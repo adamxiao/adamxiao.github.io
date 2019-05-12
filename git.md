@@ -10,6 +10,10 @@ Remote repository->Working directory: git pull
 Remote repository->Local repository: git pull
 ```
 
+## git workflow
+
+1. github workflow
+
 ## git configure
 
 ### user info
@@ -38,3 +42,17 @@ Remote repository->Local repository: git pull
 [push]
     default = simple
 ```
+
+## git FAQ
+
+1. cancel a local git commit
+git reset --hard HEAD~1
+git reset --soft HEAD~1
+
+2. sync fork repo
+git remote add upstream git://org.xxx.git
+git fetch upstream
+git merge upstream/master
+
+3. git revert remote commit
+https://www.bynicolas.com/code/git-revert-commit-already-pushed-remote-repository/
