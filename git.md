@@ -53,3 +53,6 @@ git reset --soft HEAD~1
 git remote add upstream git://org.xxx.git
 git fetch upstream
 git merge upstream/master
+
+3. git revert remote commit
+https://www.bynicolas.com/code/git-revert-commit-already-pushed-remote-repository/
