@@ -56,3 +56,6 @@ git merge upstream/master
 
 3. git revert remote commit
 https://www.bynicolas.com/code/git-revert-commit-already-pushed-remote-repository/
+
+4. git change commit message
+git commit --amend
