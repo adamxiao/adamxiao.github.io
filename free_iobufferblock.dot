@@ -1,0 +1,61 @@
+digraph iobufferblock {
+/* 把节点的默认形状设为矩形record，默认的是圆角矩形Mrecord */
+// FIXME: record rank=same failed
+//node [shape = record];
+node [shape = box];
+rankdir="LR"
+
+
+    subgraph read_buf2 {
+        rank="same";
+        struct3 -> cache_read2 [label="read"; dir=back;];
+    }
+
+    subgraph write_buf2 {
+        rank="same";
+        cache_write2 -> struct4 [label="read" ];
+    }
+    
+    subgraph write_buf1 {
+        rank="same";
+        cache_write1 -> struct3 [label="read" style=dashed, color=grey];
+    }
+
+    subgraph cluster_2 {
+        rankdir="TD"
+        color=lightgrey;
+        node [shape = record];
+        struct3 -> struct4 -> struct5;
+        label = "2. write cache";
+    }
+    
+    cache_write1 -> cache_write2 [label="write fragment" style=dashed, color=grey];
+
+
+struct3 [label=<<TABLE>
+    <TR>
+        <TD PORT="f1" BGCOLOR="gray"><FONT COLOR="white">skip</FONT></TD>
+        <TD PORT="f2" BGCOLOR="blue"><FONT COLOR="white">read_avail                    </FONT></TD>
+    </TR>
+    </TABLE>>];
+
+struct4 [label=<<TABLE>
+    <TR>
+        <TD PORT="f2" BGCOLOR="blue"><FONT COLOR="white">read_avail         </FONT></TD>
+        <TD PORT="f3" BGCOLOR="green"><FONT COLOR="black">write_avail</FONT></TD>
+    </TR>
+    </TABLE>>];
+
+struct5 [label=<<TABLE>
+    <TR>
+        <TD PORT="f3" BGCOLOR="green"><FONT COLOR="black">write_avail                            </FONT></TD>
+    </TR>
+    </TABLE>>];
+
+
+// shape=record; failed
+cache_read2 [shape=box; label="cache_read"];
+cache_write2 [shape=box; label="cache_write"];
+cache_write1 [shape=box; label="cache_write"];
+
+}
