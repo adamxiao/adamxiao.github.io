@@ -5,6 +5,10 @@ digraph iobufferblock {
 node [shape = box];
 rankdir="LR"
 
+    struct6;
+    struct3;
+    struct1;
+
 
     subgraph ref_buf1 {
         rank="same";
