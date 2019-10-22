@@ -59,3 +59,7 @@ https://www.bynicolas.com/code/git-revert-commit-already-pushed-remote-repositor
 
 4. git change commit message
 git commit --amend
+
+5. on-my-zsh git hi
+https://stackoverflow.com/questions/12765344/oh-my-zsh-slow-but-only-for-certain-git-repo
+git config --add oh-my-zsh.hide-dirty 1
