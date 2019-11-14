@@ -63,3 +63,14 @@ git commit --amend
 5. on-my-zsh git hi
 https://stackoverflow.com/questions/12765344/oh-my-zsh-slow-but-only-for-certain-git-repo
 git config --add oh-my-zsh.hide-dirty 1
+
+6. git branch fork log
+git log --graph --decorate --oneline --simplify-by-decoration --all
+
+7. git offline repo sync
+refer: http://juanmanueldehoyos.com/synchronize-git-repositories-offline-with-bundle/
+```bash
+git bundle create ../mybundle.gitbundle f8469b7a4b..develop
+git bundle verify ../mybundle.gitbundle
+git pull mybundle.gitbundle develop develop
+```

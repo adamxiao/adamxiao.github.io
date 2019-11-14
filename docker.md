@@ -17,10 +17,11 @@ RUN apt-get update \
 3. docker挂载主机文件夹
 ```bash
 docker run -i -t -P \
+    --restart=always \
     --name web \
     --mount type=bind,source=$HOME/workspaces/test_docker,target=/data \
     ubuntu:v1 \
-	/bin/bash
+    /bin/bash
 
 # -v /src/webapp:/opt/webapp
 ```
@@ -32,6 +33,24 @@ docker container  prune
 docker image save 91549c39f359 > samba_ad_dc.tar
 docker image load -i samba_ad_dc.tar
 docker tag 91549c39f359 samba-ad-dc:latest
+
+6. docker连接容器
+docker exec -it ubuntu_sphinx bash
+
+7. Dockerfile模板
+```
+FROM ubuntu:18.04
+
+MAINTAINER  Adam Xiao "http://github.com/adamxiao"
+
+ARG DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update -y \
+    && apt-get install -y \
+    git 
+
+#CMD ["/bin/bash"]
+```
 
 
 ## 问题
