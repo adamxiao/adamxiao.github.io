@@ -1,5 +1,12 @@
 # ssh
 
+## ssh直接信任服务器
+
+```
+StrictHostKeyChecking no
+UserKnownHostsFile /dev/null
+```
+
 ## ssh连接很慢的问题
 
 原因一:
