@@ -74,3 +74,8 @@ git bundle create ../mybundle.gitbundle f8469b7a4b..develop
 git bundle verify ../mybundle.gitbundle
 git pull mybundle.gitbundle develop develop
 ```
+
+8. git status 中文文件名乱码
+```
+git config --global core.quotepath false
+```
