@@ -52,6 +52,26 @@ RUN apt-get update -y \
 #CMD ["/bin/bash"]
 ```
 
+8. docker多阶段构建
+https://docs.docker.com/v17.09/engine/userguide/eng-image/multistage-build/#before-multi-stage-builds
+
+9. 基于centos构建自定义基础镜像方法
+```
+yum install supermin5 supermin 
+
+# 制作镜像
+# 配置yum源
+vim /etc/yum.repos.d/Kylin-Base.repo
+# 安装基础软件
+supermin5 -v --prepare bash vim-minimal yum passwd dbus iputils yum-utils bind-license rootfiles net-tools -o kylin.d --packager-config /etc/yum.repos.d/
+# 编译生成根文件系统
+supermin5 -v --build --format chroot kylin.d -o appliance.d
+# 打包基础镜像文件系统
+tar --numeric-owner -cpf kylin.tar -C appliance.d .
+# 导入基础镜像
+cat kylin.tar |docker import - kylinos
+```
+
 
 ## 问题
 1. docker里面的tlinux镜像不能strace, gdb, 没有权限？
