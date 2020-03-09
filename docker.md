@@ -72,6 +72,17 @@ tar --numeric-owner -cpf kylin.tar -C appliance.d .
 cat kylin.tar |docker import - kylinos
 ```
 
+centos_sphinx Docerfile
+docker run -it --privileged --restart=always --name centos_sphinx -v $HOME/tmp:/data centos:7.4.1708 bash
+```
+yum makecache
+#yum install -y python-sphinx
+
+yum install -y python3-pip
+pip3 install sphinx sphinx-autobuild sphinx_rtd_theme
+pip3 install nbsphinx 
+```
+
 
 ## 问题
 1. docker里面的tlinux镜像不能strace, gdb, 没有权限？
