@@ -79,3 +79,6 @@ git pull mybundle.gitbundle develop develop
 ```
 git config --global core.quotepath false
 ```
+
+9. git 提交到新的分支
+git push --set-upstream origin 8.1.7-24436
