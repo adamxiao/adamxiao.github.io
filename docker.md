@@ -89,3 +89,5 @@ pip3 install nbsphinx
   解决: run --privileged 参数
 2. docker的系统编译代码比较慢? 扫描文件都很慢！！！
   可能是mac版本是samba共享文件夹导致的
+3. add docker group
+sudo usermod -aG docker
