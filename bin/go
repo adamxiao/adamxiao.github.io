@@ -1,0 +1,25 @@
+#!/bin/bash
+
+if [ $# -lt 1 ]; then
+    echo "usage: $0 ip"
+    exit 0
+fi
+
+ip=$1
+user=root
+
+if [[ -f $HOME/bin/adam_get_pwd.sh ]];then
+	. $HOME/bin/adam_get_pwd.sh
+	get_pwd $ip
+fi
+
+if [[ "" == "$passwd" ]]; then
+	# Read Password
+	echo -n Password: 
+	read -s passwd
+	echo
+fi
+
+script_path=$(cd "$(dirname $0)"; pwd)
+cmd_file=${script_path}/commandfile.txt
+expect ${script_path}/go.exp $ip $user $passwd $cmd_file

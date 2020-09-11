@@ -1,0 +1,52 @@
+#!/usr/bin/expect
+
+# key: expect auto login ssh and send command
+# refer https://stackoverflow.com/questions/22147566/expect-script-for-remote-ssh-login-and-executing-commands
+
+if { [llength $argv] < 3} {
+  puts "usage: $argv0 ip user password"
+  exit 1
+}
+set ip [lindex $argv 0]
+set user [lindex $argv 1]
+set passwd [lindex $argv 2]
+set cmd_file [lindex $argv 3]
+
+spawn ssh -o StrictHostKeyChecking=no $user@$ip -p22
+
+set timeout 15
+expect {
+    timeout {
+        puts "Connection timed out"
+        exit 1
+    }
+
+    "yes/no" {
+        send "yes\r"
+        exp_continue
+    }
+
+    "assword:" {
+        send -- "$passwd\r"
+        # XXX: wrong passwd?
+    }
+
+    "~]#" {
+    }
+    "~]\\\$" {
+    }
+    "~\\\$" {
+    }
+}
+
+sleep 0.1
+# or expect $ # etc.
+
+set handle [ open $cmd_file r ]
+while { ! [eof $handle] } {
+    gets $handle buf
+    #expect "\\\$"
+    send "$buf\r"
+}
+
+interact

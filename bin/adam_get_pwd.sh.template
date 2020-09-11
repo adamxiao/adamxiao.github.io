@@ -1,0 +1,21 @@
+user=
+passwd=
+
+get_pwd()
+{
+remote_ip=$1
+user=user_00
+case $remote_ip in
+    1.1.1.1|1.1.1.3) # xxx
+        passwd=passwd1
+        ;;
+    1.1.1.2) # xxx
+        user=user2
+        passwd=passwd2
+        ;;
+    *)
+        #passwd=$(/cfs/SNG/gpwd_user ${ip} | jq -r .MSG)
+        passwd=$(/cfs/SNG/gpwd_user ${remote_ip})
+        ;;
+esac
+}
