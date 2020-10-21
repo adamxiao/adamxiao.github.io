@@ -117,3 +117,19 @@ hardy: 1. 符号快速定位 2. 自动补全 3.文件符号模糊搜索
    使用vim 8.0, 安装async异步插件
 2. c++自动非常慢
 	是用快速的YouCompleteMe, 或者不用
+
+## FAQ
+
+### vim自动对一个文件做特别设置
+```
+Per-file settings can be done using "modeline magic".
+
+The basic idea is that you can add a comment to an individual file like this:
+
+/* vim: set tabstop=8:softtabstop=8:shiftwidth=8:noexpandtab */ 
+Within vim, you should review:
+
+:help auto-setting
+:help modeline
+:help modelines
+```

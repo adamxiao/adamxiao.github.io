@@ -82,3 +82,10 @@ git config --global core.quotepath false
 
 9. git 提交到新的分支
 git push --set-upstream origin 8.1.7-24436
+
+10. git log(docker) 中文commit乱码
+```
+git config --global i18n.commitencoding utf-8
+git config --global i18n.logoutputencoding utf-8
+export LESSCHARSET=utf-8
+```

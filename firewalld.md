@@ -10,7 +10,18 @@ firewall-cmd --list-all-zones
 /etc/firewalld/zones
 
 firewall-cmd --get-active-zone 
+
+public
+  interfaces: eth0
+trusted
+  sources: 10.20.1.0/20
+
 firewall-cmd --get-default-zones 
+firewall-cmd --set-default-zone=trusted
+
+这里注意顺序问题,先匹配到就处理了
+firewall-cmd --add-source=10.20.1.0/20 --zone=trusted
+firewall-cmd --add-source=10.20.3.0/24 --zone=drop
 
 TODO: zone可以有多个吗？接口对应zone是啥意思
 firewall-cmd --get-zone-of-interface=eth0
@@ -89,6 +100,17 @@ firewall-cmd --add-forward-port=proto=80:proto=tcp:toaddr=192.168.0.1:toport=808
 firewall-cmd --permanent --zone=internal --add-interface=eth1
 firewall-cmd --permanent --zone=external --add-interface=eth0
 firewall-cmd --permanent --zone=external --add-masquerade 
+
+直接放行80端口(凌驾于所有zone之上)
+firewall-cmd --direct --add-rule ipv4 filter INPUT 0 -p tcp --dport 80 -j ACCEPT
+
+firewall-cmd --permanent --direct --passthrough ipv4 -I FORWARD -i bridge0 -j ACCEPT
+firewall-cmd --permanent --direct --passthrough ipv4 -I FORWARD -o bridge0 -j ACCEPT
+firewall-cmd --reload
+
+firewall-cmd --permanent --direct --passthrough ipv4 -A FORWARD -i br0 -j ACCEPT
+firewall-cmd --permanent --direct --passthrough ipv4 -A INPUT -i br0 -j ACCEPT
+firewall-cmd --permanent --direct --passthrough ipv4 -A FORWARD -i br0 -j ACCEPT
 
 ============================================================================
 == refer:
