@@ -1,4 +1,11 @@
 # git usage
+
+## git tutorial
+
+```
+man gittutorial
+```
+
 ## git data flow
 ```sequence
 Working directory->Index(cache): git add
@@ -88,4 +95,10 @@ git push --set-upstream origin 8.1.7-24436
 git config --global i18n.commitencoding utf-8
 git config --global i18n.logoutputencoding utf-8
 export LESSCHARSET=utf-8
+```
+
+11. git run command for each submodule
+```
+git submodule foreach 'git log --pretty=format:"%h%x09%an%x09%ad%x09%s" @{u}..HEAD'
+git submodule foreach 'git status -s'
 ```
