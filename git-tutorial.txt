@@ -1,0 +1,154 @@
+﻿用于总结git最佳实践，引导快速提高应用水平。
+
+--------开发准备----------------------------------
+#查看远程代码库
+git remote -v
+
+#add远程代码库
+git remote add upstream git@192.5.1.31:kycd_dev/uniqb.git
+#git remote add upstream git@192.5.1.31:kycd_dev/common.git
+
+#遇到本地冲突，先删除本地分支，再重新拉取远程分支
+git branch -D 8.1.8
+
+git merge 本地分支名称  #合并分支
+
+#合并远程分支到本地(有并行开发时需要先合并，会有一条合并记录)
+git pull/fetch upstream
+git merge upstream/8.1.8
+
+--------代码开发流程------------------------------
+git checkout -b 818-task12345 origin/8.1.8	#从版本分支建立任务分支
+
+git add test.txt 				#添加修改的文件
+git commit -m 'fix task#12345 xxx'	#提交代码
+
+git checkout 8.1.8		#切换到版本分支
+git pull upstream 8.1.8	#从上游更新代码
+git cherry-pick <commit id>	#合入任务的代码
+git push		#推送到远程待合入
+
+-------合并某个commit到新分支---------------------
+#切换到要合入的新分支
+git checkout 8.1.8
+#合入原分支的commit
+git cherry-pick <commit id>
+
+#有冲突的情况解决冲突再push到远程
+push
+
+-------回退版本-----------------------------------
+git reset --hard 42b6a7270432f1e3496691527ba48d1bfd0e9e27 或
+git reset --hard HEAD^   # hard选项，彻底将工作区、暂存区和版本库记录恢复到指定的版本库
+git push -f origin 8.1.7 # 强制推送到远程8.1.7分支
+
+-------合并已push的remote最近三个提交--------------
+1.查看提交历史： git log
+	commit 3ca6ec340edc66df13423f36f52919dfa3......
+	commit 1b4056686d1b494a5c86757f9eaed844......
+	commit 53f244ac8730d33b353bee3b24210b07......
+	commit 3a4226b4a0b6fa68783b07f1cee7b688.......
+2.然后执行  git rebase -i HEAD~3
+  或执行  git rebase -i 3a4226    填的是第4个commit的版本号，即合并这个commit之后的所有commit (不包括这个)
+	执行了rebase命令之后，会弹出一个窗口
+	pick 3ca6ec3   '注释**********'
+	pick 1b40566   '注释*********'
+	pick 53f244a   '注释**********'
+3.将除了第一个的pick，其他都改为 s 或 squash
+	pick 3ca6ec3   '注释**********'
+	s 1b40566   '注释*********'
+	s 53f244a   '注释**********'
+	修改后保存退出，这时 git log 一下，发现提交已经合并
+4. 强制push ( 合并本地提交不需要push )
+git push -f origin 8.1.7
+要确保强制push不会覆盖了别人的代码
+
+---------------- 生成补丁---------------------------
+#git diff old new > foo.patch
+# diff -Naur old new > foo.patch  //使用相对目录避免目录结构不一致
+ 应用补丁
+ # patch -Np0 < foo.patch
+ 还原补丁 
+ # patch -Rp0 < foo.patch
+ 
+--------将修改暂存 --------------
+#默认情况下git stash会缓存下列文件
+#添加到暂存区的修改（staged changes）；Git跟踪的但并未添加到暂存区的修改（unstaged changes）
+git stash
+git stash pop	#将缓存栈中的stash出栈并应用到当前的工作目录下
+
+git stash save "test-stash" #把所有未提交的修改（包括暂存的和非暂存的）命名为"test-stash"保存起来
+git stash list	#查看现有stash
+git stash apply	#将缓存栈中的stash应用到工作目录但不删除
+git stash show -p #查看指定stash的diff，后面可以跟着stash名字
+git stash drop stash@{0} #移除stash
+
+--------清理删除本地的修改或冲突(慎重)--------------
+##error: You have not concluded your merge (MERGE_HEAD exists).##
+#一:保留本地的更改,中止合并->重新合并->重新拉取
+    $:git merge --abort
+    $:git reset --merge
+    $:git pull
+#二:舍弃本地代码,远端版本覆盖本地版本(慎重)
+    $:git fetch --all
+    $:git reset --hard origin/8.1.7
+    $:git fetch
+##清理删除本地的修改或冲突(慎重)
+git clean -d -fx
+
+使用如下命令从仓库中删除：
+git rm --cached logs/xx.log
+如果是整个目录：
+git rm --cached -r logs
+
+git update-index --assume-unchanged  src/MC/src/groovy/com/hnkylin/mc/util/KSVDUtil.groovy
+git update-index --assume-unchanged  src/MC/test/unit/com/hnkylin/mc/util/KsvdUtilTests.groovy
+
+git update-index --no-assume-unchanged /path/to/file
+
+-------clone 新分支----------
+#查看所有远程分支：
+git branch -r
+
+以common为例，假如我们要fork ksvd的新分支8.1.7到自己的仓库中，按如下步骤操作：
+ git clone git@192.5.1.31:liuhw/common.git
+# git clone git@192.5.1.31:liuhw/uniqb.git
+ cd common/
+ git checkout --orphan 8.1.8 (分支最好与ksvd的分支同名, 如果该命令不支持，请使用git 2.0以上版本)
+ git rm -rf .
+ git pull git@192.5.1.31:kycd_dev/common.git 8.1.7 	(将代码从远程分支上搞下来）
+# git pull git@192.5.1.31:kycd_dev/uniqb.git 8.1.8
+ git push origin 8.1.7	(push之前，不用add, 也不用commit)
+ 到gitlab上看，即可看到新建的分支
+ 
+--------------------------------------
+ #添加忽略文件
+git update-index --assume-unchanged /path/to/file  
+git update-index --no-assume-unchanged /path/to/file
+
+#查看日志
+git log --pretty=format:"%H %ci %s"  hw/char/serial.c #指定格式
+git log --pretty=oneline  hw/char/serial.c
+git log --pretty=raw a1df76da57aa8772a75e
+git show a1df76da57aa8772a75e
+
+#恢复版本库
+git reset --hard a7e1d279 #恢复到指定的版本库
+git reset --hard HEAD^   # hard选项，彻底将工作区、暂存区和版本库记录恢复到指定的版本库
+git push -f origin 8.1.5-2 # 强制推送到远程分支8.1.5-2
+
+#Create patch
+git diff  commit_a^ commit_b > diff.patch
+
+--------- submodule update----------------
+cd uniqb
+ git submodule update --init 
+ cd KSVD/common
+ git checkout 8.1.6
+ cd ../lib/boost
+ git checkout 1.53.0
+ cd ../..
+ /bin/sh scripts/gen_build_cycle.sh
+ make DEBUG:=1 pre
+ cd src/ksvd-img
+ make DEBUG:=1

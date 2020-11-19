@@ -102,3 +102,16 @@ export LESSCHARSET=utf-8
 git submodule foreach 'git log --pretty=format:"%h%x09%an%x09%ad%x09%s" @{u}..HEAD'
 git submodule foreach 'git status -s'
 ```
+
+12. git query push upstream
+https://git-scm.com/book/en/v2/Git-Basics-Working-with-Remotes
+```
+git remote show origin
+```
+
+13. git cherry-pick
+```
+git cherry-pick <HashA> <HashB>
+git cherry-pick A..B
+git cherry-pick A^..B
+```
