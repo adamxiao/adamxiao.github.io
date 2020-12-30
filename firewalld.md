@@ -86,6 +86,10 @@ firewall-cmd --permanent --zone=public --add-masquerade
 firewall-cmd --query-masquerade
 firewall-cmd --remove-masquerade
 
+
+iptables -t nat -I POSTROUTING -o Mdvs -j MASQUERADE
+iptables -I FORWARD -o Mdvs -j ACCEPT
+
 ### 端口转发
 
 将80端口的流量转发至8080

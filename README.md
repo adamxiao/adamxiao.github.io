@@ -19,3 +19,6 @@
 
 ### 为止笔记
 记录笔记，备份网页知识
+
+tmux guide, readthedoc, good
+https://tmuxguide.readthedocs.io/en/latest/tmux/tmux.html

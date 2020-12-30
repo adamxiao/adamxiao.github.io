@@ -115,3 +115,7 @@ git cherry-pick <HashA> <HashB>
 git cherry-pick A..B
 git cherry-pick A^..B
 ```
+
+14. git checkout previous branch
+git checkout -
+git checkout @{-1}
