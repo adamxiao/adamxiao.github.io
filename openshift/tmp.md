@@ -1,5 +1,15 @@
 # openshift 编译arm64 Elasticsearch operator 镜像
 
+TODO: 
+* openshift集群范围内代理
+* https://access.redhat.com/documentation/zh-cn/openshift_container_platform/4.9/html/post-installation_configuration/nw-proxy-configure-object_post-install-network-configuration
+
+[Creating Kubernetes Secrets Using TLS/SSL as an Example](https://shocksolution.com/2018/12/14/creating-kubernetes-secrets-using-tls-ssl-as-an-example/)
+[secret官方文档](https://kubernetes.io/docs/concepts/configuration/secret/)
+[OpenShift 4 Hands-on Lab (12) 使用配置参数和环境变量](https://blog.csdn.net/weixin_43902588/article/details/104436782)
+[OpenShift 4 - 全图形化 Step-by-Step 部署容器应用](https://blog.csdn.net/weixin_43902588/article/details/115284085)
+
+
 一种基于openshift的自动化监控微服务api耗时方法？
 一种基于角色的集群节点管理配置文件方法
 一种基于openshift的自动监控微服务API耗时方法

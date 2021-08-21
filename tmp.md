@@ -1,5 +1,8 @@
 # 临时计划
 
+[轻量级 Kubernetes 集群发行版 K3s 完全进阶指南](https://www.hi-linux.com/posts/907.html)
+默认使用sqlite3数据(同时支持etcd，mysql等)
+
 TODO:
 * xxx
 
