@@ -34,6 +34,8 @@ firewall-cmd --get-zone-of-interface=eth0
 
 firewall-cmd --zone=public --permanent --add-port=8010/tcp
 firewall-cmd --zone=public --permanent --add-service=mysql
+允许10.20.1.50访问20171端口
+firewall-cmd --permanent --add-rich-rule="rule family="ipv4" source address="10.20.1.50" port protocol="tcp" port="20171" accept"
 
 重载配置文件
 firewall-cmd --reload
