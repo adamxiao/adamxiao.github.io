@@ -44,8 +44,10 @@ Remote repository->Local repository: git pull
 ```ini
 [https]
     proxy = http://dev-proxy.oa.com:8080
+	;proxy = sock5h://dev-proxy.oa.com:8080
 [http]
     proxy = http://dev-proxy.oa.com:8080
+	;proxy = sock5h://dev-proxy.oa.com:8080
 [push]
     default = simple
 ```
