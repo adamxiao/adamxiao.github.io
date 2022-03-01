@@ -29,3 +29,14 @@ docker build -t hub.iefcu.cn/xiaoyun/xiaoyun-console:20220301 .
 2. 修改yarn.lock，配置为使用私有npm镜像仓库
 
 3. 新增node-v14.18.0-headers.tar.gz代码，构建npm某个包需要
+
+还可以通过openshift平台，基于S2I自动构建部署console镜像
+
+目前还有一点小问题
+
+TODO: 解决
+
+```bash
+oc new-project console-test
+oc new-app http://192.168.120.13/xiaoyun/kcp-console#test-build-release-4.9
+```
