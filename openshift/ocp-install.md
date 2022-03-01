@@ -178,3 +178,111 @@ sudo coreos-installer install /dev/vda -n \
     --insecure-ignition \
     --ignition-url http://10.90.3.38:9090/bootstrap.ign
 ```
+
+安装完成后，重启，重启选择硬盘启动，同样修改grub配置，增加内核参数selinux=0
+TODO: => 优化为安装的时候，就指定内核参数selinux=0?
+然后过一会等系统起来后，就可以检查boostrap安装是否成功了。
+
+使用密钥登录系统，检查镜像下载镜像
+ssh -i ~/.ssh/new_rsa core@10.90.3.82
+
+journalctl -b -f -u release-image.service -u bootkube.service # 检查服务是否正常
+sudo podman images # 检查是否有很多镜像，大概十几个
+sudo netstat -lntp | grep 6443\|2379 # 检查etcd，apiserver服务是否起来
+
+检查bootstrap是否安装好（这个一般不用检查，特殊查问题的时候才检查）
+
+```
+curl -k https://api-int.kcp3-arm.iefcu.cn:22623/config/master
+```
+
+需要得到数据
+![](2022-03-01-21-48-56.png)
+
+#### 手动安装master
+
+基本上同bootstrap，少量参数不一样
+1. 主机名， 例如 master1.kcp3-arm.iefcu.cn
+2. 点火文件，例如 http://10.90.3.38:9090/master.ign
+3. 网卡名，例如 enp12s0f1
+
+```bash
+sudo coreos-installer install /dev/sdb \
+    --append-karg ip=10.90.3.83::10.90.3.1:255.255.255.0:master1.kcp3-arm.iefcu.cn:enp12s0f1:none \
+    --append-karg nameserver=10.90.3.38 \
+    --insecure-ignition \
+    --ignition-url http://10.90.3.38:9090/master.ign
+```
+
+##### 第一次额外配置
+reboot, 选择硬盘启动, 修改grub配置，**添加内核参数selinux=0 autorelabel=1**
+
+##### 第二次额外配置
+等重启完成后，过几次会出现两个grub参数，此时再需要修改grub配置，**添加内核参数enforcing=0 autorelabel=1**
+
+#### kylin-login修改
+
+```bash
+cd /data/kcp-install/others/kylin-logo && bash ./run.sh
+```
+
+#### 配置heketi+glusterfs存储
+
+TODO:
+
+#### 启用内部registry
+
+TODO:
+
+#### 新增htpasswd用户认证
+
+```bash
+htpasswd -c -B -b users.htpasswd admin ksvd2020
+# 输入内容如下:
+admin:$2y$05$oANlQ7bXuJQqbytIFkA7OO5Mf5pROsxoIgVU1UYdQrMTkrl2CNVi6
+```
+
+赋予admin用户集群管理员权限
+```bash
+oc adm policy add-cluster-role-to-user cluster-admin admin
+```
+
+删除默认kubeadmin用户
+```bash
+oc -n kube-system delete secrets kubeadmin
+```
+
+新增kylin-monitor用户
+```bash
+htpasswd -c -B -b users.htpasswd kylin-monitor jit@2021
+kylin-monitor:$2y$05$IzGbG9RbAEX577z7RKeVEOl3V0AgfeIoCNq8yDiO9GZ8rnYly5Tlu
+
+oc adm policy add-cluster-role-to-user cluster-monitoring-view kylin-monitor
+```
+
+## FAQ
+
+TODO:各种配置出错，可以到这里找原因和解决方法
+
+1. notReady
+node NotReady, 最后等了很久，发现有csr了，通过之后节点Ready了
+![](2022-03-01-21-54-38.png)
+![](2022-03-01-21-54-56.png)
+
+```bash
+oc get csr | grep pending -i | awk '{print $1}' | sed 's/^/kubectl certificate approve /' | bash
+```
+
+## 参考文档
+
+[openshift 4.5.9 离线安装](https://zhangguanzhang.github.io/2020/09/18/ocp-4.5-install/)
+
+[coreos安装参数参考文档 - redhat官方文档](https://access.redhat.com/documentation/zh-cn/openshift_container_platform/4.6/html/installing_on_ibm_power/creating-machines-ibm-power-restricted-network)
+
+[私有镜像仓库配置](https://docs.openshift.com/container-platform/4.8/registry/configuring_registry_storage/configuring-registry-storage-baremetal.html)
+
+[暴露私有镜像仓库](https://docs.openshift.com/container-platform/4.8/registry/securing-exposing-registry.html)
+
+[配置默认存储类](https://kubernetes.io/zh/docs/tasks/administer-cluster/change-default-storage-class/)
+
+[oc命令行参考 - redhat官方文档](https://access.redhat.com/documentation/en-us/openshift_container_platform/4.1/html/cli_reference/cli-developer-commands)

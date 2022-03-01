@@ -11,7 +11,7 @@
     "intopic-toc": {
       "selector": ".markdown-section h1, .markdown-section h2, .markdown-section h3, .markdown-section h4, .markdown-section h5, .markdown-section h6",
       "mode": "nested",
-      "maxDepth": 2,
+      "maxDepth": 5,
       "isCollapsed": false,
       "isScrollspyActive": true,
       "visible": true,
