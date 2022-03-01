@@ -4,4 +4,5 @@ all:
 		-p 4000:4000 \
 		-v ${PWD}:/srv/gitbook \
 		hub.iefcu.cn/public/gitbook \
-		gitbook serve --host 0.0.0.0
+		bash -c 'gitbook install && \
+		gitbook serve --host 0.0.0.0'

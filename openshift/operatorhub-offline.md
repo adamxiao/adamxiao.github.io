@@ -6,8 +6,13 @@
 ## 同步catalogSource镜像
 
 registry.redhat.io/redhat/redhat-operator-index:v4.9
+registry.redhat.io/redhat/certified-operator-index:v4.9
+registry.redhat.io/redhat/community-operator-index:v4.9
 
-需要使用帐号认证才能下载这个镜像
+registry.redhat.io/redhat/redhat-marketplace-index:v4.9
+(这个比较特殊，需要license)
+
+需要使用帐号认证才能下载这些镜像
 
 同步为私有仓库的镜像hub.iefcu.cn/public/redhat-operator-index:v4.9
 
@@ -30,6 +35,12 @@ cat > image-sync-list.json << EOF
 {
 "registry.redhat.io/redhat/redhat-operator-index:v4.9":
   "hub.iefcu.cn/public/redhat-operator-index:v4.9"
+,"registry.redhat.io/redhat/community-operator-index:v4.9":
+  "hub.iefcu.cn/public/community-operator-index:v4.9"
+,"registry.redhat.io/redhat/certified-operator-index:v4.9":
+  "hub.iefcu.cn/public/certified-operator-index:v4.9"
+,"registry.redhat.io/redhat/redhat-marketplace-index:v4.9":
+  "hub.iefcu.cn/public/redhat-marketplace-index:v4.9"
 }
 EOF
 

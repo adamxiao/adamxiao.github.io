@@ -10,3 +10,5 @@
    * [v2ray安装教程](scripts/V2Ray安装教程.md)
 * [openshift使用](openshift/README.md)
    * [operatorhub离线搭建使用](openshift/operatorhub-offline.md)
+   * [quay私有镜像仓库镜像同步](openshift/sync-quay-image.md)
+   * [console镜像构建方法](openshift/console-build.md)
