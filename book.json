@@ -3,6 +3,11 @@
     "description": "共享文档, 分享一些工具的使用，记录openshift搭建部署等",
     "plugins": [
         "intopic-toc"
+		,"popup"
+		,"splitter"
+		,"code"
+		,"chapter-fold"
+		,"back-to-top-button"
     ],
     "author": "adamxiao",
     "language": "zh-hans"

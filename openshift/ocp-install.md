@@ -171,16 +171,9 @@ sudo coreos-installer install /dev/vda \
     --append-karg selinux=0 \
     --insecure-ignition \
     --ignition-url http://10.90.3.38:9090/bootstrap.ign
-
-
-sudo coreos-installer install /dev/vda -n \
-    --append-karg selinux=0 \
-    --insecure-ignition \
-    --ignition-url http://10.90.3.38:9090/bootstrap.ign
 ```
 
-安装完成后，重启，重启选择硬盘启动，同样修改grub配置，增加内核参数selinux=0
-TODO: => 优化为安装的时候，就指定内核参数selinux=0?
+安装完成后，重启选择硬盘启动
 然后过一会等系统起来后，就可以检查boostrap安装是否成功了。
 
 使用密钥登录系统，检查镜像下载镜像
