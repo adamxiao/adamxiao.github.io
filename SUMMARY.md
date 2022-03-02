@@ -17,6 +17,7 @@
 * [docker镜像编译构建](docker-image-build/README.md)
    * [jit的centos8基础镜像](docker-image-build/centos8-build-env.md)
    * [istio镜像源码编译](docker-image-build/istio-image-build.md)
+   * [docker多架构镜像编译方法](docker-image-build/multi-arch-build.md)
 * [openshift使用](openshift/README.md)
    * [离线安装部署kcp文档](openshift/ocp-install.md)
    * [operatorhub离线搭建使用](openshift/operatorhub-offline.md)

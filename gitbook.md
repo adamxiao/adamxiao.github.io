@@ -1,5 +1,58 @@
 # gitbook安装使用
 
+## gitbook安装
+
+使用docker镜像安装的方式,
+参考fellah/gitbook
+```bash
+#docker run -v /srv/gitbook -v /srv/html docker.io/fellah/gitbook gitbook build . /srv/html
+docker run -v $PWD:/srv/gitbook -v $PWD/html:/srv/html hub.iefcu.cn/public/gitbook gitbook build . /srv/html
+
+docker run -it --rm -v $PWD:/srv/gitbook hub.iefcu.cn/public/gitbook bash
+```
+
+自己构建gitbook镜像, 创建Dockerfile内容如下：
+```dockerfile
+#FROM node:6-slim
+FROM hub.iefcu.cn/public/node:6-slim
+
+MAINTAINER Adam Xiao <iefcuxy@gmail.com>
+
+ARG VERSION=3.2.1
+ARG NPM_MIRROR=http://docker.iefcu.cn:5565/repository/npm-group/
+
+LABEL version=$VERSION
+
+RUN npm config set registry "${NPM_MIRROR}" &&\
+        npm install --global gitbook-cli &&\
+        gitbook fetch ${VERSION} &&\
+        npm cache clear &&\
+        rm -rf /tmp/*
+
+WORKDIR /srv/gitbook
+
+EXPOSE 4000
+
+CMD /usr/local/bin/gitbook serve
+```
+
+然后一键构建gitbook镜像
+```bash
+docker build -t hub.iefcu.cn/xiaoyun/gitbook .
+```
+
+或者一键构建多架构gitbook镜像
+(目前这个buildx构建arm64镜像有点问题，很奇怪)
+```bash
+docker buildx build \
+    --build-arg http_proxy=http://proxy.iefcu.cn:20172 \
+    --build-arg https_proxy=http://proxy.iefcu.cn:20172 \
+    --build-arg no_proxy=yumrepo.unikylin.com.cn,192.0.0.0/8 \                                                                                                                                                         --platform=linux/arm64,linux/amd64 \
+    -t hub.iefcu.cn/xiaoyun/gitbook . --push
+```
+
+## xxx
+
 TODO:
 https://zhaoda.net/2015/11/09/gitbook-plugins/
 
