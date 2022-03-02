@@ -19,6 +19,8 @@
    * [istio镜像源码编译](docker-image-build/istio-image-build.md)
    * [docker多架构镜像编译方法](docker-image-build/multi-arch-build.md)
 * [openshift使用](openshift/README.md)
+   * [openshift部署应用](openshift/deploy-app/README.md)
+       * [adam-doc文档部署](openshift/deploy-app/adam-doc-deploy.md)
    * [离线安装部署kcp文档](openshift/ocp-install.md)
    * [operatorhub离线搭建使用](openshift/operatorhub-offline.md)
    * [quay私有镜像仓库镜像同步](openshift/sync-quay-image.md)
