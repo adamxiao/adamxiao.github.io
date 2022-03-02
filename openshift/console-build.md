@@ -79,6 +79,15 @@ docker run -it -v $PWD:/opt/app-root/src -w /opt/app-root/src --entrypoint bash 
 # 编译完成可以找到前端打包dist文件: /opt/app-root/src/frontend/public/dist
 ```
 
+配置如下环境变量，能够节省一些不必要的资源下载
+```
+export CHROMEDRIVER_SKIP_DOWNLOAD=true
+export GECKODRIVER_SKIP_DOWNLOAD=true
+export SKIP_SASS_BINARY_DOWNLOAD_FOR_CI=true
+export CYPRESS_INSTALL_BINARY=0
+export NPM_CONFIG_TARBALL=/opt/app-root/src/node-v14.18.0-headers.tar.gz
+```
+
 
 ## 其他资料
 

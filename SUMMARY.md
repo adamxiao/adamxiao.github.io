@@ -18,6 +18,7 @@
    * [jit的centos8基础镜像](docker-image-build/centos8-build-env.md)
    * [istio镜像源码编译](docker-image-build/istio-image-build.md)
    * [docker多架构镜像编译方法](docker-image-build/multi-arch-build.md)
+   * [使用podman镜像编译构建镜像](docker-image-build/use-podman-build-image.md)
 * [openshift使用](openshift/README.md)
    * [openshift部署应用](openshift/deploy-app/README.md)
        * [adam-doc文档部署](openshift/deploy-app/adam-doc-deploy.md)
