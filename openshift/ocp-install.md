@@ -257,15 +257,21 @@ cd /data/kcp-install/ocp-install.arm && bash adam.sh
   离线情况下，节点拉取镜像都是从私有镜像仓库quay.iefcu.cn拉取的
   目前搭建的私有镜像仓库域名为quay.iefcu.cn，端口为9443, 镜像目录为kcp/openshift4-aarch64(文档可能更新不及时，可能不一样，得确认一下！)
   **注意私有镜像仓库的地址要根据实际配置修改**
+
+* 目前最终镜像是 hub.iefcu.cn/xiaoyun/openshift4-aarch64
+  rhcos之前是quay.io/openshift-release-dev/ocp-v4.0-art-dev
+  （TODO: 名称需要改掉，改成 hub.iefcu.cn/kylinsec/kcp-aarch64）
+* 如果用户现场搭建的私有镜像仓库也是hub.iefcu.cn/xiaoyun/openshift4-aarch64，那就不用配置，否则就需要配置
+
+配置示例如下：
 ```yaml
 imageContentSources:
 - mirrors:
   - quay.iefcu.cn:9443/kcp/openshift4-aarch64
-  source: quay.io/openshift-release-dev/ocp-release
-- mirrors:
-  - quay.iefcu.cn:9443/kcp/openshift4-aarch64
-  source: quay.io/openshift-release-dev/ocp-v4.0-art-dev
+  source: hub.iefcu.cn/xiaoyun/openshift4-aarch64
 ```
+
+
 * 其他TODO: xxx
 
 ### 安装kylin coreos

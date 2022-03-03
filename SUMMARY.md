@@ -27,6 +27,7 @@
    * [离线安装部署kcp文档](openshift/ocp-install.md)
    * [operatorhub离线搭建使用](openshift/operatorhub-offline.md)
    * [quay私有镜像仓库镜像同步](openshift/sync-quay-image.md)
+   * [制作新的openshift release镜像](openshift/create-ocp-release.md)
    * [console镜像构建方法](openshift/console-build.md)
    * [MetalLB安装以及使用方法](openshift/metallb-usage.md)
    * [openshift安装部署traefik](docker-usage/traefik.md)

@@ -7,6 +7,8 @@
 		,"splitter"
 		,"code"
 		,"back-to-top-button"
+		,"tbfed-pagefooter"
+		,"prism", "-highlight"
     ],
     "author": "adamxiao",
     "language": "zh-hans"
@@ -24,5 +26,10 @@
         "en": "In this article"
       }
     }
+	,"tbfed-pagefooter": {
+		"copyright": "Copyright &copy <a href='http://192.168.120.13/xiaoyun/adam-doc' target='_blank'>adam xiao</a> 2022",
+		"modify_label": "修订时间：",
+		"modify_format": "YYYY-MM-DD HH:mm:ss"
+	}
   }
 }

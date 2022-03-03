@@ -118,3 +118,13 @@ https://www.bookstack.cn/read/gitbook-documentation/format-markdown.md
 3 Markdown 扩展语法 GFM
 GitHub Flavored Markdown（简称 GFM）是目前最流行的 Markdown 扩展语法，它提供了包括表格、任务列表、删除线、围栏代码、Emoji 等在内的标记语法。
 https://zhuanlan.zhihu.com/p/261016461
+
+https://skyao.gitbooks.io/learning-gitbook/content/plugin/
+* Tbfed-pagefooter: 为页面添加页脚,可以增加版权信息和文件的最后修订时间
+https://zhousiwei.gitee.io/ibooks/notes/gitbook_config.html
+
+
+https://zhousiwei.gitee.io/ibooks/notes/gitbook_config.html
+* 4、GitBook插件列表: 
+* prism 基于 Prism 的代码高亮 ➡️ https://github.com/gaearon/gitbook-plugin-prism
+
