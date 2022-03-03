@@ -1,14 +1,53 @@
 # 离线安装部署kcp文档
 
-v1.6 20220215
+## 原理介绍
 
-v1.6计划：
-使用nmcli配置修改网络，主机名
-selinux=0在安装阶段处理一下。
-dns配置文档更新。
+### ocp安装流程
+
+先看这个官方的图，从图来讲流程
+![](2022-03-03-18-29-45.png)
+
+它的安装是先在一台机器（bastion）上准备 pxe 和相关的安装集群描述信息需要的文件（Ignition）以及 dns，负载均衡，然后引导主机（Bootstrap）通过 dhcp 或者 人为挂载 rhcos 的 iso 在安装界面手写 boot cmdline 从 bastion 指定获取 bootstrap.ign和 os.raw.gz 文件完成安装， 随后 master 节点启动会获取master.ign文件并且从 bootstrap 节点获取 machine-config 信息，随后 node 同理。
+
+在安装过程中 bootstrap 的 ign文件里证书是24小时过期的，因为官方这种涉及理念是 bootstrap 作用于引导集群的，安装完后会将控制平面移交到 master上，所以我们要配置负载均衡（以及代理后续集群里的 ingress controller）
+
+* 先在一台机器（bastion）上准备pxe和相关的安装集群描述信息需要的文件（Ignition）以及 dns，负载均衡，也就是图里的 Cluster Installer
+* bastion上手写一个集群安装的 yaml ，然后使用 oc 命令把 yaml 转换成集群部署清单和 Ignition 文件
+* 在引导主机启动前准备好 DNS，负载均衡，镜像仓库
+* 引导主机（Bootstrap）通过 dhcp 或者挂载 rhcos 的 iso 启动后在安装界面手写boot cmdline（包含网络配置，nameserver，install_dev,image_url,ignition_url），安装完系统后重启后，bootstrap 机器会执行 bootkube.sh 脚本，内部是 crio 和 podman 启动容器和 pod 来启动控制平面，并等待 master 加入
+* Master 节点如果像我没有dhcp就手动配置boot cmdline 安装后会从引导主机远程获取资源并完成引导，会作为 node 注册。
+* bootstrap 节点 watch 到 node的注册后，会在集群里部署 operator 执行 一些 install-n-master的 pod，例如引导主机会让 master 节点构建 Etcd 集群。
+* 引导主机使用新的 Etcd 集群启动临时 Kubernetes 控制平面。
+* 临时控制平面在 Master 节点启动生成控制平面。
+* 临时控制平面关闭并将控制权传递给生产控制平面。
+* 引导主机将 OCP 组件注入生成控制平面。
+* 整个过程主要是 bootstrap 上的 bootkube.sh 执行，最后执行完后会在集群里添加一个 -n kube-system configmap/bootstrap 作为保存状态。
+* 引导安装过程完成以后，OCP 集群部署完毕。然后集群开始下载并配置日常操作所需的其余组件，包括创建计算节点、通过 Operator 安装其他服务等。
 
 ## 准备工作
 需要准备硬件，软件，ip等
+
+#### 服务器规划
+
+服务器规划如下：
+
+* 三个控制平面节点，安装 Etcd、控制平面组件。
+* 一个计算节点，运行实际负载。
+* 一个引导主机，执行安装任务，集群部署完成后当作 worker 使用。
+* 一个基础节点，用于准备上离线资源，同时用来部署 私有镜像仓库quay，DNS 和负载均衡（负载machine-config、ocp 的 kube-apiserver 和 集群里的 ingress controller）。
+
+| 主机 | OS | vCPU | RAM | Storage | IP | FQND | 描述 |
+| :---- | ----:| :- | :- | :- | :-- | :-- | :-- | :-- |
+| bastion  | kylinos 344 |  8   | 8G | 100G | 10.90.3.38 | bastion.kcp4.iefcu.cn  |堡垒机: dns,haproxy<br>quay,http |
+| bootstrap  | kylin coreos |  8   | 4G | 120G | 10.90.3.30 | bootstrap.kcp4.iefcu.cn  | 引导节点 |
+| master1  | kylin coreos |  8   | 16G | 120G | 10.90.3.31 | master1.kcp4.iefcu.cn  |控制节点 |
+| master2  | kylin coreos |  8   | 16G | 120G | 10.90.3.32 | master2.kcp4.iefcu.cn  |控制节点 |
+| master3  | kylin coreos |  8   | 16G | 120G | 10.90.3.33 | master3.kcp4.iefcu.cn  |控制节点 |
+| worker1  | kylin coreos |  8   | 16G | 120G | 10.90.3.34 | worker1.kcp4.iefcu.cn  |计算节点 |
+
+* kcp4 是集群名，iefcu.cn是 basedomain
+* ocp内部的 kubernetes api、router、etcd通信都是使用域名，所以这里我们也给主机规定下FQDN，所有节点主机名都要采用三级域名格式，如 master1.aa.bb.com。**后面会在 dns server里写入记录**
+
 
 #### 硬件准备
 单节点环境部署，至少需要三台机器：
@@ -78,18 +117,27 @@ cd /data/kcp-install/quay && docker-compose up -d
 cd /data/kcp-install/pxe-dnsmasq && docker-compose up -d
 ```
 
-dns配置内容示例如下
+**dns配置要求如下：**
 
+按照官方文档，使用 UPI 基础架构的 OCP 集群需要以下的 DNS 记录。在每条记录中，<cluster_name> 是集群名称，<base_domain> 是在 install-config.yaml 文件中指定的集群基本域，如下表所示：
+![](2022-03-03-18-54-17.png)
+
+举例说明，
+* api.kcp4.iefcu.cn这个域名配置的ip地址是堡垒机bastion的ip地址
+* quay.iefcu.cn这个私有镜像仓库的域名配置的ip地址也是bastion的ip地址
+  (因为私有镜像仓库也在堡垒机上)
+
+当前dns配置内容示例如下：
 ```conf
 # 泛域名解析apps
-address=/apps.kcp4.iefcu.cn/172.16.135.98
-address=/api.kcp4.iefcu.cn/172.16.135.98
-address=/api-int.kcp4.iefcu.cn/172.16.135.98
+address=/apps.kcp4.iefcu.cn/10.90.3.38
+address=/api.kcp4.iefcu.cn/10.90.3.38
+address=/api-int.kcp4.iefcu.cn/10.90.3.38
 
 # 这里默认etcd是部署在master节点上
-address=/etcd-0.kcp4.iefcu.cn/172.16.135.11
-address=/etcd-1.kcp4.iefcu.cn/172.16.135.12
-address=/etcd-2.kcp4.iefcu.cn/172.16.135.13
+address=/etcd-0.kcp4.iefcu.cn/10.90.3.31
+address=/etcd-1.kcp4.iefcu.cn/10.90.3.32
+address=/etcd-2.kcp4.iefcu.cn/10.90.3.33
 
 # 加密的etcd域名SRV记录
 srv-host=_etcd-server-ssl._tcp.kcp4.iefcu.cn,etcd-0.kcp4.iefcu.cn,2380,10
@@ -97,13 +145,14 @@ srv-host=_etcd-server-ssl._tcp.kcp4.iefcu.cn,etcd-1.kcp4.iefcu.cn,2380,10
 srv-host=_etcd-server-ssl._tcp.kcp4.iefcu.cn,etcd-2.kcp4.iefcu.cn,2380,10
 
 # 除此之外再添加各节点主机名记录
-address=/bootstrap.kcp4.iefcu.cn/172.16.135.10
-address=/master1.kcp4.iefcu.cn/172.16.135.11
-address=/master2.kcp4.iefcu.cn/172.16.135.12
-address=/master3.kcp4.iefcu.cn/172.16.135.13
+address=/bootstrap.kcp4.iefcu.cn/10.90.3.30
+address=/master1.kcp4.iefcu.cn/10.90.3.31
+address=/master2.kcp4.iefcu.cn/10.90.3.32
+address=/master3.kcp4.iefcu.cn/10.90.3.33
+address=/worker1.kcp4.iefcu.cn/10.90.3.33
 
-# 临时使用
-address=/quay.iefcu.cn/172.16.135.99
+# 临时私有镜像仓库
+address=/quay.iefcu.cn/10.90.3.38
 ```
 
 
@@ -111,8 +160,89 @@ address=/quay.iefcu.cn/172.16.135.99
 
 cd /data/kcp-install/haproxy && docker-compose up -d
 
-修改haproxy配置
-TODO:
+当前haproxy配置文件示例：
+```conf
+global
+  maxconn  2000
+  ulimit-n  16384
+  log  127.0.0.1 local0 err
+
+defaults
+  log global
+  mode  http
+  option  httplog
+  timeout connect 5000
+  timeout client  50000
+  timeout server  50000
+  timeout http-request 15s
+  timeout http-keep-alive 15s
+
+listen stats
+    bind         :9000
+    mode         http
+    stats        enable
+    stats        uri /
+    stats        refresh   30s
+    stats        auth      admin:password #web页面登录
+    monitor-uri  /healthz
+
+frontend openshift-api-server
+    bind :6443
+    default_backend openshift-api-server
+    mode tcp
+    option tcplog
+
+backend openshift-api-server
+    balance roundrobin
+    mode tcp
+    option httpchk GET /healthz
+    http-check expect string ok
+    default-server inter 10s downinter 5s rise 2 fall 2 slowstart 60s maxconn 250 maxqueue 256 weight 100
+    server bootstrap 10.90.3.30:6443 check check-ssl verify none #安装结束后删掉此行
+    server master1 10.90.3.31:6443 check check-ssl verify none
+    server master2 10.90.3.32:6443 check check-ssl verify none
+    server master3 10.90.3.33:6443 check check-ssl verify none
+
+frontend machine-config-server
+    bind :22623
+    default_backend machine-config-server
+    mode tcp
+    option tcplog
+
+backend machine-config-server
+    balance roundrobin
+    mode tcp
+    server bootstrap 10.90.3.30:22623 check #安装结束后删掉此行
+    server master1 10.90.3.31:22623 check
+    server master2 10.90.3.32:22623 check
+    server master3 10.90.3.33:22623 check
+
+frontend ingress-http
+    bind :80
+    default_backend ingress-http
+    mode tcp
+    option tcplog
+
+backend ingress-http
+    balance roundrobin
+    mode tcp
+    server master1 10.90.3.31:80 check
+    server master2 10.90.3.32:80 check
+    server master3 10.90.3.33:80 check
+
+frontend ingress-https
+    bind :443
+    default_backend ingress-https
+    mode tcp
+    option tcplog
+
+backend ingress-https
+    balance roundrobin
+    mode tcp
+    server master1 10.90.3.31:443 check
+    server master2 10.90.3.32:443 check
+    server master3 10.90.3.33:443 check
+```
 
 ### 5. 生成点火文件
 
@@ -120,6 +250,23 @@ TODO:
 ```
 cd /data/kcp-install/ocp-install.arm && bash adam.sh
 ```
+
+点火文件install-config.yaml.bak配置内容说明
+
+* 配置镜像仓库的mirror
+  离线情况下，节点拉取镜像都是从私有镜像仓库quay.iefcu.cn拉取的
+  目前搭建的私有镜像仓库域名为quay.iefcu.cn，端口为9443, 镜像目录为kcp/openshift4-aarch64(文档可能更新不及时，可能不一样，得确认一下！)
+  **注意私有镜像仓库的地址要根据实际配置修改**
+```yaml
+imageContentSources:
+- mirrors:
+  - quay.iefcu.cn:9443/kcp/openshift4-aarch64
+  source: quay.io/openshift-release-dev/ocp-release
+- mirrors:
+  - quay.iefcu.cn:9443/kcp/openshift4-aarch64
+  source: quay.io/openshift-release-dev/ocp-v4.0-art-dev
+```
+* 其他TODO: xxx
 
 ### 安装kylin coreos
 
@@ -265,6 +412,19 @@ node NotReady, 最后等了很久，发现有csr了，通过之后节点Ready了
 ```bash
 oc get csr | grep pending -i | awk '{print $1}' | sed 's/^/kubectl certificate approve /' | bash
 ```
+
+## 版本变更列表
+
+* v1.7 20220303
+计划： 参考ocp-4.5-install这篇文档，更新原理，
+尤其是dns，和haproxy，点火文件的部分。
+
+* v1.6 20220215
+
+v1.6计划：
+使用nmcli配置修改网络，主机名
+selinux=0在安装阶段处理一下。
+dns配置文档更新。
 
 ## 参考文档
 
