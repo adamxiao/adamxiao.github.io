@@ -82,19 +82,16 @@ etcd1.ocp4.iefcu.cn
 
 x86机器，可以是虚拟机。
 安装系统，例如unikylin3.3-6A，最小安装即可，创建管理员adam/ksvd2020，配置网络
-安装docker，然后把我准备好的软件放上去，有如下文件
-quay.tgz => 私有镜像仓库
-kcp-extra.tgz => 其他配置
-docker-images.tar => 基础服务docker镜像
-然后创建一个目录，例如/data/kcp-install，解压上述文件
+安装docker，docker-compose，然后把我准备好的软件放上去，然后处理，有如下文件:
+* quay.tgz => 私有镜像仓库
+* docker-images.tar => 基础服务docker镜像
+* oc, kubectl等
 
 ```bash
 mkdir -p /data/kcp-install && cd /data/kcp-install
 # XXX: 把上述文件放到这里 ...
-# 解压私有镜像仓库
+# 解压私有镜像仓库，特别注意，需要保持里面部分文件的权限，用-p等参数
 sudo tar --numeric-owner -xpzf quay.tgz
-# 解压其他配置
-tar -xzf kcp-extra.tgz
 # 导入docker镜像
 docker image load -i docker-images.tar
 
@@ -104,33 +101,58 @@ docker image load -i docker-images.tar
 ### 2. 部署配置镜像仓库
 
 我已经在使用docker部署配置好了，启动即可。
+(管理员用户密码为kylin/kylinsec)
 
 ```bash
 cd /data/kcp-install/quay && docker-compose up -d
 ```
 
-* 注意修改config/config.yaml，修改SERVER_HOSTNAME字段，示例内容为 quay.iefcu.cn:9443，意思就是私有镜像仓库服务为quay.iefcu.cn,端口为9443
+* 注意修改config/config.yaml，修改SERVER_HOSTNAME字段，示例内容为 quay.iefcu.cn:9443，意思就是私有镜像仓库服务为quay.iefcu.cn，端口为9443
 * 以及修改config/ssl.key, config/ssl.cert为正确有效的https证书和密钥(注意权限为1001)
+* 最后验证一下能够拉取私有镜像仓库的镜像
+```bash
+podman pull quay.iefcu.cn:9443/kcp/ocp-build@sha256:8b52838119f1d090ca486ad6ecbbc1b4316642e467b988afaa859b0878bb061e
+podman pull quay.iefcu.cn:9443/kcp/ocp-build:4.9.0-rc.6-arm64-0125 
+# 注意，后续版本可能更新，验证拉取的镜像的可能会变化。
+```
 
+#### 再次同步一下原始release版本中的镜像，以确保万无一失
+
+一般来说我准备的quay私有镜像仓库，已经同步过了，但是再确认一下更好!
+目前我使用[image-syncer](https://github.com/AliyunContainerService/image-syncer)这个工具来同步镜像
+```bash
+cat > image-sync.json << EOF
+{
+    "quay.iefcu.cn:9443": {
+        "username": "kylin",
+        "password": "kylinsec"
+    }
+}
+EOF
+
+cat > image-sync-list.json << EOF
+{
+"hub.iefcu.cn/xiaoyun/openshift4-aarch64": "quay.iefcu.cn:9443/kcp/openshift4-aarch64"
+}
+EOF
+
+image-syncer --proc=6 --auth=./image-sync.json --images=./image-sync-list.json \
+  --namespace=public --registry=hub.iefcu.cn --retries=3
+```
 
 ### 3. 配置dnsmasq服务
 
-使用dnsmasq提供pxe安装系统服务，以及dns服务
-```bash
-cd /data/kcp-install/pxe-dnsmasq && docker-compose up -d
-```
+目前我使用dnsmasq容器提供dns服务，创建dns目录，以下操作都在dns目录下执行
 
 **dns配置要求如下：**
 
 按照官方文档，使用 UPI 基础架构的 OCP 集群需要以下的 DNS 记录。在每条记录中，<cluster_name> 是集群名称，<base_domain> 是在 install-config.yaml 文件中指定的集群基本域，如下表所示：
 ![](2022-03-03-18-54-17.png)
 
-举例说明，
-* api.kcp4.iefcu.cn这个域名配置的ip地址是堡垒机bastion的ip地址
-* quay.iefcu.cn这个私有镜像仓库的域名配置的ip地址也是bastion的ip地址
-  (因为私有镜像仓库也在堡垒机上)
 
-当前dns配置内容示例如下：
+
+#### a. 创建当前dns配置内容示例如下：
+
 ```conf
 # 泛域名解析apps
 address=/apps.kcp4.iefcu.cn/10.90.3.38
@@ -156,14 +178,87 @@ address=/worker1.kcp4.iefcu.cn/10.90.3.33
 
 # 临时私有镜像仓库
 address=/quay.iefcu.cn/10.90.3.38
+
+# 使用上游dns 8.8.8.8
+server=8.8.8.8
+no-resolv
 ```
 
+举例说明，
+* api.kcp4.iefcu.cn这个域名配置的ip地址是堡垒机bastion的ip地址
+* quay.iefcu.cn这个私有镜像仓库的域名配置的ip地址也是bastion的ip地址
+  (因为私有镜像仓库也在堡垒机上)
+
+#### b. 创建*docker-compose.yml*配置文件，内容如下：
+```yaml
+version: '3.4'
+services:
+  dnsmasq:
+    image: hub.iefcu.cn/public/dnsmasq:latest
+    container_name: dns
+    restart: always
+    network_mode: host
+    privileged: true
+    volumes:
+      - ./dnsmasq.conf:/etc/dnsmasq.conf
+    environment:
+      - HTTP_USER=kylin
+      - HTTP_PASS=test123...
+    logging:
+      driver: json-file
+      options:
+        max-file: '3'
+        max-size: 10m
+```
+
+#### c. 启动dns容器服务
+
+```bash
+docker-compose up -d # 启动dns容器
+docker ps -a | grep dns # 检查dns容器运行状态
+docker logs -f dns # 检查dns日志
+```
+
+#### d. 检查dns服务条目
+
+```bash
+dig +short api.kcp4.iefcu.cn @127.0.0.1
+dig +short -t SRV _etcd-server-ssl._tcp.kcp4.iefcu.cn @127.0.0.1
+```
 
 ### 4. 配置运行haproxy
 
-cd /data/kcp-install/haproxy && docker-compose up -d
+创建目录haproxy，以下所有命令都是在haproxy目录中执行的。
 
-当前haproxy配置文件示例：
+#### a. 创建docker-compose.yml文件内容如下
+```yaml
+version: '3.2'
+services:
+  haproxy:
+    image: hub.iefcu.cn/public/haproxy:lts
+    container_name: haproxy
+    restart: always
+    user: root
+    network_mode: host
+    volumes:
+      - ./config/:/etc/haproxy/
+      - /etc/localtime:/etc/localtime:ro
+    cap_add:
+      - ALL
+    privileged: true
+    command: ["-f", "/etc/haproxy/haproxy.cfg"]
+    logging:
+      driver: json-file
+      options:
+        max-file: '3'
+        max-size: 100m
+```
+
+#### b. 创建haproxy配置文件*config/haproxy.cfg*，内容如下
+
+**注意： 对应后端boostrap和master的ip地址需要修正**
+
+配置文件config/haproxy.cfg
 ```conf
 global
   maxconn  2000
@@ -247,14 +342,98 @@ backend ingress-https
     server master3 10.90.3.33:443 check
 ```
 
+#### c. 运行haproxy容器
+
+```bash
+docker-compose up -d # 启动haproxy容器
+docker ps -a | grep haproxy # 检查haproxy容器运行状态
+docker logs -f haproxy # 检查haproxy日志
+```
+
+### 5. 部署http服务，提供点火文件下载服务
+
+首次安装kylin coreos的时候，需要点火文件，以http文件的形式提供。
+创建目录install-nginx, 以下操作都是在这个目录中执行的。
+
+#### 1. 创建docker-compose.yml文件，内容如下
+
+```yaml
+version: '3.4'
+services:
+  nginx:
+    image: hub.iefcu.cn/public/nginx:alpine
+    container_name: install-nginx
+    restart: always
+    ports:
+      - "9090:80/tcp"
+    volumes:
+      - ./install:/usr/share/nginx/html:ro
+    logging:
+      driver: json-file
+      options:
+        max-file: '3'
+        max-size: 10m
+```
+
+#### 2. 运行nginx http服务
+
+```bash
+mkdir -p ./install
+docker-compose up -d
+curl -v -o /dev/null http://127.0.0.1:9090 # 检查http服务是否正常
+```
+
 ### 5. 生成点火文件
 
-配置install-config.yaml.bak，生成点火文件
-```
-cd /data/kcp-install/ocp-install.arm && bash adam.sh
+创建目录gen-ignition, 在这个目录中生成点火文件
+
+#### a. 首先从release镜像中，提取openshift-install二进制文件
+
+从0125这个发布版本中提取openshift-install安装客户端
+```bash
+GODEBUG=x509ignoreCN=0 oc adm release extract \
+  --command=openshift-install \
+  hub.iefcu.cn/xiaoyun/openshift4-aarch64:4.9.0-rc.6-arm64-0125
+
+# 最新测试镜像为zhouming的更新console的发布版本，正在测试中。
+hub.iefcu.cn/xiaoyun/openshift4-aarch64:4.9.0-rc.6-arm64-0304-zhouming-console
 ```
 
-点火文件install-config.yaml.bak配置内容说明
+#### b. 然后配置点火文件，示例内容如下
+
+创建配置文件install-config.yaml
+```yaml
+apiVersion: v1
+baseDomain: iefcu.cn
+compute:
+- hyperthreading: Enabled
+  name: worker
+  replicas: 0
+controlPlane:
+  hyperthreading: Enabled
+  name: master
+  replicas: 1
+metadata:
+  name: kcp2-arm
+networking:
+  clusterNetwork:
+  - cidr: 10.128.0.0/14
+    hostPrefix: 23
+  networkType: OpenShiftSDN
+  serviceNetwork:
+  - 172.30.0.0/16
+platform:
+  none: {}
+fips: false
+pullSecret: '{ "auths": { "quay.iefcu.cn:9443": { "auth": "a3lsaW46a3lsaW5zZWM=", "email": "kylinsec@kylinsec.com.cn" } } } '
+sshKey: 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCaQ9Zpb5/nyiZEw9sR1mqpdpXgRi7WMnSeDyF2R7g7ZH3kUWZhY/Kkf/LoHWeNR82Wb1gq7s5YvEzSAy9R0VnCAGtMZ6nDFR7VgWiqj2q4nexnkrTFSNA6esrAQlpbbtCXLvKSCIUEuZa73naY87H1++DrxA51FqmRlO2ni+qDKlWcl6d/Jr+0Z+JqfWAdKmGmLDtU/L3qol4VIUolMaL1g7I8O07gbQJovXGTVypkoijLdEZ/mYnL6/3ODuPRBQZfw/A7rG39BiBJ3AxU2UYv8Mfh1Cai3CTqyX/k2wxpxDv/bPHH8fj/Qf1Ib7gZmW7KteNpC0pEl4k3r9f7j5xOwkO2D/h1q0/X1w4PdfxdSzIr1SdP1l0bHDcRGUGmrYb2ZDy9M2U14D0JBT9QWWL36CNOKHNYtrE3nu+g7f7nIUHPijc6MkUZ/h1rYsREWdOSwrTSIkmDS2ajH5CLfX+FsXuExiIor1jyhaPzk8r6M2QxgGJwUZxpEdqa5N+Od0wUDRvkjtleElRZE4ssasqTvugfzZnY+gjvyoU7e1VaMUU1WUHjCjSWxOxCUC7Z4G4pHw2u/DReJ4YMq7qsCLenDE3GvcywZXTN3XA0L+69cWFe5eOC7kG5ggAsVOtXyCFk3+DgBA6vmd415RSQeafyfoitHpPpCr3aeYsOlljyDw== root@bastion.openshift4.kylin.com'
+imageContentSources:
+- mirrors:
+  - quay.iefcu.cn:9443/kcp/openshift4-aarch64
+  source: hub.iefcu.cn/xiaoyun/openshift4-aarch64
+```
+
+点火文件配置内容说明
 
 * 配置镜像仓库的mirror
   离线情况下，节点拉取镜像都是从私有镜像仓库quay.iefcu.cn拉取的
@@ -277,8 +456,16 @@ imageContentSources:
   source: hub.iefcu.cn/xiaoyun/ocp-build
 ```
 
+#### c. 执行openshift-install命令，生成ignition点火文件
 
-* 其他TODO: xxx
+```bash
+./openshift-install create manifests
+./openshift-install create ignition-configs
+
+# TODO: 记得手动把点火文件放到install-nginx目录中去
+# cp -f *.ign ../install-nginx/install/
+# chmod 644 ../install-nginx/install/*.ign
+```
 
 ### 安装kylin coreos
 
@@ -308,7 +495,7 @@ sudo route add default gw 10.90.3.1
 echo password | sudo passwd --stdin core
 ```
 
-准备工作，校准服务器硬件时间
+准备工作，校准服务器硬件时间，**特别注意vmware的虚拟机的时间**
 ```bash
 # 这里livecd一般是utc时区，我们设置时间要减去8个小时
 date -s '2022-01-22 10:00:00'

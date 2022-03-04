@@ -25,6 +25,7 @@
        * [adam-doc文档部署](openshift/deploy-app/adam-doc-deploy.md)
        * [创建自定义域名的路由](openshift/deploy-app/adam-doc-deploy.md)
    * [离线安装部署kcp文档](openshift/ocp-install.md)
+   * [部署内部dns+haproxy等服务](openshift/deploy-internel-dns-haproxy.md)
    * [operatorhub离线搭建使用](openshift/operatorhub-offline.md)
    * [quay私有镜像仓库镜像同步](openshift/sync-quay-image.md)
    * [制作新的openshift release镜像](openshift/create-ocp-release.md)
