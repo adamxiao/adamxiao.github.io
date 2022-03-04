@@ -40,7 +40,7 @@ TODO: 解决
 
 ```bash
 oc new-project console-test
-oc new-app http://192.168.120.13/xiaoyun/kcp-console#test-build-release-4.9
+oc new-app http://192.168.120.13/xiaoyun/kcp-console.git#test-build-release-4.9
 ```
 
 ## 从二进制手动构建镜像

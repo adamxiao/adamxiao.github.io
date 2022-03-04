@@ -51,6 +51,13 @@ docker buildx build \
     -t hub.iefcu.cn/xiaoyun/gitbook . --push
 ```
 
+## gitbook导出pdf
+
+参考文章: [新版gitbook导出pdf](https://cloud.tencent.com/developer/article/1657839)
+
+目前还是使用vscode的markdown preview enhanced弄吧。
+
+
 ## xxx
 
 TODO:

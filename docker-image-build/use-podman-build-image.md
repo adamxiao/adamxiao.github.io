@@ -27,8 +27,9 @@ docker buildx build \
 使用CLI部署这个podman镜像
 ```bash
 oc new-project podman-build
-# 给anyuid权限
+# 给anyuid权限, 以及privileged权限
 oc adm policy add-scc-to-user anyuid -n podman-build -z default
+oc adm policy add-scc-to-user privileged -n podman-build -z default
 oc new-app hub.iefcu.cn/xiaoyun/new-podman
 ```
 

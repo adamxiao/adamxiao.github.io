@@ -109,6 +109,9 @@ docker image load -i docker-images.tar
 cd /data/kcp-install/quay && docker-compose up -d
 ```
 
+* 注意修改config/config.yaml，修改SERVER_HOSTNAME字段，示例内容为 quay.iefcu.cn:9443，意思就是私有镜像仓库服务为quay.iefcu.cn,端口为9443
+* 以及修改config/ssl.key, config/ssl.cert为正确有效的https证书和密钥(注意权限为1001)
+
 
 ### 3. 配置dnsmasq服务
 
@@ -269,6 +272,9 @@ imageContentSources:
 - mirrors:
   - quay.iefcu.cn:9443/kcp/openshift4-aarch64
   source: hub.iefcu.cn/xiaoyun/openshift4-aarch64
+- mirrors:
+  - quay.iefcu.cn:9443/kcp/ocp-build
+  source: hub.iefcu.cn/xiaoyun/ocp-build
 ```
 
 
@@ -282,6 +288,7 @@ livecd网络准备工作
 准备工作，配置可以ssh到服务器上去执行命令
 
 ```bash
+# TODO: 更复杂的网络配置，例如bond口等
 # 使用nmcli配置ip地址, 注意enp3s0这个名称需要适配修改
 sudo nmcli c add con-name enp3s0 type ethernet ifname enp3s0
 sudo nmcli c mod enp3s0 ipv4.addresses 10.90.3.84/24 ipv4.gateway 10.90.3.1 ipv4.method manual
@@ -290,6 +297,11 @@ sudo nmcli c mod enp3s0 ipv6.method disabled
 sudo nmcli c mod enp3s0 ipv4.dhcp-hostname bootstrap.kcp4-arm.iefcu.cn
 # confirm /etc/NetworkManager/system-connections/enp3s0.nmconnection
 sudo nmcli c up enp3s0
+
+# 或者简单临时配置一下ip和网关
+sudo systemctl stop NetworkManager
+sudo ifconfig enp3s0 10.90.3.35/24
+sudo route add default gw 10.90.3.1
 
 # 可选，这些ssh配置以及密码配置是为了能够ssh登录复制粘贴命令的。
 # 修改core用户的密码为password
