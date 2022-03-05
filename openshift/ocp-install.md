@@ -428,12 +428,18 @@ fips: false
 pullSecret: '{ "auths": { "quay.iefcu.cn:9443": { "auth": "a3lsaW46a3lsaW5zZWM=", "email": "kylinsec@kylinsec.com.cn" } } } '
 sshKey: 'ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCaQ9Zpb5/nyiZEw9sR1mqpdpXgRi7WMnSeDyF2R7g7ZH3kUWZhY/Kkf/LoHWeNR82Wb1gq7s5YvEzSAy9R0VnCAGtMZ6nDFR7VgWiqj2q4nexnkrTFSNA6esrAQlpbbtCXLvKSCIUEuZa73naY87H1++DrxA51FqmRlO2ni+qDKlWcl6d/Jr+0Z+JqfWAdKmGmLDtU/L3qol4VIUolMaL1g7I8O07gbQJovXGTVypkoijLdEZ/mYnL6/3ODuPRBQZfw/A7rG39BiBJ3AxU2UYv8Mfh1Cai3CTqyX/k2wxpxDv/bPHH8fj/Qf1Ib7gZmW7KteNpC0pEl4k3r9f7j5xOwkO2D/h1q0/X1w4PdfxdSzIr1SdP1l0bHDcRGUGmrYb2ZDy9M2U14D0JBT9QWWL36CNOKHNYtrE3nu+g7f7nIUHPijc6MkUZ/h1rYsREWdOSwrTSIkmDS2ajH5CLfX+FsXuExiIor1jyhaPzk8r6M2QxgGJwUZxpEdqa5N+Od0wUDRvkjtleElRZE4ssasqTvugfzZnY+gjvyoU7e1VaMUU1WUHjCjSWxOxCUC7Z4G4pHw2u/DReJ4YMq7qsCLenDE3GvcywZXTN3XA0L+69cWFe5eOC7kG5ggAsVOtXyCFk3+DgBA6vmd415RSQeafyfoitHpPpCr3aeYsOlljyDw== root@bastion.openshift4.kylin.com'
 imageContentSources:
+additionalTrustBundle: |
+  -----BEGIN CERTIFICATE-----
+  注意这里要前面空个两格用于yaml对齐
+  -----END CERTIFICATE-----
 - mirrors:
   - quay.iefcu.cn:9443/kcp/openshift4-aarch64
   source: hub.iefcu.cn/xiaoyun/openshift4-aarch64
 ```
 
 点火文件配置内容说明
+
+* additionalTrustBundle : 私有镜像仓库的信任证书, 如果不是私有证书，就无需配置
 
 * 配置镜像仓库的mirror
   离线情况下，节点拉取镜像都是从私有镜像仓库quay.iefcu.cn拉取的

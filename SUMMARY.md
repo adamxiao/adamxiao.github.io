@@ -15,6 +15,7 @@
    * [docker基本使用](docker.md)
    * [unzip镜像解压文件](docker-usage/docker-unzip.md)
    * [skopeo拉取同步镜像](docker-usage/skopeo.md)
+   * [搭建私有镜像仓库](docker-usage/registry.md)
 * [docker镜像编译构建](docker-image-build/README.md)
    * [jit的centos8基础镜像](docker-image-build/centos8-build-env.md)
    * [istio镜像源码编译](docker-image-build/istio-image-build.md)
