@@ -57,7 +57,14 @@ services:
 * 证书是为域名quay.iefcu.cn创建的，具体创建方法见其他文档
 * registry配置服务域名为quay.iefcu.cn, 需要和证书匹配
 
-TODO: 配置镜像仓库只读
+XXX: 配置镜像仓库只读
+
+./config.yml:/etc/docker/registry/config.yml:Z
+```yaml
+  maintenance:
+    readonly:
+      enabled: false
+```
 
 ### 测试私有镜像仓库使用
 

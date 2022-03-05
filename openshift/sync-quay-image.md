@@ -136,3 +136,36 @@ GODEBUG=x509ignoreCN=0 oc adm release extract \
   --command=openshift-install \
   hub.iefcu.cn/xiaoyun/ocp-build:4.9.0-rc.6-arm64-0125
 ```
+
+### 目前kcp平台用到的镜像列表
+
+#### 1. 平台基础镜像
+
+* hub.iefcu.cn/xiaoyun/openshift4-aarch64 
+
+#### 2. heketi+glusterfs存储镜像
+
+* hub.iefcu.cn/xiaoyun/heketi:9 
+* hub.iefcu.cn/xiaoyun/gluster-containers
+
+原始镜像是
+
+#### 3. operatorhub
+
+* hub.iefcu.cn/public/redhat-operator-index:v4.9
+
+原始镜像是
+
+* registry.redhat.io/redhat/redhat-operator-index:v4.9
+
+#### 4. metallb operator相关镜像
+
+* hub.iefcu.cn/kcp/metallb-operator-bundle@sha256:549947c734afbb4fa16aa09293a92f30191270db67c3248847c58adcd7d54549
+* hub.iefcu.cn/kcp/metallb-rhel8-operator@sha256:13df32e318cdd380ee5780299c1411fa5580f113186063763246054cf633daf7
+* hub.iefcu.cn/kcp/metallb-rhel8@sha256:b8fc94d4603fa9f649307ee6d799f42e44d110cac0e30ad1e0960eb24431b8b4
+
+原始镜像是
+
+* registry.redhat.io/openshift4/metallb-operator-bundle@sha256:549947c734afbb4fa16aa09293a92f30191270db67c3248847c58adcd7d54549
+* registry.redhat.io/openshift4/metallb-rhel8-operator@sha256:13df32e318cdd380ee5780299c1411fa5580f113186063763246054cf633daf7
+* registry.redhat.io/openshift4/metallb-rhel8@sha256:b8fc94d4603fa9f649307ee6d799f42e44d110cac0e30ad1e0960eb24431b8b4
