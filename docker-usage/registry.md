@@ -43,19 +43,20 @@ services:
     volumes:
       - ./registry:/var/lib/registry:Z
       - ./certs:/certs:Z
+      # 个性化配置registry，例如可以配置registry只读
+      #- ./config.yml:/etc/docker/registry/config.yml:Z
     ports:
-      - 5000:5000
       - 9443:9443
     logging:
       driver: json-file
       options:
         max-file: '3'
-        max-size: 100m
+        max-size: 10m
 ```
 
 注意事项：
 * 证书是为域名quay.iefcu.cn创建的，具体创建方法见其他文档
-* registry配置服务域名为quay.iefcu.cn, 需要和证书匹配
+* registry配置服务端口为9443, 是因为已经了占用443端口的服务了
 
 XXX: 配置镜像仓库只读
 
@@ -64,6 +65,31 @@ XXX: 配置镜像仓库只读
   maintenance:
     readonly:
       enabled: false
+```
+
+附上config.yml全文
+```yaml
+version: 0.1
+log:
+  fields:
+    service: registry
+storage:
+  cache:
+    blobdescriptor: inmemory
+  filesystem:
+    rootdirectory: /var/lib/registry
+  maintenance:
+    readonly:
+      enabled: false
+http:
+  addr: :5000
+  headers:
+    X-Content-Type-Options: [nosniff]
+health:
+  storagedriver:
+    enabled: true
+    interval: 10s
+    threshold: 3
 ```
 
 ### 测试私有镜像仓库使用

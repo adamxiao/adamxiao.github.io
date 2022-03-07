@@ -139,6 +139,13 @@ GODEBUG=x509ignoreCN=0 oc adm release extract \
 
 ### 目前kcp平台用到的镜像列表
 
+### 0. 堡垒机dns+haproxy等镜像
+
+* haproxy:lts
+* hub.iefcu.cn/xiaoyun/dnsmasq => 自己编译构建的
+* nginx:alpine
+* registry:2
+
 #### 1. 平台基础镜像
 
 * hub.iefcu.cn/xiaoyun/openshift4-aarch64 

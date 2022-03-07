@@ -41,3 +41,10 @@ oc new-app hub.iefcu.cn/xiaoyun/new-podman
 oc rsh xxx
 # 然后执行podman进行编译?
 ```
+
+## podman 信任私有证书
+
+```bash
+mkdir -p /etc/containers/certs.d/quay.iefcu.cn:9443
+cp /root/ssl.cert /etc/containers/certs.d/quay.iefcu.cn:9443/ssl.crt
+```
