@@ -31,6 +31,7 @@
        * [MetalLB安装以及使用方法](openshift/metallb-usage.md)
        * [禁止crio-wipe清理镜像](openshift/disable-crio-wipe.md)
        * [openshift安装部署traefik](docker-usage/traefik.md)
+       * [内部镜像仓库配置使用](openshift/install/internel-registry-usage.md)
    * [openshift部署应用](openshift/deploy-app/README.md)
        * [adam-doc文档部署](openshift/deploy-app/adam-doc-deploy.md)
        * [创建自定义域名的路由](openshift/deploy-app/adam-doc-deploy.md)
