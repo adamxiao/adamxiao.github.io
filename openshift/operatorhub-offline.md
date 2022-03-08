@@ -151,8 +151,9 @@ metadata:
   namespace: openshift-marketplace
 spec:
   displayName: adam
-  image: 'hub.iefcu.cn/public/redhat-operator-index:v4.9'
+  #image: 'hub.iefcu.cn/public/redhat-operator-index:v4.9'
   #image: 'hub.iefcu.cn/kcp/adam-operatorhub:20220224'
+  image: 'registry.kcp.local:5000/kcp/redhat-operator-index:v4.9'
   publisher: adam
   sourceType: grpc
 EOF

@@ -1,5 +1,7 @@
 # openshift集群计算节点部署dns,haproxy,keepalived容器等
 
+master节点少于3个，就不需要部署haproxy和keepalived服务
+
 ## 部署架构
 
 ![](2022-03-04-16-25-41.png)
@@ -229,8 +231,12 @@ sudo systemctl enable kcp-registry
 
 #### 导入镜像
 
-TODO:
-直接打包文件
+```bash
+sudo tar -xf registry-data.tar -C /var/lib/registry
+
+# 对应的打包方法就是
+sudo tar -cf /data/registry-data.tar -C /var/lib/registry *
+```
 
 #### 配置使用这个私有镜像仓库
 
