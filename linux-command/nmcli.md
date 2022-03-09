@@ -11,3 +11,18 @@ sudo nmcli c mod enp3s0 ipv6.method disabled
 # confirm /etc/NetworkManager/system-connections/enp3s0.nmconnection
 sudo nmcli c up enp3s0
 ```
+
+#### 新增ip地址（网卡多ip配置）
+
+关键字《nmcli 设置接口多ip》
+
+https://www.linuxidc.com/Linux/2017-07/145573.htm
+
+```
+nmcli connection modify test2 +ipv4.addresses 10.10.10.10/8
+```
+
+对应nmcli配置文件内容为
+```
+addresses2=xxx
+```

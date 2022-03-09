@@ -40,3 +40,4 @@
    * [制作新的openshift release镜像](openshift/create-ocp-release.md)
    * [console镜像构建方法](openshift/console-build.md)
    * [console镜像修改 - 监控相关修改](openshift/console-image-update.md)
+   * [修改节点dns地址](openshift/network/update-node-dns.md)
