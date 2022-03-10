@@ -55,7 +55,7 @@ docker buildx build \
 ```bash
 sudo mkdir -p /etc/keepalived
 # generate /etc/keepalived/keepalived.conf
-    
+
 # openshift 环境，为什么不需要处理selinux的问题呢？
 # unconfined_u:object_r:etc_t:s0 keepalived.conf
 sudo podman run -d --name keepalived \
@@ -152,7 +152,7 @@ docker buildx build \
 # 发现使用目录/etc/dnsmasq，不需要配置selinux权限，反正只读就行
 sudo mkdir /etc/dnsmasq/
 # generate /etc/dnsmasq.d/dnsmasq.conf
-    
+
 # 发现使用目录/etc/dnsmasq，不需要配置selinux权限，反正只读就行
 sudo podman run -d --name dns --restart=always \
     -p 53:53 -p 53:53/udp \
@@ -161,11 +161,21 @@ sudo podman run -d --name dns --restart=always \
 
 sudo podman generate systemd \
     --new --name dns \
-    > /etc/systemd/system/kcp-dns.service
+    | sudo tee /etc/systemd/system/kcp-dns.service
 sudo systemctl enable kcp-dns
 ```
 
 dns配置文件，就使用堡垒机上的dns配置就可以了
+
+配置额外一个base.conf配置
+```conf
+# 配置上游dns
+server=8.8.8.8
+no-resolv
+
+# 注意这个值可以修改
+address=/registry.kcp.local/10.90.3.35
+```
 
 dns验证
 ```bash
@@ -251,6 +261,14 @@ spec:
     - registry.kcp.local:5000
 ```
 
+或者使用一行命令处理，参考 https://openshift.tips/registries/
+```bash
+oc patch image.config.openshift.io/cluster -p \
+'{"spec":{"registrySources":{"insecureRegistries":["registry.kcp.local:5000"]}}}' --type='merge'
+```
+
+配置镜像mirror策略（安装时配置好，现在就不用配置了）
+TODO: 使用machine config配置更多mirror策略？
 ```bash
 cat << EOF | oc create -f -
 apiVersion: operator.openshift.io/v1alpha1

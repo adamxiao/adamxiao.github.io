@@ -119,6 +119,19 @@ spec:
 EOF
 ```
 
+#### 确认安装计划位于命名空间中
+
+```
+oc get installplan -n metallb-system
+```
+
+#### 要验证是否已安装 Operator，请输入以下命令：
+
+```
+oc get clusterserviceversion -n metallb-system \
+  -o custom-columns=Name:.metadata.name,Phase:.status.phase
+```
+
 ## 在集群中启动 METALLB
 
 #### 1. 创建 MetalLB 自定义资源的单一实例
@@ -133,9 +146,21 @@ metadata:
 EOF
 ```
 
+#### 2. 检查控制器的部署是否正在运行：
+
+```
+oc get deployment -n metallb-system controller
+```
+
+#### 3. 检查 speaker 的守护进程集是否正在运行：
+
+```
+oc get daemonset -n metallb-system speaker
+```
+
 ## 使用方法
 
-1. 首先配置地址池
+#### 1. 首先配置地址池
 
 ```bash
 cat << EOF | oc apply -f -
@@ -143,7 +168,6 @@ apiVersion: metallb.io/v1alpha1
 kind: AddressPool
 metadata:
   namespace: metallb-system
-  #namespace: adam-test
   name: doc-example
 spec:
   protocol: layer2
@@ -152,7 +176,7 @@ spec:
 EOF
 ```
 
-2. 然后在service中使用这个地址池
+#### 2. 然后在service中使用这个地址池
 
 ```bash
 cat << EOF | oc apply -f -
@@ -181,7 +205,7 @@ spec:
 EOF
 ```
 
-3. 最后查看svc自动分配的ip地址，以及访问
+#### 3. 最后查看svc自动分配的ip地址，以及访问
 
 ```bash
 oc -n grzs-traefik get svc traefik-ingress
