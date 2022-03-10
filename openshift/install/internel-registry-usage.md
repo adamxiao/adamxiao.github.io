@@ -25,6 +25,17 @@ storage:
 
 修改 managementState: Removed 为 managementState: Managed
 
+patch命令搞定
+```
+oc patch configs.imageregistry.operator.openshift.io cluster --type merge --patch '{"spec":{"managementState":"Managed"}}'
+oc patch configs.imageregistry.operator.openshift.io cluster --type merge --patch '{"spec":{"storage":{"pvc":{claim:""}}}'
+```
+
+将镜像 registry 存储设置为空目录 (非生产集群使用)
+```
+oc patch configs.imageregistry.operator.openshift.io cluster --type merge --patch '{"spec":{"storage":{"emptyDir":{}}}}'
+```
+
 #### 4. 确认registry容器启动最终效果：
 
 ```bash
@@ -64,6 +75,31 @@ oc get secret -n openshift-ingress  router-certs-default -o go-template='{{index
 podman login -u kubeadmin -p $(oc whoami -t) $HOST
 ```
 
+### 使用自定义路由公开registry
+
+#### 1. 使用路由的 TLS 密钥创建一个 secret
+
+```
+oc create secret tls public-route-tls \
+    -n openshift-image-registry \
+    --cert=ssl.cert \
+    --key=ssl.key
+```
+
+#### 2. 在 Registry Operator 中
+
+```
+spec:
+  routes:
+    - name: public-routes
+      hostname: quay.iefcu.cn
+      secretName: public-route-tls
+```
+
+一行命令处理
+```
+oc patch configs.imageregistry.operator.openshift.io cluster --type merge --patch '{"spec":{"routes":[{"name":"public-routes","hostname":"quay.iefcu.cn","secretName":"public-route-tls"}]}}'
+```
 
 ## 参考文档
 
