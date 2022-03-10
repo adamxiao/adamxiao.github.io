@@ -114,8 +114,22 @@ metadata:
 spec:
   channel: stable
   name: metallb-operator
-  source: redhat-operators
+  source: adam
   sourceNamespace: openshift-marketplace
+EOF
+```
+
+## 在集群中启动 METALLB
+
+#### 1. 创建 MetalLB 自定义资源的单一实例
+
+```bash
+cat << EOF | oc apply -f -
+apiVersion: metallb.io/v1beta1
+kind: MetalLB
+metadata:
+  name: metallb
+  namespace: metallb-system
 EOF
 ```
 
@@ -128,8 +142,8 @@ cat << EOF | oc apply -f -
 apiVersion: metallb.io/v1alpha1
 kind: AddressPool
 metadata:
-  #namespace: metallb-system
-  namespace: adam-test
+  namespace: metallb-system
+  #namespace: adam-test
   name: doc-example
 spec:
   protocol: layer2
