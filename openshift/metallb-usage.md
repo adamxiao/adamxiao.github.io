@@ -136,6 +136,7 @@ oc get clusterserviceversion -n metallb-system \
 
 #### 1. 创建 MetalLB 自定义资源的单一实例
 
+**注意在metallb-system项目下运行此命令? 否则会没有作用！！！**
 ```bash
 cat << EOF | oc apply -f -
 apiVersion: metallb.io/v1beta1

@@ -5,11 +5,11 @@
 
 ## 同步catalogSource镜像
 
-registry.redhat.io/redhat/redhat-operator-index:v4.9
-registry.redhat.io/redhat/certified-operator-index:v4.9
-registry.redhat.io/redhat/community-operator-index:v4.9
+* registry.redhat.io/redhat/redhat-operator-index:v4.9
+* registry.redhat.io/redhat/certified-operator-index:v4.9
+* registry.redhat.io/redhat/community-operator-index:v4.9
 
-registry.redhat.io/redhat/redhat-marketplace-index:v4.9
+* registry.redhat.io/redhat/redhat-marketplace-index:v4.9
 (这个比较特殊，需要license)
 
 需要使用帐号认证才能下载这些镜像
