@@ -9,11 +9,10 @@ console源码中有Dockerfile，但是都是基于外部的一些基础镜像，
 (分支 test-build-release-4.9 )
 我修改了如下文件
 
-M       Dockerfile
-
-M       frontend/yarn.lock
-
-A       node-v14.18.0-headers.tar.gz
+* M Dockerfile => 修改使用内部编译构建镜像，以及修正部分网络依赖逻辑
+* M frontend/yarn.lock => 修改使用内部私有npm仓库源
+* A node-v14.18.0-headers.tar.gz => 编译npm模块需要
+* M build-frontend.sh  => yarn install --network-timeout 1000000 (网络磁盘慢导致yarn install总失败)
 
 编译构建console镜像，只需要一行命令即可
 
@@ -26,17 +25,14 @@ docker build -t hub.iefcu.cn/xiaoyun/xiaoyun-console:20220301 .
 
 修改逻辑，主要是使用自己的内部镜像进行编译，以及去除网络下载依赖
 
-1. Dockerfile中，使用私有镜像仓库的镜像来构建
-
-2. 修改yarn.lock，配置为使用私有npm镜像仓库
-
-3. 新增node-v14.18.0-headers.tar.gz代码，构建npm某个包需要
+* 1.Dockerfile中，使用私有镜像仓库的镜像来构建
+* 2.修改yarn.lock，配置为使用私有npm镜像仓库
+* 3.新增node-v14.18.0-headers.tar.gz代码，构建npm某个包需要
+* 4.修改yarn install增加超时时间, 因为网络磁盘慢导致yarn install总报网络失败
 
 还可以通过openshift平台，基于S2I自动构建部署console镜像
 
-目前还有一点小问题
-
-TODO: 解决
+目前还有一点小问题, 需要配置放开crio的pids limit限制，从1024增大为4096
 
 ```bash
 oc new-project console-test

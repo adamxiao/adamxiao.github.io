@@ -39,6 +39,13 @@ CMD /usr/local/bin/gitbook serve
 然后一键构建gitbook镜像
 ```bash
 docker build -t hub.iefcu.cn/xiaoyun/gitbook .
+
+# 或者使用buildx一键构建多架构镜像
+#docker buildx build \
+        #--build-arg http_proxy=http://proxy.iefcu.cn:20172 --build-arg https_proxy=http://proxy.iefcu.cn:20172 \
+        #--build-arg no_proxy=yumrepo.unikylin.com.cn,192.0.0.0/8 \
+        #--platform=linux/arm64,linux/amd64 \
+        #-t hub.iefcu.cn/xiaoyun/gitbook . --push
 ```
 
 或者一键构建多架构gitbook镜像

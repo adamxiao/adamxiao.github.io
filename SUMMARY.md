@@ -42,3 +42,4 @@
    * [console镜像修改 - 监控相关修改](openshift/console-image-update.md)
    * [修改节点dns地址](openshift/network/update-node-dns.md)
    * [使用operator部署ES集群](openshift/deploy-elastic-operator.md)
+   * [容器pid max limit限制配置](openshift/tricks/container-pidsLimit.md)
