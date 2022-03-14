@@ -1,77 +1,107 @@
 # quay私有镜像仓库镜像同步
 
-首先配置私有镜像仓库，配置内容如下，使用9443端口
+#### 部署配置私有镜像仓库
+
+1.配置部署quay私有镜像仓库，端口使用9443端口
+提前建立组织kcp
 ![Alt text](./asserts/1646030897658.png)
 
-然后需要把安装kcp所需要的镜像都同步过去，目前使用在线同步。
+2.或者部署配置registry私有镜像仓库，http协议，使用5000端口
+```
+mkdir -p /data/registry
+docker run -d --name registry --restart=always \
+  -p 5000:5000 \
+  -v /data/registry:/var/lib/registry \
+  docker.io/library/registry:2
+```
 
-提前建立组织kcp
+或者使用docker-compose启动registry私有镜像仓库
+```
+version: '3.2'
+services:                                                                                                                                                                                                    registry:                                                                                                                                                                                                    image: hub.iefcu.cn/public/registry:2
+    container_name: registry                                                                                                                                                                                   restart: always
+    #environment:
+      #REGISTRY_HTTP_TLS_CERTIFICATE: /certs/ssl.cert                                                                                                                                                            #REGISTRY_HTTP_TLS_KEY: /certs/ssl.key
+      #REGISTRY_HTTP_ADDR: 0.0.0.0:443
+    volumes:
+      - ./registry:/var/lib/registry:Z
+      #- ./certs:/certs:Z                                                                                                                                                                                        #- ./config.yml:/etc/docker/registry/config.yml:Z
+    ports:                                                                                                                                                                                                       #- 443:443                                                                                                                                                                                                 - 5000:5000
+    logging:
+      driver: json-file
+      options:
+        max-file: '3'
+        max-size: 10m
+```
 
-TODO: 使用skepoe sync，只同步arm64的镜像？
+#### 待同步的私有镜像仓库的镜像
 
 待同步的镜像列表如下：
-
-openshift原始镜像
-
+```bash
+# openshift原始镜像
 hub.iefcu.cn/xiaoyun/openshift4-aarch64
 
-构建kylin coreos 0125的版本镜像
-
-hub.iefcu.cn/xiaoyun/ocp-build:4.9.0-rc.6-arm64-0125
-
-hub.iefcu.cn/xiaoyun/ocp-build@sha256:261b0f94eccd2def621d94431854a36b167b860878da6b06995c11a8aa71d8e5
-
-hub.iefcu.cn/xiaoyun/ocp-build@sha256:3e1f31c63d58d6ddb976ee3769ada8ffaa958a7ef658698596e714c2a3be7dc2
-
-hub.iefcu.cn/xiaoyun/ocp-build@sha256:b545afac322248a902e5b645d7c10c3bc841af1f898209a1c198e3cc34dbe889
-
-heketi + glusterfs存储
-
+# heketi + glusterfs存储
 hub.iefcu.cn/xiaoyun/gluster-containers:latest
-
 hub.iefcu.cn/xiaoyun/heketi:9
 
+# 其他应用镜像 ...
+```
 
-同步镜像脚本如下：
+#### 使用oc adm mirror同步镜像
+
+TODO: 这个工具能精确同步安装kcp所需要的所有镜像
+
+#### 使用image-syncer工具同步镜像
 
 目前我使用[image-syncer](https://github.com/AliyunContainerService/image-syncer)这个工具来同步镜像
 
+XXX: 使用skepoe sync，只同步arm64的镜像？ => 不行, skepoe同步，sha256会变化
+
+同步镜像脚本如下：
 ```bash
+src_hub="hub.iefcu.cn"
+dst_hub="127.0.0.1:5000"
+
 cat > image-sync.json << EOF
 {
-    "tmp.iefcu.cn": {
-        "username": "adam",
+    "${src_hub}": {
+        "username": "TODO:username",
         "password": "TODO:passwd"
+    }
+    ,"${dst_hub}": {
+        "username": "TODO:username",
+        "password": "TODO:passwd"
+        ,"insecure": true
     }
 }
 EOF
 
 cat > image-sync-list.json << EOF
 {
-"hub.iefcu.cn/xiaoyun/openshift4-aarch64": "tmp.iefcu.cn:9443/kcp/openshift4-aarch64"
+"${src_hub}/xiaoyun/openshift4-aarch64":"${dst_hub}/kcp/openshift4-aarch64"
+,"${src_hub}/xiaoyun/openshift4-aarch64@sha256:3668ad5942cb4bfdeea526571b267a570ae1a1201843c68c364958ab2ec4af75":"${dst_hub}/kcp/openshift4-aarch64"
 
-,"hub.iefcu.cn/xiaoyun/ocp-build:4.9.0-rc.6-arm64-0125": "tmp.iefcu.cn:9443/kcp/ocp-build"
-,"hub.iefcu.cn/xiaoyun/ocp-build@sha256:261b0f94eccd2def621d94431854a36b167b860878da6b06995c11a8aa71d8e5": "tmp.iefcu.cn:9443/kcp/ocp-build"
-,"hub.iefcu.cn/xiaoyun/ocp-build@sha256:3e1f31c63d58d6ddb976ee3769ada8ffaa958a7ef658698596e714c2a3be7dc2": "tmp.iefcu.cn:9443/kcp/ocp-build"
-,"hub.iefcu.cn/xiaoyun/ocp-build@sha256:b545afac322248a902e5b645d7c10c3bc841af1f898209a1c198e3cc34dbe889": "tmp.iefcu.cn:9443/kcp/ocp-build"
+,"${src_hub}/xiaoyun/heketi:9":"${dst_hub}/kcp/heketi"
+,"${src_hub}/xiaoyun/gluster-containers":"${dst_hub}/kcp/gluster-containers"
 
-,"hub.iefcu.cn/xiaoyun/gluster-containers:latest": "tmp.iefcu.cn:9443/kcp/gluster-containers"
-,"hub.iefcu.cn/xiaoyun/heketi:9": "tmp.iefcu.cn:9443/kcp/heketi"
+,"${src_hub}/public/redhat-operator-index:v4.9":"${dst_hub}/kcp/redhat-operator-index:v4.9"
+,"${src_hub}/kcp/metallb-operator-bundle":"${dst_hub}/kcp/metallb-operator-bundle"
+,"${src_hub}/kcp/metallb-rhel8-operator":"${dst_hub}/kcp/metallb-rhel8-operator"
+,"${src_hub}/kcp/metallb-rhel8":"${dst_hub}/kcp/metallb-rhel8"
 
+,"${src_hub}/xiaoyun/keepalived:latest":"${dst_hub}/kcp/keepalived"
+,"${src_hub}/xiaoyun/dnsmasq:latest":"${dst_hub}/kcp/dnsmasq"
+,"${src_hub}/public/haproxy:lts-alpine":"${dst_hub}/kcp/haproxy"
+,"${src_hub}/public/registry:2":"${dst_hub}/kcp/registry"
 }
 EOF
 
-image-syncer --proc=6 --auth=./image-sync.json --images=./image-sync-list.json \
-  --namespace=public --registry=hub.iefcu.cn --retries=3
+image-syncer --proc=6 --auth=./image-sync.json --images=./image-sync-list.json --namespace=public \
+--registry=hub.iefcu.cn --retries=3
 ```
 
-遇到一个问题：
-
-同步这个镜像，报错 error: unsupported manifest type: application/vnd.oci.image.manifest.v1+json
-
-hub.iefcu.cn/xiaoyun/ocp-build@sha256:b545afac322248a902e5b645d7c10c3bc841af1f898209a1c198e3cc34dbe889 
-
-![Alt text](./asserts/2022-02-28_16-42.png)
+#### 配置ImageContentSourcePolicy使用新的私有镜像仓库
 
 虽然同步了镜像到quay私有镜像仓库中了，但各种安装工具中，以及yaml使用的都是原来的镜像地址，
 
@@ -84,78 +114,48 @@ hub.iefcu.cn/xiaoyun/ocp-build@sha256:b545afac322248a902e5b645d7c10c3bc841af1f89
 ```yaml
 imageContentSources:
 - mirrors:
-  - quay.iefcu.cn:9443/kcp/openshift4-aarch64
+  - hub.iefcu.cn/xiaoyun/openshift4-aarch64
+  - quay.iefcu.cn:9443/xiaoyun/openshift4-aarch64
   source: quay.io/openshift-release-dev/ocp-release
 - mirrors:
-  - quay.iefcu.cn:9443/kcp/openshift4-aarch64
+  - quay.iefcu.cn:9443/xiaoyun/openshift4-aarch64
+  - hub.iefcu.cn/xiaoyun/openshift4-aarch64
   source: quay.io/openshift-release-dev/ocp-v4.0-art-dev
 - mirrors:
-  - quay.iefcu.cn:9443/kcp
-  source: hub.iefcu.cn/xiaoyun
+  - registry.kcp.local:5000/kcp/openshift4-aarch64
+  - quay.iefcu.cn:9443/kcp/openshift4-aarch64
+  source: hub.iefcu.cn/xiaoyun/openshift4-aarch64
 - mirrors:
-  - quay.iefcu.cn:9443/kcp
-  source: hub.iefcu.cn/kcp
+  - registry.kcp.local:5000/kcp/openshift4-aarch64
+  source: quay.iefcu.cn:9443/xiaoyun/openshift4-aarch64
 ```
 
-## 构建适配kylin coreos的release镜像方法
+## 目前kcp平台用到的镜像列表
 
-TODO: 构建os-content镜像
+#### 0. 堡垒机dns+haproxy等镜像
 
-
-### 基于os-content等镜像构建新的kcp release版本
-
-```dockerfile
-FROM hub.iefcu.cn/xiaoyun/openshift4-aarch64:4.9.0-rc.6-arm64
-
-# replace 4.9.0-rc.6-arm64-machine-os-content  427f68d74f88fa0855ac7398ed61f64b407e8961fe25c31d16286efbabb50adb
-# 使用新的kyiln coreos content 0125
-RUN sed -i -e "s#quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:427f68d74f88fa0855ac7398ed61f64b407e8961fe25c31d16286efbabb50adb#hub.iefcu.cn/xiaoyun/ocp-build@sha256:261b0f94eccd2def621d94431854a36b167b860878da6b06995c11a8aa71d8e5#g" /release-manifests/*
-
-# replace 4.9.0-rc.6-arm64-cluster-network-operator f26acbe535dbd4261ed152bfeb66e4a0cac122caa6860f6a31e7a6774d61e8e5
-# 修正network-operator关于os-release的判断
-RUN sed -i -e "s#quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:f26acbe535dbd4261ed152bfeb66e4a0cac122caa6860f6a31e7a6774d61e8e5#hub.iefcu.cn/xiaoyun/ocp-build@sha256:3e1f31c63d58d6ddb976ee3769ada8ffaa958a7ef658698596e714c2a3be7dc2#g" /release-manifests/*
-
-# replace 4.9.0-rc.6-arm64-machine-config-operator c22ff95d895155ed0e66d703409e6e803dac516b60cec03f819b02f8f99c8c22
-# 修正machine-config关于os-release的判断
-RUN sed -i -e "s#quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:c22ff95d895155ed0e66d703409e6e803dac516b60cec03f819b02f8f99c8c22#hub.iefcu.cn/xiaoyun/ocp-build@sha256:b545afac322248a902e5b645d7c10c3bc841af1f898209a1c198e3cc34dbe889#g" /release-manifests/*
-
-# 使用hub.iefcu.cn
-RUN sed -i -e "s#quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:#hub.iefcu.cn/xiaoyun/openshift4-aarch64@sha256:#g" /release-manifests/*
-```
-
-```bash
-docker build -f ./Dockerfile -t hub.iefcu.cn/xiaoyun/ocp-build:4.9.0-rc.6-arm64-0125 .
-```
-
-### 提取出新的openshift-install工具使用
-
-使用这个新的openshift-install工具，就会用到自己构建的kcp相关镜像了
-
-```bash
-GODEBUG=x509ignoreCN=0 oc adm release extract \
-  --command=openshift-install \
-  hub.iefcu.cn/xiaoyun/ocp-build:4.9.0-rc.6-arm64-0125
-```
-
-### 目前kcp平台用到的镜像列表
-
-### 0. 堡垒机dns+haproxy等镜像
-
-* haproxy:lts
+* hub.iefcu.cn/public/haproxy:lts-alpine
 * hub.iefcu.cn/xiaoyun/dnsmasq => 自己编译构建的
-* nginx:alpine
-* registry:2
+* hub.iefcu.cn/xiaoyun/keepalived:latest => 自己编译构建的
+* hub.iefcu.cn/public/registry:2
+
+原始镜像是
+* docker.io/library/haproxy:lts-alpine
+* docker.io/library/registry:2
 
 #### 1. 平台基础镜像
 
-* hub.iefcu.cn/xiaoyun/openshift4-aarch64 
+* hub.iefcu.cn/xiaoyun/openshift4-aarch64
 
 #### 2. heketi+glusterfs存储镜像
 
-* hub.iefcu.cn/xiaoyun/heketi:9 
+* hub.iefcu.cn/xiaoyun/heketi:9
 * hub.iefcu.cn/xiaoyun/gluster-containers
 
 原始镜像是
+
+* heketi是自己构建出来的
+* gluster-containers TODO:
 
 #### 3. operatorhub
 
@@ -176,3 +176,21 @@ GODEBUG=x509ignoreCN=0 oc adm release extract \
 * registry.redhat.io/openshift4/metallb-operator-bundle@sha256:549947c734afbb4fa16aa09293a92f30191270db67c3248847c58adcd7d54549
 * registry.redhat.io/openshift4/metallb-rhel8-operator@sha256:13df32e318cdd380ee5780299c1411fa5580f113186063763246054cf633daf7
 * registry.redhat.io/openshift4/metallb-rhel8@sha256:b8fc94d4603fa9f649307ee6d799f42e44d110cac0e30ad1e0960eb24431b8b4
+
+#### 5. eck operator相关镜像
+
+* hub.iefcu.cn/public/eck-operator:1.9.1
+* hub.iefcu.cn/public/elasticsearch:7.16.3
+
+原始镜像是
+
+* docker.elastic.co/eck/eck-operator:1.9.1
+* docker.elastic.co/elasticsearch/elasticsearch:7.16.3
+
+## FAQ
+
+* 1.error: unsupported manifest type: application/vnd.oci.image.manifest.v1+json
+使用image-syncer同步如下镜像时报错
+hub.iefcu.cn/xiaoyun/ocp-build@sha256:b545afac322248a902e5b645d7c10c3bc841af1f898209a1c198e3cc34dbe889
+![Alt text](./asserts/2022-02-28_16-42.png)
+可能是因为镜像是v1仓库协议，后续使用新版本docker生成这个镜像，应该就没有问题了
