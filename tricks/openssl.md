@@ -90,6 +90,14 @@ $ openssl x509 -req -in ssl.csr -CA rootCA.pem -CAkey rootCA.key -CAcreateserial
     验证可以的！
 * 发现一个新的制作证书的工具: https://github.com/FiloSottile/mkcert
 
+## openssl查看在线网站证书
+
+```bash
+openssl s_client -showcerts -connect 10.90.2.94:2379
+
+openssl s_client -showcerts -connect www.baidu.com:443
+```
+
 ## openssl概念
 
 不同后缀文件列表:

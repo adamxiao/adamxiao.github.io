@@ -43,3 +43,4 @@
    * [修改节点dns地址](openshift/network/update-node-dns.md)
    * [使用operator部署ES集群](openshift/deploy-elastic-operator.md)
    * [容器pid max limit限制配置](openshift/tricks/container-pidsLimit.md)
+   * [openshift节点修改ip地址](openshift/tricks/update-node-ip.md)
