@@ -6,6 +6,52 @@
 * 2.弃用旧ip地址, 配置新ip地址
   待验证，可能有问题
 
+其他
+* 没有查到官方修改ip的资料, k8s的相关修改倒是有
+
+现在的关键点：
+* 适配更新etcd证书，以及apiserver使用这个新证书
+
+## 删除节点，再添加节点
+
+参考openshift文档，[备份与恢复](https://access.redhat.com/documentation/zh-cn/openshift_container_platform/4.9/html-single/backup_and_restore/index#dr-recovering-expired-certs)
+
+
+### 删除节点
+
+#### 在手动删除前取消调度并排空节点
+
+https://access.redhat.com/documentation/zh-cn/openshift_container_platform/4.9/html/nodes/nodes-nodes-working-deleting-bare-metal_nodes-nodes-working
+
+* 1.将节点标记为不可调度。
+
+```bash
+oc adm cordon <node_name>
+```
+
+* 2.排空节点上的所有 pod：
+
+```bash
+oc adm drain <node_name> --force=true
+```
+
+如果节点离线或者无响应，此步骤可能会失败。即使节点没有响应，它仍然在运行写入共享存储的工作负载。为了避免数据崩溃，请在进行操作前关闭物理硬件。
+
+* 3.从集群中删除节点：
+
+```bash
+$ oc delete node <node_name>
+```
+
+虽然节点对象现已从集群中删除，但它仍然可在重启后或 kubelet 服务重启后重新加入集群。要永久删除该节点及其所有数据，您必须弃用该节点。
+
+* 4.如果您关闭了物理硬件，请重新打开它以便节点可以重新加入集群。
+
+
+### 新增节点
+
+
+
 ## 配置接口新增ip地址
 
 TODO: 问题
