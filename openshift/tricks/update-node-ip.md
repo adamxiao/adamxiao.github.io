@@ -60,6 +60,24 @@ x509: certificate is valid for ::1, 10.90.3.35, 127.0.0.1, ::1, not 10.90.2.94".
 (原因是etcd会校验客户端的证书。)
 TODO: 关键字《openshift etcd证书更新》
 
+之前触发过etcd重新安装!!!
+![](2022-03-14-19-38-15.png)
+
+发现证书里面的ip地址还是旧的。
+```bash
+openssl x509 -text -in etcd-peer-master1.kcp2-arm.iefcu.cn.crt | grep DNS
+        Validity           
+            Not Before: Mar 10 11:31:18 2022 GMT                                                     
+            Not After : Mar  9 11:31:19 2025 GMT
+        DNS:localhost, DNS:10.90.3.35, IP Address:10.90.3.35
+```
+
+etcd pod crash 替换不健康的 etcd 成员
+https://access.redhat.com/documentation/zh-cn/openshift_container_platform/4.9/html-single/backup_and_restore/index#_replacing-the-unhealthy-etcd-member
+
+
+关键字《单k8s节点ip地址修改》，有不少文章，但不适合openshift
+
 TODO: 目前来说，是有问题的。系统容器启动失败，报错。  
 
 ## 旧的笔记，待整理

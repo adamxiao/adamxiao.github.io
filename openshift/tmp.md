@@ -1,6 +1,16 @@
 # openshift 编译arm64 Elasticsearch operator 镜像
 
 
+备份和恢复
+https://access.redhat.com/documentation/zh-cn/openshift_container_platform/4.9/html-single/backup_and_restore/index
+
+etcd备份
+![](2022-03-14-21-27-51.png)
+
+## oc通过证书请求
+oc adm certificate approve <csr_name>
+
+
 trusted ca
 https://docs.openshift.com/container-platform/4.7/cicd/builds/setting-up-trusted-ca.html
 
