@@ -27,20 +27,40 @@ https://access.redhat.com/documentation/zh-cn/openshift_container_platform/4.9/h
 
 ```bash
 oc adm cordon <node_name>
+
+oc adm cordon worker2.kcp4-arm.iefcu.cn
 ```
 
 * 2.排空节点上的所有 pod：
 
 ```bash
 oc adm drain <node_name> --force=true
+
+oc adm drain worker2.kcp4-arm.iefcu.cn --force=true
+```
+
+=> **报错!**
+```
+DEPRECATED WARNING: Aborting the drain command in a list of nodes will be deprecated in v1.23.
+The new behavior will make the drain command go through all nodes even if one or more nodes failed during the drain.
+For now, users can try such experience via: --ignore-errors
+error: unable to drain node "worker2.kcp4-arm.iefcu.cn", aborting command...
+
+There are pending nodes to be drained:
+ worker2.kcp4-arm.iefcu.cn
+error: cannot delete DaemonSet-managed Pods (use --ignore-daemonsets to ignore): adam-test/speaker-csvwg, kube-system/istio-cni-node-cjg67, openshift-cluster-node-tuning-operator/tuned-ql6tk, openshift-dns/dns-default-8j8s5, openshift-dns/node-resolver-rgf8h, openshift-image-registry/node-ca-6flhm, openshift-ingress-canary/ingress-canary-b6djk, openshift-machine-config-operator/machine-config-daemon-kbkvl, openshift-monitoring/node-exporter-6tz44, openshift-multus/multus-2956t, openshift-multus/multus-additional-cni-plugins-mknt2, openshift-multus/network-metrics-daemon-6w22l, openshift-network-diagnostics/network-check-target-5mxnc, openshift-sdn/sdn-g7t9r
 ```
 
 如果节点离线或者无响应，此步骤可能会失败。即使节点没有响应，它仍然在运行写入共享存储的工作负载。为了避免数据崩溃，请在进行操作前关闭物理硬件。
 
 * 3.从集群中删除节点：
 
+虽然上一步排空pods失败，但是照样可以关机worker2节点，然后删除节点。
+
 ```bash
 $ oc delete node <node_name>
+
+oc delete node worker2.kcp4-arm.iefcu.cn
 ```
 
 虽然节点对象现已从集群中删除，但它仍然可在重启后或 kubelet 服务重启后重新加入集群。要永久删除该节点及其所有数据，您必须弃用该节点。
@@ -50,7 +70,28 @@ $ oc delete node <node_name>
 
 ### 新增节点
 
+尼玛worker2节点开机，就自动加入到集群中了。。。
 
+* 1.首先修改dns域名配置，将节点的ip地址修改一下。
+  可能没有啥用，之前dns配置错误了
+* 2.然后修改节点的nmcli的ip
+* 以及crio服务的节点ip地址?
+  /etc/systemd/system/crio.service.d/20-nodenet.conf
+  /etc/systemd/system/kubelet.service.d/20-nodenet.conf
+* 以及修改/etc目录的ip地址信息？
+  worker节点没有相应pod需要修改数据，简单
+* 然后关机，然后删除这个节点，再开机这个节点。
+* 最后发现节点自动加入，需要通过认证证书
+
+```bash
+oc get csr | grep pending -i | awk '{print $1}' | sed 's/^/kubectl certificate approve /' | bash
+
+# 或者使用oc命令approve证书
+oc adm certificate approve
+```
+
+=> 最后发现节点成功加入进来，worker2这个节点的ip地址被成功修改了。
+![](2022-03-16-10-21-04.png)
 
 ## 配置接口新增ip地址
 
