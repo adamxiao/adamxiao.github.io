@@ -44,3 +44,4 @@
    * [使用operator部署ES集群](openshift/deploy-elastic-operator.md)
    * [容器pid max limit限制配置](openshift/tricks/container-pidsLimit.md)
    * [openshift节点修改ip地址](openshift/tricks/update-node-ip.md)
+   * [haproxy容器选择节点运行](openshift/tricks/haproxy-node-select.md)

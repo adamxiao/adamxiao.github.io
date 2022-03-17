@@ -1,5 +1,8 @@
 # openshift 编译arm64 Elasticsearch operator 镜像
 
+这个页面多几个数据暂时，有节点数，啥的等。
+有几个宿主机，硬盘啥的。点进去能看到某一个宿主机的cpu，内存等使用率。
+![](2022-03-16-14-03-50.png)
 
 备份和恢复
 https://access.redhat.com/documentation/zh-cn/openshift_container_platform/4.9/html-single/backup_and_restore/index

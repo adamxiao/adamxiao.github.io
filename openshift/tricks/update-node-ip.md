@@ -76,8 +76,10 @@ oc delete node worker2.kcp4-arm.iefcu.cn
   可能没有啥用，之前dns配置错误了
 * 2.然后修改节点的nmcli的ip
 * 以及crio服务的节点ip地址?
-  /etc/systemd/system/crio.service.d/20-nodenet.conf
-  /etc/systemd/system/kubelet.service.d/20-nodenet.conf
+```bash
+/etc/systemd/system/crio.service.d/20-nodenet.conf
+/etc/systemd/system/kubelet.service.d/20-nodenet.conf
+```
 * 以及修改/etc目录的ip地址信息？
   worker节点没有相应pod需要修改数据，简单
 * 然后关机，然后删除这个节点，再开机这个节点。
@@ -87,11 +89,93 @@ oc delete node worker2.kcp4-arm.iefcu.cn
 oc get csr | grep pending -i | awk '{print $1}' | sed 's/^/kubectl certificate approve /' | bash
 
 # 或者使用oc命令approve证书
-oc adm certificate approve
+oc get csr | grep pending -i | awk '{print $1}' | sed 's/^/oc adm certificate approve /' | bash
 ```
 
 => 最后发现节点成功加入进来，worker2这个节点的ip地址被成功修改了。
 ![](2022-03-16-10-21-04.png)
+
+### 验证删除新增master节点！！！最终目的修改节点ip地址
+
+* 首先驱逐删除节点，基本上跟worker节点一样
+```bash
+oc adm cordon master3.kcp4-arm.iefcu.cn
+oc adm drain master3.kcp4-arm.iefcu.cn --force=true
+```
+
+驱逐pods同样是报错。
+![](2022-03-16-11-28-37.png)
+
+* 1.修改dns域名配置，特别是etcd
+* 2.修改节点nmcli的ip地址
+* 以及节点crio服务的ip配置
+
+```bash
+/etc/systemd/system/crio.service.d/20-nodenet.conf
+/etc/systemd/system/kubelet.service.d/20-nodenet.conf
+```
+
+* 修改静态pods的ip地址
+
+```bash
+# static-pod-resources: etcd, apiserver
+# 都在kubelet k8s相应目录 /etc/kubernetes/static-pod-resources
+
+# TODO: 最麻烦的地方了？
+sudo sed -i -e 's/10.90.3.35/10.90.2.94/g' etcd-pod.yaml
+```
+
+* 更新etcd证书ip地址啥的。
+参考 4.2.4. 替换不健康的 etcd 成员
+
+```bash
+oc get pods -n openshift-etcd
+
+oc -n openshift-etcd rsh etcd-master1.kcp4-arm.iefcu.cn
+
+# 查看成员列表：记录不健康的 etcd 成员的 ID 和名称，因为稍后需要这些值。
+etcdctl member list -w table
+
+# 通过向 etcdctl member remove 命令提供 ID 来删除不健康的 etcd 成员 :
+etcdctl member remove ae33b17c46663348
+
+# 再次查看成员列表，并确认成员已被删除：
+etcdctl member list -w table
+
+# 删除已删除的不健康 etcd 成员的旧 secret。
+oc get secrets -n openshift-etcd | grep master3.kcp4-arm.iefcu.cn
+oc delete secret -n openshift-etcd etcd-peer-master3.kcp4-arm.iefcu.cn
+oc delete secret -n openshift-etcd etcd-serving-master3.kcp4-arm.iefcu.cn
+oc delete secret -n openshift-etcd etcd-serving-metrics-master3.kcp4-arm.iefcu.cn
+```
+
+删除并重新创建 control plane 机器。重新创建此机器后，会强制一个新修订版本并自动扩展 etcd。
+
+如果您正在运行安装程序置备的基础架构，或者您使用 Machine API 创建机器，请按照以下步骤执行。否则，您必须使用最初创建 master 时使用的相同方法创建新的 master。
+
+强制 etcd 重新部署。？
+
+尼玛etcd起不来了。。。整个集群都会出问题。。。 => 修改ip回来正常，看来某个顺序不对。
+原来是在master1上删除etcd出了一点小问题。 => 正好，修改master1的ip地址，重新部署etcd吧
+![](2022-03-16-13-04-32.png)
+
+=> 新增disable kubelet服务的处理，防止静态pod启动加入集群。
+
+新增旧master1节点，etcd还是有点问题。
+![](2022-03-16-18-48-33.png)
+
+新的etcd没有成功加进来。
+![](2022-03-16-18-53-10.png)
+
+etcd operator的错误日志
+![](2022-03-16-18-56-56.png)
+
+目前我暂没能力修改master节点的ip，因为etcd一直有问题。
+![](2022-03-16-23-01-17.png)
+
+TODO:
+尝试这个方法吧
+https://myopenshiftblog.com/rebuilding-master-node/
 
 ## 配置接口新增ip地址
 
