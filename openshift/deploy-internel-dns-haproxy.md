@@ -220,6 +220,22 @@ sudo systemctl enable kcp-ha
 
 haproxy配置文件参考堡垒机的配置
 
+发现在计算节点上不能访问其他节点的machine-config服务22623端口
+
+[core@master1 ~]$ curl -k https://10.90.3.23:22623
+curl: (7) Failed to connect to 10.90.3.23 port 22623: Connection refused
+
+后来发现是有一个防火墙阻止了
+
+ 101K 6034K REJECT     tcp  --  *      *       0.0.0.0/0            0.0.0.0/0            tcp dpt:22623 flags:0x17/0x02 reject-with icmp-port-unreachable
+
+影响不大，只会导致计算不能提供machine-config服务，但是这个服务只有在添加新节点时才会使用。
+
+可以通过临时放开这个防火墙解决。
+
+sudo iptables -I OPENSHIFT-BLOCK-OUTPUT -p tcp --dport 22623 -j ACCEPT
+
+
 ### 部署运行registry容器
 
 #### 部署运行registry容器

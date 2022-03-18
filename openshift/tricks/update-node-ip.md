@@ -101,7 +101,14 @@ oc get csr | grep pending -i | awk '{print $1}' | sed 's/^/oc adm certificate ap
 ```bash
 oc adm cordon master3.kcp4-arm.iefcu.cn
 oc adm drain master3.kcp4-arm.iefcu.cn --force=true
+
+# csdn上一篇文章加了额外的参数。
+oc adm drain <node_name> --force --delete-local-data --ignore-daemonsets
+oc adm drain master1.kcp4-arm.iefcu.cn --force --delete-local-data --ignore-daemonsets --delete-emptydir-data
 ```
+
+这里加上了额外的参数，居然有驱逐pod的日志？
+![](2022-03-17-11-08-44.png)
 
 驱逐pods同样是报错。
 ![](2022-03-16-11-28-37.png)
@@ -292,3 +299,8 @@ kube-apiserver也是连接旧的ip地址
 
 因为kubelet老是报错：node xxx not found
 Dec 15 06:59:11 master1.kcp4.iefcu.cn hyperkube[1528]: E1215 06:59:11.159415    1528 kubelet.go:2303] "Error getting node" err="node \"master1.kcp4.iefcu.cn\" not found"
+
+
+## 参考资料
+
+* [Rebuilding Master Node](https://myopenshiftblog.com/rebuilding-master-node/)

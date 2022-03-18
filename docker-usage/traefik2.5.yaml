@@ -69,6 +69,7 @@ data:
     providers:
       kubernetescrd:
         endpoint: https://kubernetes.default
+        allowCrossNamespace: true
     api:
       dashboard: true
       insecure: true

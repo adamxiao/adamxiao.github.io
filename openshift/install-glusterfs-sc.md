@@ -90,6 +90,55 @@ oc create -f slow-sc.yaml
 kubectl patch storageclass slow -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
 ```
 
+## 修改glusterfs节点ip
+
+```bash
+# 获取集群列表
+heketi-cli cluster list
+
+# 列举集群节点
+heketi-cli node list
+
+# 新增节点
+heketi-cli node add --cluster=b9bef1abd4593699d16f5cd8757d1b90 \
+  --management-host-name=master1-1.kcp4-arm.iefcu.cn \
+  --storage-host-name=10.90.3.29 --zone=1
+
+# 需要手动清理旧数据，lvremove, vgremove, pvremove
+# 新增节点磁盘, 节点的manage-host-name输入错入，导致问题。
+heketi-cli device add --name=/dev/vdb --destroy-existing-data \
+  --node=fd331650c884bdca38a8011875a58f93
+Error: Setup of device /dev/vdb failed (already initialized or contains data?): Unable to find a GlusterFS pod on host master1-1.kcp1-arm.iefcu.cn with a label key glusterfs-node
+
+# 新增节点磁盘， 自动清理数据还是有问题啊。自动清理仅仅是wipefs。。。
+heketi-cli device add --name=/dev/vdb --destroy-existing-data \
+  --node=cf4d8dd2902a2050ef4746992e3a29fd
+Error: Setup of device /dev/vdb failed (already initialized or contains data?): wipefs: error: /dev/vdb: probing initialization failed: Device or resource busy
+
+# 删除旧的节点和磁盘设备数据
+heketi-cli node delete abaae7250bce1ca4cec98d34138c9824
+heketi-cli node disable abaae7250bce1ca4cec98d34138c9824
+heketi-cli node remove abaae7250bce1ca4cec98d34138c9824
+Error: Failed to remove device, error: Unable to get heal info of volume : vol_dd0dd2c46c741e6435fe339d39636e8b
+# 不行，需要先删除上面的device
+heketi-cli device disable c3aac82f962174690a8ae545d130a28f
+```
+
+```
+[heketi] ERROR 2022/03/17 07:14:38 heketi/apps/glusterfs/device_entry.go:493:glusterfs.(*DeviceEntry).removeBricksFromDevice: Failed to remove device, error: Unable to get heal info of volume : vol_dd0dd2c46c741e6435fe339d39636e8b
+```
+
+![](2022-03-17-15-20-57.png)
+
+![](2022-03-17-14-30-50.png)
+
+还有其他方法
+```bash
+heketi-cli db dump
+# 可以导出当前的数据库的json格式，修改以后
+```
+
+
 # 参考资料
 
 参考: https://github.com/heketi/heketi

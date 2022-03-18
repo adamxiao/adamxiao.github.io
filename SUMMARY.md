@@ -17,6 +17,7 @@
    * [unzip镜像解压文件](docker-usage/docker-unzip.md)
    * [skopeo拉取同步镜像](docker-usage/skopeo.md)
    * [搭建私有镜像仓库](docker-usage/registry.md)
+   * [traefik使用middleware做基本认证](docker-usage/traefik-middleware.md)
 * [docker镜像编译构建](docker-image-build/README.md)
    * [jit的centos8基础镜像](docker-image-build/centos8-build-env.md)
    * [istio镜像源码编译](docker-image-build/istio-image-build.md)
@@ -45,3 +46,4 @@
    * [容器pid max limit限制配置](openshift/tricks/container-pidsLimit.md)
    * [openshift节点修改ip地址](openshift/tricks/update-node-ip.md)
    * [haproxy容器选择节点运行](openshift/tricks/haproxy-node-select.md)
+   * [额外新增节点](openshift/install/add-new-node.md)
