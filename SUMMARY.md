@@ -47,3 +47,5 @@
    * [openshift节点修改ip地址](openshift/tricks/update-node-ip.md)
    * [haproxy容器选择节点运行](openshift/tricks/haproxy-node-select.md)
    * [额外新增节点](openshift/install/add-new-node.md)
+   * [traefik mesh安装配置使用](openshift/tricks/traefik-mesh.md)
+   * [coreos系统pxe安装](openshift/tricks/coreos-pxe-install.md)
