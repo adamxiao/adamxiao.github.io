@@ -1,5 +1,8 @@
 # openshift 编译arm64 Elasticsearch operator 镜像
 
+https://www.youtube.com/watch?v=nVzxwwkEZPo&ab_channel=TuTu%E7%94%9F%E6%B4%BB%E5%BF%97
+使用openwrt搭建lede系统，安装v2ray插件，实现软路由翻墙。
+
 旁路由 单臂路由了解
 
 发现一个节点有问题，有可能跟虚拟机的宿主机有关吧，只能ping，不能ssh，过一会好了。

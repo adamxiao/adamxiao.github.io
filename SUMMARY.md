@@ -49,3 +49,4 @@
    * [额外新增节点](openshift/install/add-new-node.md)
    * [traefik mesh安装配置使用](openshift/tricks/traefik-mesh.md)
    * [coreos系统pxe安装](openshift/tricks/coreos-pxe-install.md)
+   * [grafana监控面板安装使用](openshift/monitor-app/grafana-install.md)

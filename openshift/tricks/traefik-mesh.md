@@ -344,3 +344,44 @@ https://www.modb.pro/db/116312
 这篇文档也可以, traefik开监控
 
 创建一个ServiceMonitor以便于prometrics发现这个target
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: traefik-monitor
+  name: traefik-monitor
+  #namespace: default
+spec:
+  ports:
+  - port: 8080
+    protocol: TCP
+    targetPort: 8080
+    name: metrics
+  selector:
+    component: maesh-mesh
+  type: ClusterIP
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  labels:
+    k8s-app: traefik-monitor
+  name: traefik-monitor
+  #namespace: default
+spec:
+  endpoints:
+  - interval: 30s
+    port: metrics
+    path: /metrics
+    scheme: http
+  selector:
+    matchLabels:
+      app: traefik-monitor
+```
+
+效果
+![](2022-03-22-13-38-44.png)
+
+![](2022-03-22-13-39-11.png)
