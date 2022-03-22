@@ -90,4 +90,6 @@ EOF
 
 ## 参考文档
 
-https://doc.traefik.io/traefik/getting-started/install-traefik/
+* https://doc.traefik.io/traefik/getting-started/install-traefik/
+
+* [通过 Traefik 使用 Kubernetes Service APIs 进行流量路由 (http,https,金丝雀发布)](https://www.1024sou.com/article/604750.html)

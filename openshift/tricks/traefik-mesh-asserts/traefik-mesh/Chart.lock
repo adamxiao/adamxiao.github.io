@@ -1,0 +1,9 @@
+dependencies:
+- name: tracing
+  repository: ""
+  version: 0.0.3
+- name: metrics
+  repository: ""
+  version: 0.1.0
+digest: sha256:a4e8dccc3a482b34b84a1decc8e649d6bf501e6aa931d49f0b72092d2a6b5639
+generated: "2022-03-19T17:50:25.58206978+08:00"

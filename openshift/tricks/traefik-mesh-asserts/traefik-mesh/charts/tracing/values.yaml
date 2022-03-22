@@ -1,0 +1,3 @@
+image:
+  #jaeger: jaegertracing/all-in-one:1.18
+  jaeger: hub.iefcu.cn/public/jaegertracing-all-in-one:1.32
