@@ -288,14 +288,68 @@ docker.io/grafana/grafana:7.5.15
 
 => 尼马安装镜像太多了。
 
+## 导入导出面板dashboard
+
+关键字《grafana 导入面板》
+
+参考： https://grafana.com/docs/grafana/latest/dashboards/export-import/
+
+#### 1. 导出面板
+
+面板可以导出为json格式，包含面板的任何信息：布局，变量，风格，数据源，查询等。
+![](https://grafana.com/static/img/docs/export/export-modal.png)
+
+#### 2. 导入面板
+
+![](https://grafana.com/static/img/docs/v70/import_step1.png)
+
+#### 3. 更多面板在Grafana.com
+
+发现更多服务应用的面板， [Grafana.com/dashboards](https://grafana.com/dashboards).
+![](https://grafana.com/static/img/docs/v50/gcom_dashboard_list.png)
+
+
+## 变量说明
+
+editable: 是否可以编辑
+
+#### 更多资料
+
+* [(好)教你一分钟内导出 Grafana 所有的 Dashboard](https://cloud.tencent.com/developer/article/1766285)
+  => 有各种骚操作
+
+## TODO:
+
+* 1.了解一下面板json配置文件的含义
+* 2.怎么分类traefik service监控？
+
+新搭建的grafana可以查询到我搭建的测试应用的信息。
+
+traefik_service_request_duration_seconds_sum
+
+![](2022-03-23-10-33-00.png)
+
+![](2022-03-23-10-31-52.png)
+
+计划通过这种下拉列表的方式，筛选不同service的api调用耗时？
+![](2022-03-23-11-47-18.png)
+
 ## FAQ
 
 * 1.订阅之后没有反映！发现channel不对，从stable改为v4
 * 2.只能安装到指定namespace
 * 3.订阅安装失败，查看installplan得到原因
 ![](2022-03-22-21-19-08.png)
+* 4.导入的traefik mesh的监控面板没有数据
+  通过修改面板的数据源解决问题!
+![](2022-03-23-11-16-45.png)
+  修改数据源，最后应用就可以了
+![](2022-03-23-11-17-19.png)
+
 
 
 ## 参考资料
 
 * [OpenShift 4 - 使用定制的Grafana和Dashboard](https://blog.csdn.net/weixin_43902588/article/details/108763230)
+* [Grafana 教程 - 构建你的第一个仪表盘](https://kalacloud.com/blog/grafana-with-prometheus-tutorial/)
+  使用docker简单构建验证grafana仪表盘
