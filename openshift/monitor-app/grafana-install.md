@@ -1,5 +1,9 @@
 # grafana安装使用
 
+我们知道，在OpenShift 4 中已经内置了Prometheus和Grafana，可以在控制台的“仪表盘”中直接使用，它们的相关资源都运行在openshift-monitoring项目中。但是为了能保持监控环境始终可以正常运行，OpenShift只为内置的Grafana提供了只读（下图的Viewer）权限，即便使用OpenShift集群管理员也不能修改集群内置的Grafana配置，例如导入定制的Dashboard。
+
+为了能够对Dashboard进行定制，我们需要安装使用项目级定制的Grafana环境。本文档通过Operator部署项目级的Grafana，并将OpenShift集群预制的Prometheus作为数据源（其实也可在同一项目中安装项目级Prometheus，并作为其数据源）显示数据。
+
 ## 同步grafana相关镜像
 
 参考 [operatorhub离线安装](../operatorhub-offline.html)
@@ -283,8 +287,8 @@ spec:
 ```
 
 居然还是少镜像了！！！
-quay.io/grafana-operator/grafana_plugins_init:0.0.5
-docker.io/grafana/grafana:7.5.15
+* quay.io/grafana-operator/grafana_plugins_init:0.0.5
+* docker.io/grafana/grafana:7.5.15
 
 => 尼马安装镜像太多了。
 
@@ -308,8 +312,48 @@ docker.io/grafana/grafana:7.5.15
 发现更多服务应用的面板， [Grafana.com/dashboards](https://grafana.com/dashboards).
 ![](https://grafana.com/static/img/docs/v50/gcom_dashboard_list.png)
 
+## grafana变量配置使用
 
-## 变量说明
+https://www.jianshu.com/p/fe8bab704716
+
+Type为变量的类型，总共有六种类型：Interval（时间间隔类），Query（查询类），Datasource（数据源类型），Custom（自定义类），Constant（常量类），Ad hoc filters（我也不知道啥玩意，未知类）
+
+#### 新建变量
+
+手动建了一个service自定义变量
+![](2022-03-24-14-17-46.png)
+
+新建查询变量，参考 https://segmentfault.com/a/1190000039678098
+```bash
+label_values(traefik_service_requests_total{exported_service=~".*"},exported_service)
+```
+
+![](https://segmentfault.com/img/remote/1460000039678102)
+
+traefik mesh监控服务的变量如下：
+```bash
+label_values(traefik_service_requests_total{exported_service=~".*"},exported_service)
+```
+
+![](2022-03-25-10-46-22.png)
+
+## grafana面板定制
+
+通过新建，以及复制的方式
+
+#### 首先创建一个面板
+
+![](2022-03-25-10-10-49.png)
+
+#### 然后复制粘贴一个面板
+
+复制一个面板（需要注意的是，openshift内置面板不能复制panel，但是能导出）
+![](2022-03-25-10-09-10.png)
+
+然后粘贴一个面板
+![](2022-03-25-10-10-25.png)
+
+## grafana配置说明
 
 editable: 是否可以编辑
 

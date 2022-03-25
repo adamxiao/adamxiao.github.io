@@ -146,24 +146,6 @@ traefik_service_requests_total{code="200",method="GET",protocol="http",service="
 traefik_service_requests_total{code="499",method="GET",protocol="http",service="readiness@http"} 3
 ```
 
-## grafana变量
-
-https://www.jianshu.com/p/fe8bab704716
-
-Type为变量的类型，总共有六种类型：Interval（时间间隔类），Query（查询类），Datasource（数据源类型），Custom（自定义类），Constant（常量类），Ad hoc filters（我也不知道啥玩意，未知类）
-
-#### 新建变量
-
-手动建了一个service自定义变量
-![](2022-03-24-14-17-46.png)
-
-新建查询变量，参考 https://segmentfault.com/a/1190000039678098
-```bash
-label_values(traefik_service_requests_total{exported_service=~".*"},exported_service)
-```
-
-![](https://segmentfault.com/img/remote/1460000039678102)
-
 ## p99延迟
 
 99%的最慢的请求的延迟时间
