@@ -51,7 +51,8 @@ helm pull traefik-mesh/maesh
 tar -tzf traefik-mesh-4.0.2.tgz
 # 修改values.yaml里面的镜像名称
 
-# 安装
+# 安装, TODO:: 暂时在default下安装, 其他namespace有scc问题
+# 修改values.yaml, 配置 metrics.deploy=false 可以不安装promeghues
 helm install traefik-mesh traefik-mesh
 
 # 卸载
@@ -115,6 +116,12 @@ traefik-mesh-proxy-s2pz8                  1/1     Running   0               4h36
 
 #### 部署server和client
 
+准备namespace和scc
+```bash
+oc new-project test
+oc adm policy add-scc-to-user anyuid -n test -z default
+```
+
 server.yaml
 ```yaml
 ---
@@ -122,7 +129,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: server
-  namespace: test
+  #namespace: test
   labels:
     app: server
 spec:
@@ -146,7 +153,7 @@ kind: Service
 apiVersion: v1
 metadata:
   name: server
-  namespace: test
+  #namespace: test
 spec:
   selector:
     app: server
@@ -164,7 +171,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: client
-  namespace: test
+  #namespace: test
   labels:
     app: client
 spec:
@@ -268,6 +275,30 @@ metrics:
 - name: failure_count
   value: 100
 ```
+
+## dns融合
+
+与openshift的dns融合的方法：
+
+参考 [redhat官方文档: 使用 DNS 转发](https://access.redhat.com/documentation/zh-cn/openshift_container_platform/4.9/html-single/networking/index#nw-dns-forward_dns-operator)
+
+```bash
+oc edit dns.operator/default
+# 注意配置upstream的地址为新的coredns的svc地址
+# XXX: 使用 coredns.kube-system.svc.cluster.local 试试?
+# 不行: plugin/forward: not an IP address or file: "coredns.kube-system.svc.cluster.local"
+
+  servers:
+  - forwardPlugin:
+      upstreams:
+      - 172.30.142.46
+    name: traefik-mesh
+    zones:
+    - traefik.mesh
+```
+
+TODO: 准备单独部署traefik mesh组件看看？
+目前的traefik mesh的部署方法还是太复杂!!!
 
 ## 其他
 
