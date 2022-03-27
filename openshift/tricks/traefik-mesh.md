@@ -52,6 +52,7 @@ tar -tzf traefik-mesh-4.0.2.tgz
 # 修改values.yaml里面的镜像名称
 
 # 安装, TODO:: 暂时在default下安装, 其他namespace有scc问题
+# 其他namespace需要手动给权限: oc adm policy add-scc-to-user anyuid -n traefik-mesh -z traefik-mesh-controller
 # 修改values.yaml, 配置 metrics.deploy=false 可以不安装promeghues
 helm install traefik-mesh traefik-mesh
 

@@ -12,6 +12,7 @@
    * [ssh反向隧道](scripts/ssh_reverse_tunnel.md)
    * [v2ray安装教程](scripts/V2Ray安装教程.md)
    * [openssl使用](tricks/openssl.md)
+   * [openwrt安装使用](tricks/openwrt.md)
 * [docker使用](docker-usage/README.md)
    * [docker基本使用](docker.md)
    * [unzip镜像解压文件](docker-usage/docker-unzip.md)

@@ -1,7 +1,72 @@
 # openshift 编译arm64 Elasticsearch operator 镜像
 
+2021今年买啥软路由？新年度软路由测试总结与推荐！！！
 
-2022 Q1绩效考核
+https://www.youtube.com/watch?v=utWlY8_rpLg&ab_channel=jackstone
+
+## scc深入了解
+
+[Review SCC(Security Context Constraints) based on RBAC in OpenShift v4](https://daein.medium.com/review-scc-security-context-constraints-based-on-rbac-on-openshift-49007ff26317)
+
+[(好)Linux Capabilities in OpenShift](https://cloud.redhat.com/blog/linux-capabilities-in-openshift)
+
+![](https://cloud.redhat.com/hubfs/Openshift%20API%20Call.png)
+
+![](https://cloud.redhat.com/hubfs/SCC_Admission_Simplified.png)
+
+[openshift踩坑日记](https://developer.aliyun.com/article/787121)
+
+而创建的pod资源默认归属于**Restricted**策略。管理员用户也可以创建自己的 scc 并赋予自己的 serviceaccount:
+
+根据错误提示，找到了问题点在于 scc 。官方的介绍如下：
+
+OpenShift 的 安全環境限制 （Security Context Constraints）類似於 RBAC 資源控制用戶訪問的方式，管理員可以使用安全環境限制（Security Context Constraints, SCC）來控制Pod 的權限。 您可以使用 SCC 定義 Pod 運行時必須特定條件才能被系統接受。
+
+=> traefik-ee 建立了自己的一个scc，并且绑定到sa上?
+
+
+[Tutorial: Use SCCs to restrict and empower OpenShift workloads](https://developer.ibm.com/learningpaths/secure-context-constraints-openshift/scc-tutorial/)
+scc tutorial
+
+
+查看my-scc项目的annotations，其中“sa.scc”相关参数是当SCC策略非RunAsAny时提供默认值。
+
+```bash
+oc get project traefik-mesh -o json | jq .metadata.annotations
+oc get project default -o json | jq .metadata.annotations
+```
+
+scc可以和用户，组，服务帐号进行绑定!
+
+
+查询scc privileged可以被谁使用, 参考[OpenShift 4 - 安全上下文](https://blog.csdn.net/weixin_43902588/article/details/103374097)
+```bash
+oc adm policy who-can use scc privileged
+```
+
+![](2022-03-26-14-45-45.png)
+
+## helm入门
+
+关键字《helm原理》
+
+#### 下图为Helm整体应用框架图：
+
+　　helm是作为Helm Repository的客户端工具，helm默认工作时，会从本地家目录中去获取chart，只有本地没有chart时，它才会到远端的Helm Repository上去获取Chart，当然你也可以自己在本地做一个Chart，当需要应用chart到K8s上时，就需要helm去联系K8s Cluster上部署的Tiller Server，当helm将应用Chart的请求给Tiller Server时，Tiller Server接受完helm发来的charts(可以是多个chart) 和 chart对应的Config 后，它会自动联系API Server，去请求应用chart中的配置清单文件，最终这些清单文件会被实例化为Pod或其它定义的资源，而这些通过chart创建的资源，统称为release，一个chart可被实例化多次，其中的某些参数是会根据Config规则自动更改，例如Pod的名字等。
+
+![](https://img2018.cnblogs.com/blog/922925/201908/922925-20190802211739347-306840075.png)
+
+#### 疑问
+
+* 初始化 Helm 并安装 Tiller 服务（需要事先配置好 kubectl）
+这个是干嘛用的? openshift需不需要这个？
+https://feisky.gitbooks.io/kubernetes/content/apps/helm.html
+https://www.cnblogs.com/wn1m/p/11291304.html
+
+目前 helm3 已经不依赖于 tiller，Release 名称可在不同 ns 间重用。
+[Helm3 不需要安装 tiller，下载到 Helm 二进制文件直接解压到 $PATH 下就可以使用了。](https://xie.infoq.cn/article/1497dec4312a1233b613939f2)
+
+## 2022 Q1绩效考核
 
 *【日常】业绩:
   业绩良好，有新增任务且能及时高效完成任务，满足业务需求: 1
