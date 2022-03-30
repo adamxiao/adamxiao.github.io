@@ -13,6 +13,7 @@
    * [v2ray安装教程](scripts/V2Ray安装教程.md)
    * [openssl使用](tricks/openssl.md)
    * [openwrt安装使用](tricks/openwrt.md)
+   * [vscode使用markdown说明](tricks/vscode-markdown.md)
 * [docker使用](docker-usage/README.md)
    * [docker基本使用](docker.md)
    * [unzip镜像解压文件](docker-usage/docker-unzip.md)
@@ -53,3 +54,4 @@
    * [openshift监控](openshift/monitor-app/README.md)
        * [promethues使用入门](openshift/monitor-app/promethues-usage.md)
        * [grafana监控面板安装使用](openshift/monitor-app/grafana-install.md)
+   * [kubernets client api使用](openshift/tricks/kubernetes-client-api.md)

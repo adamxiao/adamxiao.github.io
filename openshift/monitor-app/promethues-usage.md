@@ -163,8 +163,173 @@ Prometheus 是假设每一个桶内的数据都是线性分布的，比如说现
 
 可以注意到因为是基于线性分布的假设，不是准确的数据。比如假设 300-500 的桶中耗时最高的请求也只有 310ms, 得到的计算结果也会是 400ms. 桶的区间越大，越不准确，桶的区间越小，越准确。
 
+## promethues的api
+
+关键字《prometheus 接口》
+
+[Prometheus查询及接口服务](https://blog.csdn.net/liangcha007/article/details/88558389)
+
+```java
+    public static void main(String[] args) throws Exception
+    {
+        String query = URLEncoder.encode("{label=\"2.1.2\"} [5m]","utf-8");
+        String url = "http://localhost:9090/api/v1/query?query="+query;
+        String ret = HttpKit.get(url);
+        System.out.println(ret);
+    }
+```
+
+输出结果如下：
+```json
+{
+	"status": "success",
+	"data": {
+		"resultType": "matrix",
+		"result": [{
+			"metric": {
+				"__name__": "online_accse_host_1_a",
+				"instance": "sp1-exp",
+				"job": "bis-sp1",
+				"label": "2.1.2",
+				"prov": "yunnan"
+			},
+			"values": [
+				[1552558929.044, "3903089"],
+				[1552559214.044, "3903089"]
+			]
+		}]
+	}
+}
+```
+
+这是一个标准的JSON串。一般情况下，我们在使用Prometheus的时候，都会配套的使Grafana等其他数据展示的工具，但其实，我们也可以自己开发自定义的panel。通过访问Prometheus的接口服务，来获取对应的数据。
+
+[(好)promethues官方api文档](https://prometheus.io/docs/prometheus/latest/querying/api/)
+
+* Instant queries
+* Range queries
+* ...
+
+
+[Prometheus 二次开发之 API 接口](https://cloud.tencent.com/developer/article/1824993)
+统计Prometheus全局配置 target?监控点
+```bash
+curl http://localhost:9090/api/v1/targets
+```
+
+查询规则
+该接口返回告警并记录当前配置生效的规则列表，此外，还返回当前活动的告警实例；
+```bash
+curl http://localhost:9090/api/v1/rules
+```
+
+查询告警
+返回所有活动警报的列表。
+```bash
+curl http://localhost:9090/api/v1/alerts
+```
+
+
+#### promethues api python客户端
+
+[官方Prometheus Python Client](https://github.com/prometheus/client_python)
+=> 额，这个应该是python promethues上报的sdk吧
+
+```bash
+pip3 install prometheus-client
+```
+
+#### 使用curl访问promethues接口
+
+创建服务帐号，以及赋予权限
+```bash
+oc project default
+oc create sa grafana-serviceaccount
+oc adm policy add-cluster-role-to-user cluster-monitoring-view -z grafana-serviceaccount
+TOKEN=$(oc serviceaccounts get-token grafana-serviceaccount)
+```
+
+```bash
+# curl $APISERVER/api/v1/services --header "Authorization: Bearer $TOKEN"
+curl -ks -H "Authorization: Bearer $TOKEN" \
+  https://thanos-querier-openshift-monitoring.apps.kcp5.iefcu.cn/api/v1/query?query=http_requests_total
+```
+
+```bash
+curl -ks -H "Authorization: Bearer $TOKEN" \
+  https://alertmanager-main-openshift-monitoring.apps.kcp5.iefcu.cn/api/v2/alerts
+```
+
+## promethues告警调研
+
+[Prometheus告警简介](https://yunlzheng.gitbook.io/prometheus-book/parti-prometheus-ji-chu/alert/prometheus-alert-manager-overview)
+
+告警能力在Prometheus的架构中被划分成两个独立的部分。如下所示，通过在Prometheus中定义AlertRule（告警规则），Prometheus会周期性的对告警规则进行计算，如果满足告警触发条件就会向Alertmanager发送告警信息。
+
+![](2022-03-29-15-39-31.png)
+
+在Prometheus中一条告警规则主要由以下几部分组成：
+
+* 告警名称：用户需要为告警规则命名，当然对于命名而言，需要能够直接表达出该告警的主要内容
+* 告警规则：告警规则实际上主要由PromQL进行定义，其实际意义是当表达式（PromQL）查询结果持续多长时间（During）后出发告警
+
+在Prometheus中，还可以通过Group（告警组）对一组相关的告警进行统一定义。当然这些定义都是通过YAML文件来统一管理的。
+
+Alertmanager作为一个独立的组件，负责接收并处理来自Prometheus Server(也可以是其它的客户端程序)的告警信息。Alertmanager可以对这些告警信息进行进一步的处理，比如当接收到大量重复告警时能够消除重复的告警信息，同时对告警信息进行分组并且路由到正确的通知方，Prometheus内置了对邮件，Slack等多种通知方式的支持，同时还支持与Webhook的集成，以支持更多定制化的场景。例如，目前Alertmanager还不支持钉钉，那用户完全可以通过Webhook与钉钉机器人进行集成，从而通过钉钉接收告警信息。同时AlertManager还提供了静默和告警抑制机制来对告警通知行为进行优化。
+
+Alertmanager特性
+
+Alertmanager除了提供基本的告警通知能力以外，还主要提供了如：分组、抑制以及静默等告警特性：
+
+![](2022-03-29-16-00-12.png)
+
+关键字《openshift 告警通知配置》
+
+[将通知发送到外部系统](https://access.redhat.com/documentation/zh-cn/openshift_container_platform/4.7/html/monitoring/sending-notifications-to-external-systems_managing-alerts)
+
+[安装后配置 - 配置警报通知](https://access.redhat.com/documentation/zh-cn/openshift_container_platform/4.7/html/post-installation_configuration/configuring-alert-notifications)
+
+[理解OpenShift（7）：基于 Prometheus 的集群监控](https://www.cnblogs.com/sammyliu/p/10155442.html)
+
+## altermanager api接口
+
+[AlertManager的API](https://pshizhsysu.gitbook.io/prometheus/ff08-san-ff09-prometheus-gao-jing-chu-li/kuo-zhan-yue-du/alertmanagerde-api)
+
+获取alert接口
+```bash
+curl -ks -H "Authorization: Bearer $TOKEN" https://alertmanager-main-openshift-monitoring.apps.kcp5.iefcu.cn/api/v2/alerts
+```
+![](2022-03-30-09-05-26.png)
+
+## 为用户定义的项目创建警报规则
+
+参考[openshift监控 - 为用户定义的项目创建警报规则](https://access.redhat.com/documentation/zh-cn/openshift_container_platform/4.7/html/monitoring/creating-alerting-rules-for-user-defined-projects_managing-alerts)
+
+```yaml
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: example-alert
+  namespace: ns1
+spec:
+  groups:
+  - name: example
+    rules:
+    - alert: VersionAlert
+      expr: version{job="prometheus-example-app"} == 0
+```
+
+此配置会创建一个名为 example-alert 的警报规则。当示例服务公开的 version 指标变为 0 时，警报规则会触发警报。
+
+> 重要
+用户定义的警报规则可以包含其自身项目的指标和集群指标。您不能包含其他用户定义的项目的指标。
+例如，用户定义的项目 ns1 的警报规则可以包含来自 ns1 的指标和集群指标，如 CPU 和内存指标。但是，该规则无法包含来自 ns2 的指标。
+另外，您无法为 openshift-* 核心 OpenShift 项目创建警报规则。OpenShift Container Platform 监控默认为这些项目提供一组警报规则。
+
 ## 参考资料
 
 * [使用 Prometheus 监控服务器性能](https://cjting.me/2017/03/12/use-prometheus-to-monitor-server/)
 
 * [P99是如何计算的](https://www.kawabangga.com/posts/4284)
+
+* [Promethues 中文文档 - 存储](https://prometheus.fuckcloudnative.io/di-san-zhang-prometheus/storage)
