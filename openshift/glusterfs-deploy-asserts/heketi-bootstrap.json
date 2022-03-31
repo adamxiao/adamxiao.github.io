@@ -64,6 +64,7 @@
             "containers": [
               {
                 "image": "registry.kcp.local:5000/kcp/heketi:9",
+                "image.org": "hub.iefcu.cn/xiaoyun/heketi:9",
                 "imagePullPolicy": "IfNotPresent",
                 "name": "deploy-heketi",
                 "env": [

@@ -38,6 +38,7 @@
    * [openshift部署应用](openshift/deploy-app/README.md)
        * [adam-doc文档部署](openshift/deploy-app/adam-doc-deploy.md)
        * [创建自定义域名的路由](openshift/deploy-app/adam-doc-deploy.md)
+       * [redis集群部署](openshift/deploy-app/redis-deploy.md)
    * [operatorhub离线搭建使用](openshift/operatorhub-offline.md)
    * [quay私有镜像仓库镜像同步](openshift/sync-quay-image.md)
    * [制作新的openshift release镜像](openshift/create-ocp-release.md)

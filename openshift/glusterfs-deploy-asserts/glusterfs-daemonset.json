@@ -32,6 +32,7 @@
                 "containers": [
                     {
                         "image": "registry.kcp.local:5000/kcp/gluster-containers:latest",
+                        "image.org": "hub.iefcu.cn/xiaoyun/gluster-containers:latest",
                         "imagePullPolicy": "IfNotPresent",
                         "name": "glusterfs",
                         "volumeMounts": [
