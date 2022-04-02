@@ -23,3 +23,14 @@ iptables -A FORWARD -i eth0 -s 192.168.1.3 -p tcp --sport 3306 -j ACCEPT
 
 sudo iptables -t nat -A OUTPUT -p tcp --dport 80 -j REDIRECT --to-ports 3128
 sudo iptables -t nat -A OUTPUT -p tcp --dport 80 -j DNAT --to 10.20.3.18:3128
+
+#### 一对一NAT
+
+配置浮动ip地址, 需要注意这个浮动ip浮动的物理接口eth0
+
+```bash
+iptables -I FORWARD -j ACCEPT
+ip address add 10.90.3.32/32 dev eth0
+iptables -t nat -I POSTROUTING -s 192.168.100.1/32 -o eth0 -j SNAT --to-source 10.90.3.32
+iptables -t nat -I PREROUTING -i eth0 -d 10.90.3.32/32 -j DNAT --to-destination 192.168.100.1
+```
