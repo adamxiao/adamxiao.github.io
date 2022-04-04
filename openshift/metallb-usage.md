@@ -125,12 +125,29 @@ EOF
 oc get installplan -n metallb-system
 ```
 
+如果没有出现installplane，就要查查olm operator的日志？
+
+例如订阅到空的operator的日志
+```
+oc -n openshift-operator-lifecycle-manager logs -f catalog-operator-6565788966-rfzp7
+
+I0403 03:32:33.072628       1 event.go:282] Event(v1.ObjectReference{Kind:"Namespace", Namespace:"", Name:"openshift-operators-redhat", UID:"5a
+de5ab6-4a91-4372-acc4-19e99432c051", APIVersion:"v1", ResourceVersion:"129988", FieldPath:""}): type: 'Warning' reason: 'ResolutionFailed' cons
+traints not satisfiable: no operators found from catalog redhat-operators in namespace openshift-marketplace referenced by subscription elastic
+search-operator, subscription elasticsearch-operator exists
+```
+
 #### 要验证是否已安装 Operator，请输入以下命令：
 
 ```
 oc get clusterserviceversion -n metallb-system \
   -o custom-columns=Name:.metadata.name,Phase:.status.phase
 ```
+
+如果没有就，则看installplan的状态
+可能是bundle任务失败，就会一直卡着。
+oc -n openshift-marketplace get jobs d5d6cba0f745806d76d87f36482c281b250abd2eff473959d55d606b40d231a -o yaml
+删除这个jobs是否可行？=> 确实可行!!!
 
 ## 在集群中启动 METALLB
 
