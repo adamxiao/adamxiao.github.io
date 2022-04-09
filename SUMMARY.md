@@ -40,6 +40,8 @@
        * [创建自定义域名的路由](openshift/deploy-app/adam-doc-deploy.md)
        * [redis集群部署](openshift/deploy-app/redis-deploy.md)
    * [operatorhub离线搭建使用](openshift/operatorhub-offline.md)
+       * [elasticsearch安装](openshift/operator-install/elasticsearch.md)
+       * [cluster logging 日志安装](openshift/operator-install/cluster-logging.md)
    * [quay私有镜像仓库镜像同步](openshift/sync-quay-image.md)
    * [制作新的openshift release镜像](openshift/create-ocp-release.md)
    * [console镜像构建方法](openshift/console-build.md)
