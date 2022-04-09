@@ -2,6 +2,23 @@
 
 主要是promethues的配置使用, openshift使用的promethues operator，配置方法跟普通的promethues有一点儿不一样。
 
+#### 监控指标
+
+* 1.云正常运行时间
+    先用node_boot_time_seconds进行调试（这个是节点的时间），我们后续提供集群的运行时间
+
+* 2.硬件服务器总数量
+    这个可以使用k8s api查询，获取节点的数量，包括ready，notReady的状态
+* 3.云健康程度 
+    看系统的健康状况吗，不包括应用吗？使用oc get clusteroperator可以看，有一定数量的operator的状态，有可用，降级，不可用三种状态。
+* 4.云节点状态
+    这个可以使用k8s api查询，获取节点的数量，包括ready，notReady的状态
+* 5.云中软件应用总数
+    需要开发
+    过滤出非系统项目中的deployments数量，使用k8s api查询
+
+
+#### xxx
 
 关键字《traefik api 耗时监控》
 

@@ -1,5 +1,45 @@
 # 日志收集监控调研
 
+#### es operator源码编译安装
+
+首先，使用docker insepct查看到es operator和es镜像的源码，下载下来
+
+然后修改一下dockerfile,开始编译
+
+#### arm64下安装
+
+安装cluster-logging operator失败
+
+0s          Warning   UnsupportedOperatorGroup   clusterserviceversion/cluster-logging.5.3.4-13   AllNamespaces InstallModeType not supported, cannot configure to watch all namespaces
+
+0s          Warning   TooManyOperatorGroups      clusterserviceversion/cluster-logging.5.3.4-13   csv created in namespace with multiple operatorgroups, can't pick one automatically
+
+原来是自己的operatorgroup配置出错了，没有配置targetNamespaces，或者spec覆盖了！！！
+```yaml
+apiVersion: operators.coreos.com/v1
+kind: OperatorGroup
+metadata:
+  name: cluster-logging
+  namespace: openshift-logging
+spec:
+  targetNamespaces:
+  - openshift-logging
+spec: {}
+```
+
+官方cli安装文档也是一样的，不明白怎么allnamespaces了！！！
+https://docs.openshift.com/container-platform/4.9/logging/cluster-logging-deploying.html
+
+
+发现olm报错
+
+I0406 06:12:24.850288       1 event.go:282] Event(v1.ObjectReference{Kind:"Namespace", Namespace:"", Name:"openshift-logging", UID:"b7f4ce26-1a0a-4841-bf76-7ed2d2d0a7dd", APIVersion:"v1", ResourceVersion:"1054514", FieldPath:""}): type: 'Warning' reason: 'ResolutionFailed' constraints not satisfiable: no operators found from catalog adam" in namespace openshift-marketplace referenced by subscription cluster-logging, subscription cluster-logging exists
+
+=> 原来是catalog adam名称输入错误，弄成adam"了
+
+
+#### xxx
+
 关键字《EFK原理》
 
 EFK 架构，参考： https://ithelp.ithome.com.tw/articles/10223004

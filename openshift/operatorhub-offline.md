@@ -170,7 +170,37 @@ oc -n  openshift-marketplace delete CatalogSource adam
 
 ### 同步operator相关镜像到私有仓库
 
-TODO:
+TODO: filter-by-os ?
+oc adm catalog mirror \
+    registry.okd.example.com:5000/redhat/redhat-operator-index:v4.7  \
+    file:///local/index \
+    --index-filter-by-os="linux/amd64'" \
+    -a /root/pull-secret.json \
+    --insecure
+
+```bash
+# 同步grafana相关镜像到本地文件
+mkdir mirror-xxx && cd mirror-xxx
+oc adm catalog mirror \
+    hub.iefcu.cn/kcp/redhat-operator-index:v4.9 \
+    -a /tmp/pull-secret.json \
+    file:///local/index
+
+info: Mirroring completed in 1m45.84s (4.408MB/s)
+wrote mirroring manifests to manifests-grafana-operator-index-1647941600
+
+To upload local images to a registry, run:
+
+        oc adm catalog mirror file://local/index/kcp/redhat-operator-index:v4.9 REGISTRY/REPOSITORY
+
+# 同步镜像到私有镜像仓库
+oc adm catalog mirror \
+  file://local/index/kcp/redhat-operator-index:v4.9 \
+  192.168.120.44/kcp/
+  -a /tmp/pull-secret.json \
+  --insecure
+```
+
 
 ### 通过订阅安装operator
 

@@ -18,3 +18,20 @@ dhcp-option=subnet3_20,3,10.90.3.1
 dhcp-option=subnet3_20,6,10.90.3.38,192.168.168.168
 dhcp-option=subnet3_20,option:domain-search,iefcu.cn
 ```
+
+#### 启动dnsmasq容器服务
+
+```bash
+docker run \
+    --name dnsmasq \
+    --privileged \
+    -d \
+    --network kylin-macvlan-net \
+    --ip 10.90.2.190 \
+    -v /data/dnsmasq/dnsmasq.conf:/etc/dnsmasq.conf \
+    --log-opt "max-size=100m" \
+    -e "HTTP_USER=adam" \
+    -e "HTTP_PASS=6251965" \
+    --restart always \
+    jpillora/dnsmasq
+```
