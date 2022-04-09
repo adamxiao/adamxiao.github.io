@@ -52,6 +52,21 @@ Remote repository->Local repository: git pull
     default = simple
 ```
 
+ssh协议代理, 配置~/.ssh/config配置文件
+```
+Host github.com *.github.com
+    User git
+    # SSH默认端口22， HTTPS默认端口443
+    Port 22
+    Hostname %h
+    # 这里放你的SSH私钥
+    IdentityFile ~/.ssh/id_rsa
+    # 设置代理, 127.0.0.1:10808 换成你自己代理软件监听的本地地址
+    # HTTPS使用-H，SOCKS使用-S
+    #ProxyCommand connect -S proxy.iefcu.cn:20170 %h %p
+    ProxyCommand nc -v -x proxy.iefcu.cn:20170 %h %p
+```
+
 ## git FAQ
 
 1. cancel a local git commit
