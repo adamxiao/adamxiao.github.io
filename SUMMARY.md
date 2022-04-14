@@ -28,6 +28,7 @@
 * [openshift使用](openshift/README.md)
    * [openshift基本安装](openshift/install/README.md)
        * [离线安装部署kcp文档](openshift/ocp-install.md)
+       * [openshift 安装定制调研](openshift/install/install-customizing.md)
        * [新增htpasswd用户认证](openshift/install/add-basic-user.md)
        * [部署glusterfs存储类](openshift/install-glusterfs-sc.md)
        * [部署内部dns+haproxy等服务](openshift/deploy-internel-dns-haproxy.md)

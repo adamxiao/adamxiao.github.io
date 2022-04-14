@@ -19,7 +19,7 @@ function parse_yaml {
    }'
 }
 
-eval $(parse_yaml ./install-config.yaml.bak)
+eval $(parse_yaml ./install-config.yaml)
 # 需要确保metadata_name等不为空
 if [[ "" == "${metadata_name}" ]]
 then
@@ -38,14 +38,20 @@ then
     mv $dir "delete/${dir}.bak.$(date +%s)"
 fi
 
+# 0. 提取openshift-install
+rm -f openshift-install
+GODEBUG=x509ignoreCN=0 oc adm release extract \
+  --command=openshift-install ${kcp_release}
+
 # 1. 生成点火文件
 echo "=> 1. generate ignition files ..."
 mkdir $dir && cd $dir
-cp -f ../install-config.yaml.bak ./install-config.yaml
-cp -f ../install-config.yaml.bak ./install-config.yaml.bak
+cp -f ../install-config.yaml ./install-config.yaml
+cp -f ../install-config.yaml ./install-config.yaml.bak
 
 ../openshift-install create manifests
 ../openshift-install create ignition-configs
+rm -f ../openshift-install # 用完就删除掉
 
 # 2. 拷贝点火文件到http服务器中去
 echo "=> 2. copy ignition files to http server ..."
