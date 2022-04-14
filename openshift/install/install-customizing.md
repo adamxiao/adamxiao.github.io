@@ -6,6 +6,40 @@
 * release-manifests的yaml配置文件，就是从console-operator等镜像中提取出来的！
 * 直接修改release-manifests里面的yaml配置，是可以安装(或升级)生效的
 
+#### kylinlogo定制
+
+修改如下两个yaml配置，以及新增kylinlogo相关yaml配置文件: 0000_50_console-operator_03-configmap.yaml
+```diff
+diff --git a/release-manifests/0000_05_config-operator_02_oauth.cr.yaml b/release-manifests/0000_05_config-operator_02_oauth.cr.yaml
+index a20be20..1b6ec0e 100644
+--- a/release-manifests/0000_05_config-operator_02_oauth.cr.yaml
++++ b/release-manifests/0000_05_config-operator_02_oauth.cr.yaml
+@@ -7,4 +7,9 @@ metadata:
+     include.release.openshift.io/self-managed-high-availability: "true"
+     include.release.openshift.io/single-node-developer: "true"
+     release.openshift.io/create-only: "true"
+-spec: {}
++spec:
++  templates:
++    login:
++      name: kylin-login-template
++    providerSelection:
++      name: kylin-providers-template
+diff --git a/release-manifests/0000_50_console-operator_01-operator-config.yaml b/release-manifests/0000_50_console-operator_01-operator-config.yaml
+index c7131eb..5c2a2bd 100644
+--- a/release-manifests/0000_50_console-operator_01-operator-config.yaml
++++ b/release-manifests/0000_50_console-operator_01-operator-config.yaml
+@@ -9,3 +9,8 @@ metadata:
+     release.openshift.io/create-only: "true"
+ spec:
+   managementState: Managed
++  customization:
++    customLogoFile:
++      key: Kylin_logo.png
++      name: kylinlogo
++    customProductName: KylinSec Cloud Console
+```
+
 #### 定制新版本 - 直接修改release镜像的yaml配置文件
 
 这种方法临时测试使用，最好还是通过其他方法（例如CI）生成release版本
