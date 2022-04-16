@@ -8,6 +8,9 @@
 
 #### kylinlogo定制
 
+如果通过升级的方式，Console和OAuth对象的配置不会更新，但是configmap和secret能够创建成功!
+因为这两个资源是create-only=true
+
 修改如下两个yaml配置，以及新增kylinlogo相关yaml配置文件: 0000_50_console-operator_03-configmap.yaml
 ```diff
 diff --git a/release-manifests/0000_05_config-operator_02_oauth.cr.yaml b/release-manifests/0000_05_config-operator_02_oauth.cr.yaml

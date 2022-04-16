@@ -52,6 +52,12 @@ docker inspect --format='{{index .RepoDigests 0}}' hub.iefcu.cn/kcp/cluster-logg
 docker images --digests
 ```
 
+参考： https://stackoverflow.com/questions/39375421/can-i-get-an-image-digest-without-downloading-the-image
+```bash
+skopeo inspect docker://hub.iefcu.cn/xiaoyun/tmp:0413-4.9.0-rc.6-arm64-console-operator | grep Digest
+skopeo inspect --format "{{ .Digest }}" "docker://$image"
+```
+
 ## 参考文档
 
 [（好）如何使用Skopeo做一个优雅的镜像搬运工](https://www.modb.pro/db/251368)

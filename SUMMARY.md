@@ -43,6 +43,7 @@
    * [operatorhub离线搭建使用](openshift/operatorhub-offline.md)
        * [elasticsearch安装](openshift/operator-install/elasticsearch.md)
        * [cluster logging 日志安装](openshift/operator-install/cluster-logging.md)
+       * [keycloak认证安装使用](docker-usage/keycloak-usage.md)
    * [quay私有镜像仓库镜像同步](openshift/sync-quay-image.md)
    * [制作新的openshift release镜像](openshift/create-ocp-release.md)
    * [console镜像构建方法](openshift/console-build.md)
