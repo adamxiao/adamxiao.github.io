@@ -5,6 +5,13 @@
 
 ## 操作步骤
 
+#### 首先更新dns,haproxy配置
+
+* dns的更新, 跟初始安装的一样
+* haproxy配置，如果新节点需要承载ingress功能，就需要配置
+
+#### 然后安装新节点
+
 * 1.获取ca证书
 
 ```bash
@@ -12,6 +19,14 @@ oc describe cm root-ca -n kube-system
 ```
 
 ![](2022-03-17-09-17-06.png)
+
+也可以通过openssl来获取证书? 参考: https://www.linkedin.com/pulse/how-add-new-worker-node-existing-openshift-4-cluster-ibm-miranda
+```bash
+openssl s_client -connect api-int.<cluster_name>.<domain>:22623 -showcerts
+
+MCS="api-int.<cluster_name>.<domain>:22623"
+NEWBASE64CERT=$(echo "q" | openssl s_client -connect $MCS  -showcerts 2>/dev/null | awk '/-----BEGIN CERTIFICATE-----/,/-----END CERTIFICATE-----/' | base64 --wrap=0) && sed --regexp-extended --in-place=.backup "s%base64,[^,]+%base64,$NEWBASE64CERT\"%" /<path_to_worker.ign>/worker.ign
+```
 
 * 2.base64处理证书
 
