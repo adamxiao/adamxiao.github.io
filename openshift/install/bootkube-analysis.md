@@ -22,6 +22,65 @@
   这样会有错误，但是刚好可以调试!
   => 不错
 
+## 20220418分析
+
+=> 总结: 就是得到需要了解CVO,和etcd-operator的逻辑细节,这样就能解释一点了.
+遇到了问题,三节点遇到问题,一个节点始终没有ready,调试一下? 一直都没有csr?
+=> 验证发现/etc/kubernetes/kubeconfig文件内容不对，导致无法注册node(调高日志等级可以详细查看kubelet的日志)
+   直接重新点火安装这个节点(master3)
+通过检查kubelet的参数，发现
+sudo md5sum /etc/kubernetes/kubelet.conf /etc/kubernetes/kubeconfig /var/lib/kubelet/kubeconfig
+Apr 18 11:24:46 master3.kcp2-arm.iefcu.cn hyperkube[2975]: I0418 11:24:46.083716    2975 round_trippers.go:454] POST https://api-int.kcp2-arm.iefcu.cn:6443/api/v1/nodes 401 Unauthorized in 1 milliseconds
+Apr 18 11:24:46 master3.kcp2-arm.iefcu.cn hyperkube[2975]: E0418 11:24:46.083820    2975 kubelet_node_status.go:95] "Unable to register node with API server" err="Unauthorized" node="master3.kcp2-arm.ief
+
+=> 重新安装一次都不行，虽然kubeconfig配置文件对了，但还是注册成功，再次重新安装就可以了！！！
+
+TODO: etcd集群是怎么扩展的？
+* 验证cluster operator version做的逻辑
+  加master节点前,将cluster version operator容器kill掉
+  以及看相关日志? 打开调试日志?
+=> 可能需要看的是etcd-operator的日志? 看过,没看出啥名堂!
+看一下configmap啥的,他怎么知道需要3个etcd?
+=> 查看历史etcd-operator的日志,是不是operator等所有master节点都准备好了,然后再开始安装etcd pods 作为静态pod
+
+只安装bootstrap节点，此时已经有了几乎所有的namespace，以及deployment?
+例如openshift-etcd-operator的deployment
+验证一下多master节点的情况？ => etcd-operator知道需要多少etcd实例!
+只有bootstrap节点，也还是可以oc get clusterversion查看进度？不过总是会出错而已
+
+oc edit etcd cluster没有etcd集群数量配置
+获取内置haproxy配置信息
+oc edit ingresscontroller/default -n  openshift-ingress-operator
+
+bootstrap的这个manifests配置文件
+/opt/openshift/manifests/cluster-config.yaml
+oc -n kube-system get configmap cluster-config-v1
+
+bootstrap节点的点火配置文件路径:
+/etc/mcs/bootstrap
+
+但是缺少如下ns?
+```diff
+openshift                                          Active
+openshift-apiserver                                Active
+openshift-authentication                           Active
+openshift-console                                  Active
+openshift-console-operator                         Active
+openshift-console-user-settings                    Active
+openshift-controller-manager                       Active
+openshift-dns                                      Active
+openshift-host-network                             Active
+openshift-ingress                                  Active
+openshift-ingress-canary                           Active
+openshift-kube-storage-version-migrator            Active
+openshift-multus                                   Active
+openshift-network-diagnostics                      Active
+openshift-node                                     Active
+openshift-oauth-apiserver                          Active
+openshift-sdn                                      Active
+openshift-service-ca                               Active
+```
+
 #### 调试bootkube方法:
 
 * rm xxx.done => 有很多残留数据，很难删除干净
@@ -344,7 +403,7 @@ fb9e313b4b69772, started, etcd-bootstrap, https://192.168.100.93:2380, https://1
 
 bootstrapp 集群涉及以下步骤：
 
-* 1.bootstrap 机器启动并开始托管 control plane 机器引导所需的远程资源。（如果自己配置基础架构，则需要人工干预）
+* 1. bootstrap 机器启动并开始托管 control plane 机器引导所需的远程资源。（如果自己配置基础架构，则需要人工干预）
 * 2. bootstrap 机器启动单节点 etcd 集群和一个临时 Kubernetes control plane。
 * 3. control plane 机器从 bootstrap 机器获取远程资源并完成启动。（如果自己配置基础架构，则需要人工干预）
 * => 4. 临时 control plane 将生产环境的 control plane 调度到生产环境 control plane 机器。

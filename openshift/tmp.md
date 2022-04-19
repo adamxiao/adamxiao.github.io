@@ -1,5 +1,43 @@
 # openshift 编译arm64 Elasticsearch operator 镜像
 
+专利方面考虑
+自动service mesh监控服务api耗时
+machine-config配置(时间同步等配置) 还有优化的地方
+堡垒机器安装做成一个安装程序, 快速安装kcp平台
+应用程序部署，回放配置，多平台部署?
+gitops相关, CI/CD, 自动识别编译构建镜像啥的
+人脸认证登录kcp系统(手机识别登录)
+
+TODO:
+* Documents整理
+* ssl证书， quay文档
+* uniface 8.1.8安装ubuntu
+* arm64盒子安装podman, libc6-dev
+* 参考 family-media-center, 写多个docker-compose.yaml配置，启动堡垒机服务 => 做成一个镜像(Dockerfile)
+https://github.com/crazygit/family-media-center
+写一个run.sh
+```bash
+docker-compose -f docker-compose.aria2.yml \
+               -f docker-compose.jellyfin.yml \
+               -f docker-compose.kodi.yml \
+               -f docker-compose.openwrt.yml \
+               -f docker-compose.samba.yml \
+               -f docker-compose.tiny_media_manager.yml \
+               -f docker-compose.watchtower.yml \
+               $@
+```
+
+openshift origin的构建编译环境？
+openshift/origin-release
+(Build environment for OpenShift Origin)
+
+
+https://www.one-tab.com/page/YfTvjlabR9OqHV1mRY4wqA?ext=de72ce03-98b7-4210-b30f-86afdf724045
+
+https://devopstales.github.io/home/openshift4-auth/
+[Part1b: Install Opeshift 4 with calico](https://devopstales.github.io/kubernetes/openshift4-calico/)
+
+
 2021今年买啥软路由？新年度软路由测试总结与推荐！！！
 
 https://www.youtube.com/watch?v=utWlY8_rpLg&ab_channel=jackstone

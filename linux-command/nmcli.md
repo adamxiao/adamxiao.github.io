@@ -31,7 +31,6 @@ addresses2=xxx
 
 参考: https://access.redhat.com/documentation/zh-cn/red_hat_enterprise_linux/8/html/configuring_and_managing_networking/configuring-static-routes_configuring-and-managing-networking
 
-TODO: 待实践
 ```bash
 $ sudo nmcli connection modify example +ipv4.routes "192.0.2.0/24 198.51.100.1"
 ```
