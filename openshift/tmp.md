@@ -9,6 +9,9 @@ gitops相关, CI/CD, 自动识别编译构建镜像啥的
 人脸认证登录kcp系统(手机识别登录)
 
 TODO:
+* 时间同步配置验证
+* 时区配置验证, 以及容器时区
+
 * Documents整理
 * ssl证书， quay文档
 * uniface 8.1.8安装ubuntu

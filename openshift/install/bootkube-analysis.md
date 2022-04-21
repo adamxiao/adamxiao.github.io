@@ -88,6 +88,7 @@ openshift-service-ca                               Active
   把bootkube.sh服务改成enable=false
   然后就可以手动运行调试脚本了
   cd /opt/openshift && bash -x /usr/local/bin/bootkube.sh
+  => 把service改成ExecStart=true
 
 
 临时目录: /opt/openshift
