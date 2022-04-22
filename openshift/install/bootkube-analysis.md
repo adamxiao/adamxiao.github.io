@@ -40,7 +40,7 @@ TODO: etcd集群是怎么扩展的？
   加master节点前,将cluster version operator容器kill掉
   以及看相关日志? 打开调试日志?
 => 可能需要看的是etcd-operator的日志? 看过,没看出啥名堂!
-看一下configmap啥的,他怎么知道需要3个etcd?
+看一下configmap啥的,他怎么知道需要3个etcd? => 直接获取cluster信息就行了, 要等所有master节点准备好，才会开始安装etcd集群
 => 查看历史etcd-operator的日志,是不是operator等所有master节点都准备好了,然后再开始安装etcd pods 作为静态pod
 
 只安装bootstrap节点，此时已经有了几乎所有的namespace，以及deployment?
@@ -52,7 +52,7 @@ oc edit etcd cluster没有etcd集群数量配置
 获取内置haproxy配置信息
 oc edit ingresscontroller/default -n  openshift-ingress-operator
 
-bootstrap的这个manifests配置文件
+bootstrap的这个manifests配置文件, 有集群cluster数量配置！
 /opt/openshift/manifests/cluster-config.yaml
 oc -n kube-system get configmap cluster-config-v1
 
@@ -407,7 +407,7 @@ bootstrapp 集群涉及以下步骤：
 * 1. bootstrap 机器启动并开始托管 control plane 机器引导所需的远程资源。（如果自己配置基础架构，则需要人工干预）
 * 2. bootstrap 机器启动单节点 etcd 集群和一个临时 Kubernetes control plane。
 * 3. control plane 机器从 bootstrap 机器获取远程资源并完成启动。（如果自己配置基础架构，则需要人工干预）
-* => 4. 临时 control plane 将生产环境的 control plane 调度到生产环境 control plane 机器。
+* 4. 临时 control plane 将生产环境的 control plane 调度到生产环境 control plane 机器。
 * 5. Cluster Version Operator（CVO）在线并安装 etcd Operator。etcd Operator 在所有 control plane 节点上扩展 etcd。
 * 6. 临时 control plane 关机，并将控制权交给生产环境 control plane。
 * 7. bootstrap 机器将 OpenShift Container Platform 组件注入生产环境 control plane。
