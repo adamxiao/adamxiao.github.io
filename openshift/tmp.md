@@ -1,5 +1,9 @@
 # openshift 编译arm64 Elasticsearch operator 镜像
 
+一种基于openshift的自动化监控微服务api耗时方法？
+一种基于角色的集群节点管理配置文件方法
+一种基于openshift的自动监控微服务API耗时方法
+
 专利方面考虑
 自动service mesh监控服务api耗时
 machine-config配置(时间同步等配置) 还有优化的地方
