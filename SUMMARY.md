@@ -62,3 +62,4 @@
        * [grafana监控面板安装使用](openshift/monitor-app/grafana-install.md)
    * [openshift日志](openshift/logs/README.md)
    * [kubernets client api使用](openshift/tricks/kubernetes-client-api.md)
+   * [machine config原理调研](openshift/machine-config.md)

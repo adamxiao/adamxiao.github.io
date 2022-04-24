@@ -138,6 +138,10 @@ heketi-cli db dump
 # 可以导出当前的数据库的json格式，修改以后
 ```
 
+## 其他
+
+参考https://github.com/lwolf/docker-multiarch, 做出了heketi多架构镜像
+
 
 # 参考资料
 
