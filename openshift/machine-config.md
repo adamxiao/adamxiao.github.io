@@ -193,6 +193,8 @@ spec:
 dn.triggerUpdateWithMachineConfig() -> dn.update()
 暂没有更详细的日志，如果要再分析下去，需要调试分析了
 
+从 performPostConfigChangeAction 这个方法可以看到，只有crio的配置修改，不需要重启系统
+
 machine-config-daemon的日志
 ```
 I0422 05:50:51.551317    7963 update.go:1896] Adding SIGTERM protection
@@ -266,6 +268,175 @@ kylin coreos把selinux=0去除之后，系统又死了
 [    7.026496] systemd[1]: Failed to allocate manager object: Permission denied
 [!!!!!!] Failed to allocate manager object, freezing.
 [    7.028519] systemd[1]: Freezing execution.
+```
+
+## machine config源码编译调试
+
+修改Dockerfile, 修改编译镜像啥的
+```dockerfile
+FROM hub.iefcu.cn/public/golang:1.16 AS builder
+FROM hub.iefcu.cn/library/centos:7
+```
+
+修改源码, 兼容KylinSecOS
+```diff
+diff --git a/pkg/daemon/osrelease.go b/pkg/daemon/osrelease.go
+index fc42c075..c68ca740 100644
+--- a/pkg/daemon/osrelease.go
++++ b/pkg/daemon/osrelease.go
+@@ -19,7 +19,7 @@ type OperatingSystem struct {
+
+ // IsRHCOS is true if the OS is RHEL CoreOS
+ func (os OperatingSystem) IsRHCOS() bool {
+-       return os.ID == "rhcos"
++       return os.ID == "rhcos" || os.ID == "KylinSecOS"
+ }
+
+ // IsFCOS is true if the OS is RHEL CoreOS
+```
+
+添加调试日志
+```diff
+diff --git a/pkg/daemon/daemon.go b/pkg/daemon/daemon.go
+index feca535..81e6af9 100644
+--- a/pkg/daemon/daemon.go
++++ b/pkg/daemon/daemon.go
+@@ -466,6 +466,7 @@ func (dn *Daemon) syncNode(key string) error {
+                return errors.Wrapf(err, "prepping update")
+        }
+        if current != nil || desired != nil {
++               glog.Info("adam debug log 1")
+                if err := dn.triggerUpdateWithMachineConfig(current, desired); err != nil {
+                        return err
+                }
+```
+
+然后安装hack目录的调试脚本进行调试 (日志等级都变了-v 4)
+https://github.com/openshift/machine-config-operator/blob/master/docs/HACKING.md#developing-the-mcd-without-building-images
+=> operator部署直接禁用了，hack脚本手动部署daemon, server, controller服务
+居然是直接拷贝binary到pod里面的!!
+
+更新ImageContentSourcePolicy的逻辑，是调用这个接口
+dn.syncHandler = dn.syncNode
+
+mc-daemon就是一直等待消息,然后进行处理
+然后检查是否需要同步配置文件, 然后进行配置文件等同步处理!
+```go
+func (dn *Daemon) processNextWorkItem() bool {
+	key, quit := dn.queue.Get()
+	if quit {
+		return false
+	}
+	defer dn.queue.Done(key)
+
+	err := dn.syncHandler(key.(string))
+	dn.handleErr(err, key)
+
+	return true
+}
+```
+
+#### controller逻辑分析
+
+由不同的machineconfig 生成最终master, worker角色的machineconfig
+```log
+# master 角色的配置
+I0123 16:08:34.589324       1 render_controller.go:501] Generated machineconfig rendered-master-11faf11ff0214a83a2c68a3be8ced3ad from 7 configs: [{MachineConfig  00-master  machineconfiguration.openshift.io/v1  } {MachineConfig  01-master-container-runtime  machineconfiguration.openshift.io/v1  } {MachineConfig  01-master-kubelet  machineconfiguration.openshift.io/v1  } {MachineConfig  05-master-kernelarg-selinuxoff  machineconfiguration.openshift.io/v1  } {MachineConfig  99-master-generated-registries  machineconfiguration.openshift.io/v1  } {MachineConfig  99-master-ssh  machineconfiguration.openshift.io/v1  } {MachineConfig  masters-chrony-configuration  machineconfiguration.openshift.io/v1  }]
+I0123 16:08:34.590148       1 event.go:282] Event(v1.ObjectReference{Kind:"MachineConfigPool", Namespace:"", Name:"master", UID:"b36da062-9d0f-4024-8261-e8bc4c200712", APIVersion:"machineconfiguration.openshift.io/v1", ResourceVersion:"640936", FieldPath:""}): type: 'Normal' reason: 'RenderedConfigGenerated' rendered-master-11faf11ff0214a83a2c68a3be8ced3ad successfully generated
+I0123 16:08:34.642510       1 render_controller.go:526] Pool master: now targeting: rendered-master-11faf11ff0214a83a2c68a3be8ced3ad
+
+# worker 角色的配置
+I0123 16:08:34.679534       1 render_controller.go:501] Generated machineconfig rendered-worker-9e12d112ab361b132221c3f66d87bddc from 7 configs: [{MachineConfig  00-worker  machineconfiguration.openshift.io/v1  } {MachineConfig  01-worker-container-runtime  machineconfiguration.openshift.io/v1  } {MachineConfig  01-worker-kubelet  machineconfiguration.openshift.io/v1  } {MachineConfig  05-worker-kernelarg-selinuxoff  machineconfiguration.openshift.io/v1  } {MachineConfig  99-worker-generated-registries  machineconfiguration.openshift.io/v1  } {MachineConfig  99-worker-ssh  machineconfiguration.openshift.io/v1  } {MachineConfig  workers-chrony-configuration  machineconfiguration.openshift.io/v1  }]
+I0123 16:08:34.679795       1 event.go:282] Event(v1.ObjectReference{Kind:"MachineConfigPool", Namespace:"", Name:"worker", UID:"ef020158-f58d-48ab-9ea7-25b8b6a20a49", APIVersion:"machineconfiguration.openshift.io/v1", ResourceVersion:"640892", FieldPath:""}): type: 'Normal' reason: 'RenderedConfigGenerated' rendered-worker-9e12d112ab361b132221c3f66d87bddc successfully generated
+I0123 16:08:34.712104       1 render_controller.go:526] Pool worker: now targeting: rendered-worker-9e12d112ab361b132221c3f66d87bddc
+```
+
+然后发现master池由一个节点待升级，则需要开始升级
+```bash
+$ oc get mcp
+NAME     CONFIG                                             UPDATED   UPDATING   DEGRADED   MACHINECOUNT   READYMACHINECOUNT   UPDATEDMACHINECOUNT   DEGRADEDMACHINECOUNT   AGE
+master   rendered-master-11faf11ff0214a83a2c68a3be8ced3ad   True      False      False      1              1                   1                     0                      2d12h
+worker   rendered-worker-9e12d112ab361b132221c3f66d87bddc   True      False      False      0              0                   0                     0                      2d12h
+```
+
+升级过程日志
+```log
+I0123 16:08:39.643153       1 node_controller.go:419] Pool master: 1 candidate nodes for update, capacity: 1
+I0123 16:08:39.643187       1 node_controller.go:419] Pool master: filtered to 1 candidate nodes for update, capacity: 1
+I0123 16:08:39.643193       1 node_controller.go:419] Pool master: Setting node master1.kcp5-arm.iefcu.cn target to rendered-master-11faf11ff0214a83a2c68a3be8ced3ad
+I0123 16:08:39.659294       1 event.go:282] Event(v1.ObjectReference{Kind:"MachineConfigPool", Namespace:"", Name:"master", UID:"b36da062-9d0f-4024-8261-e8bc4c200712", APIVersion:"machineconfiguration.openshift.io/v1", ResourceVersion:"645322", FieldPath:""}): type: 'Normal' reason: 'SetDesiredConfig' Targeted node master1.kcp5-arm.iefcu.cn to config rendered-master-11faf11ff0214a83a2c68a3be8ced3ad
+I0123 16:08:39.672455       1 node_controller.go:424] Pool master: node master1.kcp5-arm.iefcu.cn: changed annotation machineconfiguration.openshift.io/desiredConfig = rendered-master-11faf11ff0214a83a2c68a3be8ced3ad
+I0123 16:08:39.672890       1 event.go:282] Event(v1.ObjectReference{Kind:"MachineConfigPool", Namespace:"", Name:"master", UID:"b36da062-9d0f-4024-8261-e8bc4c200712", APIVersion:"machineconfiguration.openshift.io/v1", ResourceVersion:"645340", FieldPath:""}): type: 'Normal' reason: 'AnnotationChange' Node master1.kcp5-arm.iefcu.cn now has machineconfiguration.openshift.io/desiredConfig=rendered-master-11faf11ff0214a83a2c68a3be8ced3ad
+```
+
+每个节点上报升级配置完成，最后配置更新完成
+```log
+I0123 16:08:40.684210       1 node_controller.go:424] Pool master: node master1.kcp5-arm.iefcu.cn: changed annotation machineconfiguration.openshift.io/state = Working
+I0123 16:08:40.684414       1 event.go:282] Event(v1.ObjectReference{Kind:"MachineConfigPool", Namespace:"", Name:"master", UID:"b36da062-9d0f-4024-8261-e8bc4c200712", APIVersion:"machineconfiguration.openshift.io/v1", ResourceVersion:"645340", FieldPath:""}): type: 'Normal' reason: 'AnnotationChange' Node master1.kcp5-arm.iefcu.cn now has machineconfiguration.openshift.io/state=Working
+
+
+I0123 16:08:48.754648       1 node_controller.go:424] Pool master: node master1.kcp5-arm.iefcu.cn: Completed update to rendered-master-11faf11ff0214a83a2c68a3be8ced3ad
+I0123 16:08:49.686055       1 status.go:90] Pool master: All nodes are updated with rendered-master-11faf11ff0214a83a2c68a3be8ced3ad
+```
+
+#### mc-server逻辑分析
+
+非常简单，就是给新节点提供点火配置下载功能
+例如，这个pod的启动参数就是如下:
+```log
+    Command:
+      /usr/bin/machine-config-server
+    Args:
+      start
+      --apiserver-url=https://api-int.kcp5-arm.iefcu.cn:6443
+```
+
+#### 创建新的machine config pool
+
+参考 [4.4.3. 为基础架构机器创建机器配置池](https://access.redhat.com/documentation/zh-cn/openshift_container_platform/4.9/html/post-installation_configuration/creating-infra-machines_post-install-cluster-tasks)
+
+如果需要基础架构机器具有专用配置，则必须创建一个 infra 池。
+
+1.向您要分配为带有特定标签的 infra 节点的节点添加标签：
+```yaml
+$ oc label node <node_name> <label>
+
+$ oc label node ci-ln-n8mqwr2-f76d1-xscn2-worker-c-6fmtx node-role.kubernetes.io/infra=
+```
+
+创建mc-pool
+```yaml
+apiVersion: machineconfiguration.openshift.io/v1
+kind: MachineConfigPool
+metadata:
+  name: infra
+spec:
+  machineConfigSelector:
+    matchExpressions:
+      - {key: machineconfiguration.openshift.io/role, operator: In, values: [worker,infra]} 
+  nodeSelector:
+    matchLabels:
+      node-role.kubernetes.io/infra: "" 
+``` 
+
+为这个mc-pool添加mc配置
+```yaml
+apiVersion: machineconfiguration.openshift.io/v1
+kind: MachineConfig
+metadata:
+  name: 51-infra
+  labels:
+    machineconfiguration.openshift.io/role: infra 
+spec:
+  config:
+    ignition:
+      version: 3.2.0
+    storage:
+      files:
+      - path: /etc/infratest
+        mode: 0644
+        contents:
+          source: data:,infra
 ```
 
 ## 参考文档
