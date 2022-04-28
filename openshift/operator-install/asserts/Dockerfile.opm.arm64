@@ -1,0 +1,10 @@
+# 使用podman镜像，添加oc, opm, grpc等, 构建opm裁剪镜像环境
+
+# 构建: podman build -f Dockerfile.opm -t hub.iefcu.cn/xiaoyun/podman-opm:arm64 .
+# 使用: docker run -it --privileged -v $PWD:/data -w /data hub.iefcu.cn/xiaoyun/podman-opm:arm64
+
+from hub.iefcu.cn/public/podman
+
+RUN curl -sL -o - https://mirror.openshift.com/pub/openshift-v4/arm64/clients/ocp/4.9.15/opm-linux-4.9.15.tar.gz | tar -C /usr/bin -xzf - \
+	&& curl -sL -o - https://github.com/fullstorydev/grpcurl/releases/download/v1.8.6/grpcurl_1.8.6_linux_arm64.tar.gz | tar -C /usr/bin -xzf - \
+	&& curl -sL -o - https://mirror.openshift.com/pub/openshift-v4/arm64/clients/ocp/4.9.15/openshift-client-linux-4.9.15.tar.gz | tar -C /usr/bin -xzf -

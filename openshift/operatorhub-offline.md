@@ -3,6 +3,29 @@
 目前就是同步redhat构建的operatorhub，直接拿过来离线实现，
 以及构建一些arm64的镜像来使用。
 
+## catalog镜像原理分析
+
+#### 查看catalog镜像里的operator
+
+```bash
+podman run -p50051:50051 -it hub.iefcu.cn/public/redhat-operator-index:v4.9
+grpcurl -plaintext localhost:50051 api.Registry/ListPackages
+```
+
+#### catalog镜像分析
+
+程序入口(目前是sqlite数据库文件)
+```bash
+opm registry serve --database /database/index.db
+```
+
+提取出数据库文件，自己验证
+```bash
+oc image extract --confirm \
+  --path /database/index.db:/tmp \
+  hub.iefcu.cn/public/redhat-operator-index:v4.9
+```
+
 ## 同步catalogSource镜像
 
 * registry.redhat.io/redhat/redhat-operator-index:v4.9
@@ -60,7 +83,10 @@ image-syncer --proc=6 --auth=./image-sync.json --images=./image-sync-list.json \
 
 安装podman，oc（ocp节点上都有）
 
-参考https://access.redhat.com/documentation/zh-cn/openshift_container_platform/4.8/html/operators/olm-pruning-index-image_olm-restricted-networks
+我通过一个[dockerfile](./operator-install/asserts/Dockerfile.opm)，构建好了arm64镜像: hub.iefcu.cn/xiaoyun/podman-opm
+使用方法: `docker run -it --privileged -v $PWD:/data -w /data hub.iefcu.cn/xiaoyun/podman-opm`
+
+参考: [openshift 4.8 - 修剪索引镜像](https://access.redhat.com/documentation/zh-cn/openshift_container_platform/4.8/html/operators/olm-pruning-index-image_olm-restricted-networks)
 
 获取catalog镜像的operator列表，有elasticsearch-operator，metallb-operator 等等
 ```bash
@@ -124,6 +150,32 @@ COPY ./elasticsearch-operator.v5.3.0.clusterserviceversion.yaml /manifests/elast
 ![Alt text](./asserts/1646011348546.png)
 
 ##### bundle镜像文件获取
+
+catalog镜像的数据库文件index.db是sqlite3数据库文件，可以查看
+
+```bash
+# ubuntu 安装sqlite3
+apt install sqlite3
+```
+
+查看相关bundle信息
+```bash
+oc image extract --confirm \
+  --path /database/index.db:/tmp \
+  hub.iefcu.cn/public/redhat-operator-index:v4.9
+
+sqlite3 ./index.db 'select * from main.related_image;' | grep pipelines | grep bundle
+
+可以得到不同版本的pipelines的bundle镜像地址
+registry.redhat.io/openshift-pipelines/pipelines-operator-bundle@sha256:4a8a4f4dc20909ad47a0e357f22a8d50763afd515c1c2c607a3df90f1dac0d34|redhat-openshift-pipelines.v1.4.0
+registry.redhat.io/openshift-pipelines/pipelines-operator-bundle@sha256:3449a2d9c146801c9a3c1444e9764f74d4abcc5392d5c1e58d925a122a0e59e6|redhat-openshift-pipelines.v1.5.2
+registry.redhat.io/openshift-pipelines/pipelines-operator-bundle@sha256:b5c6c1a3f937f507d832cde83c1581535f9fa3abbbaf833ffcc9aec0e061a9c2|openshift-pipelines-operator-rh.v1.6.1
+=> registry.redhat.io/openshift-pipelines/pipelines-operator-bundle@sha256:33579b992c33350232af2f2c4d370dda769a7f1e1a498ad1c697199f13f5e9a4|openshift-pipelines-operator-rh.v1.6.2
+
+> .tables
+> select * from related_image;
+> select * from operatorbundle;
+```
 
 目前我获取到catalogsource镜像中的bundle镜像非常粗暴：
 
