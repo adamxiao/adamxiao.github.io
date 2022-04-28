@@ -253,6 +253,63 @@ oc adm catalog mirror \
   --insecure
 ```
 
+#### 直接同步到私有仓库
+
+1.先将manifest文件拉取下来
+
+```bash
+oc adm catalog mirror \
+hub.iefcu.cn/zhouming/redhat-operator-index:v0426 \
+hub.iefcu.cn/zhouming/es \   #镜像目标仓库
+-a /run/user/0/containers/auth.json \  #podman登录镜像仓库后自动生成
+--insecure \
+--manifests-only=true
+```
+
+执行此命令后，目录结构如下：
+
+```bash
+[系统未激活][root@localhost mirror4]# tree 
+.
+└── manifests-redhat-operator-index-1651057961
+    ├── catalogSource.yaml
+    ├── imageContentSourcePolicy.yaml
+    ├── mapping.txt
+#mapping.txt即源镜像仓库到目标镜像仓库之间的映射，按照官方文档，使用oc image mirror -f mapping.txt 同步镜像也会报manifest unknow错误
+```
+
+所以我使用了skopeo工具。
+
+```bash
+yum install -y skopeo
+# skopeo  login  hub.iefcu.cn
+# skopeo  login  xxxxx
+cat mapping.txt | while read line; do
+  origin=$(echo $line | cut -d= -f1)
+  target=$(echo $line | cut -d= -f2)
+  if [[ "$origin" =~ "sha256" ]]; then
+    tag=$(echo $origin | cut -d: -f2 | cut -c -8)
+    #skopeo copy --all docker://$origin docker://$target:$tag
+    skopeo copy --all docker://$origin docker://$target
+  else
+    skopeo copy --all docker://$origin docker://$target
+  fi
+done
+```
+
+如果因网络原因出现同步失败，需要再次执行。
+
+同步ok后：
+
+```bash
+oc apply -f catalogSource.yaml
+oc apply -f imageContentSourcePolicy.yaml
+```
+
+至此，可以在web console的operatorhub页面看到刚才添加的catalog source。
+
+直接在web上安装operator。
+
 
 ### 通过订阅安装operator
 
