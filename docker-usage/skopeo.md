@@ -12,7 +12,21 @@ skopeo作用:
 
 ## 安装skopeo
 
-TODO:
+centos 7安装
+```bash
+yum install -y skopeo
+```
+
+### 直接使用镜像
+
+```bash
+# 原始镜像: quay.io/skopeo/stable:latest
+alias skopeo='docker run --privileged -v $PWD:/data -w /data --rm hub.iefcu.cn/public/skopeo'
+# XXX: 要加--privileged才行，不然段错误，为啥?
+
+# 简单使用测试
+skopeo copy --help
+```
 
 ## 使用入门
 

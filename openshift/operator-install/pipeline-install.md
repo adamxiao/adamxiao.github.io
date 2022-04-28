@@ -1,5 +1,94 @@
 # openshift pipeline安装使用
 
+
+## 安装jenkins template
+
+参考: [OpenShift 4 Hands-on Lab (7) - 用Jenkins Pipeline实现在不同运行环境中升迁部署应用](https://blog.csdn.net/weixin_43902588/article/details/104285933)
+
+openshift x86 4.8.9有jenkins模板, 而且有jenkins镜像
+4.8.9-x86_64-jenkins
+
+openshift arm64 4.9.0-rc6也有jenkins镜像
+4.9.0-rc.6-arm64-jenkins
+
+由sample operaotr处理的!
+`oc -n openshift-cluster-samples-operator get pods`
+
+#### 获取x86上的is, template过来
+
+```bash
+oc -n openshift get is jenkins -o yaml > is-jenkins.yaml
+# 同步下来后主要修改一下docker镜像地址
+
+# TODO: 还有几个is, 手动做的话, 好难弄
+jenkins-agent-base
+jenkins-agent-maven
+jenkins-agent-nodejs
+
+oc -n openshift get Template jenkins-ephemeral -o yaml > jenkins-1.yaml
+
+# TODO: 还有几个模板, 暂时不手动弄
+oc get Template -A | grep jenkins
+openshift   jenkins-ephemeral                               Jenkins service, without persistent storage....
+openshift   jenkins-ephemeral-monitored                     Jenkins service, without persistent storage. ...
+openshift   jenkins-persistent                              Jenkins service, with persistent storage....
+openshift   jenkins-persistent-monitored                    Jenkins service, with persistent storage. ...
+```
+
+然后改一改里面的内容，到arm64上去运行验证一下啊
+
+#### 手动安装ubi8/php74 构建镜像
+
+```bash
+oc -n openshift get is php -o yaml > php.yaml
+```
+重点修改里面的镜像
+
+注意同步这个最新的镜像, 这样才有多架构镜像，否则就是只有x86_64版本的!
+registry.redhat.io/ubi8/php-74:latest
+
+然后同步页面创建s2i构建, 看能够使用这个构建器么!
+`http://192.168.120.13/xiaoyun/cotd.git`
+
+也可以通过命令行创建
+```bash
+oc new-app --name=myapp openshift/php:latest~http://192.168.120.13/xiaoyun/cotd.git \
+  --as-deployment-config -n ${USER_ID}-pipeline-dev
+```
+
+报错？原来我的多个环境，都没有配置启用内部registry
+```
+[core@master1 jenkins-test]$ oc status
+In project adam-pipeline-dev on server https://api.kcp1-arm.iefcu.cn:6443
+
+svc/myapp - 172.30.51.128 ports 8080, 8443
+  dc/myapp deploys istag/myapp:latest <-
+    bc/myapp source builds http://192.168.120.13/xiaoyun/cotd.git on openshift/php:latest
+      build #1 new for about a minute (can't push to image)
+    deployment #1 waiting on image or update
+
+Errors:
+  * bc/myapp is pushing to istag/myapp:latest, but the administrator has not configured the integrated container image registry.
+
+1 error, 2 infos identified, use 'oc status --suggest' to see details.
+```
+
+先简单快速测试开启内部registry, 构建就可以开始了
+```bash
+oc patch configs.imageregistry.operator.openshift.io cluster --type merge --patch '{"spec":{"storage":{"emptyDir":{}}}}'
+oc patch configs.imageregistry.operator.openshift.io cluster --type merge --patch '{"spec":{"managementState":"Managed"}}'
+```
+
+尼玛构建出错，发现php镜像是x86_64架构的，得找一个合适的才行了!
+
+执行命令，禁止自动deployment。
+```
+oc get dc myapp -o yaml -n ${USER_ID}-pipeline-dev | sed 's/automatic: true/automatic: false/g' | oc replace -f -
+```
+
+通过jenkins构建成功
+![](../../imgs/2022-04-28-17-39-18.png)
+
 ## 首先裁剪镜像，同步镜像
 
 ```bash
