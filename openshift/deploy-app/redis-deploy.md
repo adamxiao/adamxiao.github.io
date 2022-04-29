@@ -34,9 +34,54 @@
 
 ## 通过源码编译生成redis-operator镜像
 
+https://github.com/OT-CONTAINER-KIT/redis-operator
+* (detached from v0.9.0)
+
 修改Dockerfile, 使用定制
+```diff
+diff --git a/Dockerfile b/Dockerfile
+index 1c38d14..3bd86d7 100644
+--- a/Dockerfile
++++ b/Dockerfile
+@@ -1,5 +1,5 @@
+ # Build the manager binary
+-FROM golang:1.15 as builder
++FROM hub.iefcu.cn/public/golang:1.16 as builder
+
+ WORKDIR /workspace
+ # Copy the Go Modules manifests
+@@ -16,11 +16,11 @@ COPY controllers/ controllers/
+ COPY k8sutils/ k8sutils/
+
+ # Build
+-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o manager main.go
++RUN CGO_ENABLED=0 GO111MODULE=on go build -a -o manager main.go
+
+ # Use distroless as minimal base image to package the manager binary
+ # Refer to https://github.com/GoogleContainerTools/distroless for more details
+-FROM gcr.io/distroless/static:nonroot
++FROM hub.iefcu.cn/public/gcr.io-distroless-static:nonroot
+ WORKDIR /
+ COPY --from=builder /workspace/manager .
+ USER 65532:65532
 ```
+
+构建镜像
 ```
+docker buildx build \
+  --build-arg http_proxy=http://proxy.iefcu.cn:20172 \
+  --build-arg https_proxy=http://proxy.iefcu.cn:20172 \
+  --platform=linux/arm64,linux/amd64 \
+  -t hub.iefcu.cn/public/redis-operator:20220209 . --push
+```
+
+还有一个redis-export
+```
+podman build -f ./docker/Dockerfile.arm64 -t hub.iefcu.cn/public/redis-exporter:1.0-arm64 .
+origin  https://github.com/oliver006/redis_exporter.git (push)
+* (detached from 18080da)
+```
+
 
 ## 使用community operatorhub安装redis operator
 

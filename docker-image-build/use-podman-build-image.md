@@ -1,5 +1,13 @@
 # 使用podman镜像编译构建镜像
 
+## docker运行使用podman
+
+```bash
+docker run -it --name podman --privileged -v $PWD:/data -w /data hub.iefcu.cn/xiaoyun/podman-opm:amd64
+
+docker exec -it podman bash
+```
+
 ## 1. 首先构建一个podman daemon镜像, 就是sleep
 
 创建Dockerfile内容如下

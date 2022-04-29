@@ -132,6 +132,56 @@ hub.iefcu.cn/kcp/elasticsearch-operator@sha256:b059084bee16e3a722ca5c0030a6db513
 
 简单改一下dockerfile，和编译构建脚本即可
 
+```diff
+diff --git a/Dockerfile b/Dockerfile
+index 09d78bd..8f33d68 100644
+--- a/Dockerfile
++++ b/Dockerfile
+@@ -1,6 +1,7 @@
+ ### This is a generated file from Dockerfile.in ###
+ #@follow_tag(registry-proxy.engineering.redhat.com/rh-osbs/openshift-golang-builder:rhel_8_golang_1.16)
+-FROM registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.16-openshift-4.8 AS builder
++#FROM registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.16-openshift-4.8 AS builder
++FROM hub.iefcu.cn/public/golang:1.16 AS builder
+
+ ENV BUILD_VERSION=1.0
+ ENV OS_GIT_MAJOR=1
+@@ -17,7 +18,8 @@ COPY ${REMOTE_SOURCE} .
+ RUN make
+
+ #@follow_tag(registry.redhat.io/ubi8:latest)
+-FROM registry.ci.openshift.org/ocp/4.8:base
++#FROM registry.ci.openshift.org/ocp/4.8:base
++FROM hub.iefcu.cn/library/centos:7
+ COPY --from=builder /go/src/github.com/openshift/elasticsearch-proxy/bin/elasticsearch-proxy /usr/bin/
+ ENTRYPOINT ["/usr/bin/elasticsearch-proxy"]
+```
+
+```bash
+# TODO: 自动化集成编译，参数生成
+CI_CONTAINER_VERSION=v5.3.4
+CI_X_VERSION=
+CI_Y_VERSION=
+CI_Z_VERSION=
+CI_ELASTICSEARCH_PROXY_UPSTREAM_COMMIT=b4a4ddf
+CI_ELASTICSEARCH_PROXY_UPSTREAM_URL=https://github.com/openshift/elasticsearch-proxy
+REMOTE_SOURCE=.
+
+docker buildx build \
+    -f Dockerfile \
+    --build-arg http_proxy=http://proxy.iefcu.cn:20172 --build-arg https_proxy=http://proxy.iefcu.cn:20172 \
+    --build-arg no_proxy=yumrepo.unikylin.com.cn,192.0.0.0/8 \
+    --build-arg CI_CONTAINER_VERSION=${CI_CONTAINER_VERSION} \
+    --build-arg CI_X_VERSION=${CI_X_VERSION} \
+    --build-arg CI_Y_VERSION=${CI_Y_VERSION} \
+    --build-arg CI_Z_VERSION=${CI_Z_VERSION} \
+    --build-arg CI_ELASTICSEARCH_PROXY_UPSTREAM_COMMIT=${CI_ELASTICSEARCH_PROXY_UPSTREAM_COMMIT} \
+    --build-arg CI_ELASTICSEARCH_PROXY_UPSTREAM_URL=${CI_ELASTICSEARCH_PROXY_UPSTREAM_URL} \
+    --build-arg REMOTE_SOURCE=${REMOTE_SOURCE} \
+    --platform=linux/arm64,linux/amd64 \
+    -t hub.iefcu.cn/kcp/elasticsearch-proxy-rhel8:20220407 . --push
+```
+
 编译出镜像:
 hub.iefcu.cn/kcp/elasticsearch-proxy-rhel8:20220407@sha256:9892f7b7ad86d053f40619ecc8ab0c8fffc22877365f614c5362e8093b076b31
 
@@ -146,6 +196,37 @@ hub.iefcu.cn/kcp/elasticsearch-proxy-rhel8:20220407@sha256:9892f7b7ad86d053f4061
   源码
 
 修改Dockerfile.ocp
+```diff
+diff --git a/Dockerfile.ocp b/Dockerfile.ocp
+index ac777e7..6a0e49b 100644
+--- a/Dockerfile.ocp
++++ b/Dockerfile.ocp
+@@ -1,4 +1,5 @@
+-FROM registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.15-openshift-4.7 AS builder
++#FROM registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.15-openshift-4.7 AS builder
++FROM hub.iefcu.cn/public/golang:1.16 AS builder
+ WORKDIR /go/src/github.com/brancz/kube-rbac-proxy
+ COPY . .
+ ENV GO111MODULE=on
+@@ -7,7 +8,7 @@ ENV GOFLAGS="-mod=vendor"
+ RUN make build && \
+     cp _output/kube-rbac-proxy-$(go env GOOS)-$(go env GOARCH) _output/kube-rbac-proxy
+
+-FROM registry.ci.openshift.org/ocp/4.7:base
++FROM hub.iefcu.cn/library/centos:7
+ LABEL io.k8s.display-name="kube-rbac-proxy" \
+       io.k8s.description="This is a proxy, that can perform Kubernetes RBAC authorization." \
+       io.openshift.tags="openshift,kubernetes" \
+```
+
+```bash
+docker buildx build \
+        --build-arg http_proxy=http://proxy.iefcu.cn:20172 --build-arg https_proxy=http://proxy.iefcu.cn:20172 \
+        --build-arg no_proxy=yumrepo.unikylin.com.cn,192.0.0.0/8 \
+        --platform=linux/arm64,linux/amd64 \
+        -f Dockerfile.ocp \
+        -t hub.iefcu.cn/kcp/ose-kube-rbac-proxy:20220224 . --push
+```
 
 编译出镜像:
 hub.iefcu.cn/kcp/ose-kube-rbac-proxy:20220224@sha256:40dd71d8c4e066eca94967a7025be026ace8d1af7ac0945fd52fd32785fe2cd7
@@ -164,6 +245,35 @@ hub.iefcu.cn/kcp/ose-kube-rbac-proxy:20220224@sha256:40dd71d8c4e066eca94967a7025
 
 编译出镜像:
 hub.iefcu.cn/kcp/ose-oauth-proxy:20220407@sha256:4a5b51edd04cb02348b9ed3a04a1add5aba96b1086a81a8ad88e4faa2e846fd6
+
+```diff
+diff --git a/Dockerfile b/Dockerfile
+index ceb4424..cf85d56 100644
+--- a/Dockerfile
++++ b/Dockerfile
+@@ -1,8 +1,10 @@
+-FROM registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.15-openshift-4.7 AS builder
++#FROM registry.ci.openshift.org/ocp/builder:rhel-8-golang-1.15-openshift-4.7 AS builder
++FROM hub.iefcu.cn/public/golang:1.16 AS builder
+ WORKDIR  /go/src/github.com/openshift/oauth-proxy
+ COPY . .
+ RUN go build .
+
+-FROM registry.ci.openshift.org/ocp/builder:rhel-8-base-openshift-4.7
++#FROM registry.ci.openshift.org/ocp/builder:rhel-8-base-openshift-4.7
++FROM hub.iefcu.cn/library/centos:7
+ COPY --from=builder /go/src/github.com/openshift/oauth-proxy/oauth-proxy /usr/bin/oauth-proxy
+ ENTRYPOINT ["/usr/bin/oauth-proxy"]
+```
+
+```bash
+docker buildx build \
+        --build-arg http_proxy=http://proxy.iefcu.cn:20172 --build-arg https_proxy=http://proxy.iefcu.cn:20172 \
+        --build-arg no_proxy=yumrepo.unikylin.com.cn,192.0.0.0/8 \
+        --platform=linux/arm64,linux/amd64 \
+        -f Dockerfile \
+        -t hub.iefcu.cn/kcp/ose-oauth-proxy:20220407 . --push
+```
 
 #### 5. elasticsearch6-rhel8
 

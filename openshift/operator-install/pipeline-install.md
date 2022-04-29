@@ -14,6 +14,12 @@ openshift arm64 4.9.0-rc6也有jenkins镜像
 由sample operaotr处理的!
 `oc -n openshift-cluster-samples-operator get pods`
 
+(说明：本文已经在OpenShift 4.9环境中验证)
+
+在DevOps过程中CI/CD是最主要的工具，通过它的Pipeline可以驱动整个开发、测试、交付和部署过程。在OpenShift 4.x中自带两个CI/CD引擎：Jenkins和Tekton。其中Jenkins是目前最为常用的CI/CD工具，而Tekton是是直接运行在Kubernetes上的原生CI/CD。我们在本章节介绍如何部署运行一套Jenkins的环境，进而利用Pipeline将应用在开发、测试和生产环境中进行升迁部署。
+
+![](../../imgs/jenkins-pipelines-arch.png)
+
 #### 获取x86上的is, template过来
 
 ```bash
@@ -88,6 +94,160 @@ oc get dc myapp -o yaml -n ${USER_ID}-pipeline-dev | sed 's/automatic: true/auto
 
 通过jenkins构建成功
 ![](../../imgs/2022-04-28-17-39-18.png)
+
+1. 执行以下命令创建相关项目。其中一个项目用来运行Jenkins的Pipeline，其它项目用来模拟3个阶段的应用环境。
+```bash
+export USER_ID=adam
+oc new-project ${USER_ID}-pipeline-jenkins
+oc new-project ${USER_ID}-pipeline-dev
+oc new-project ${USER_ID}-pipeline-test
+oc new-project ${USER_ID}-pipeline-prod
+```
+
+2. 执行以下命令，在USER-ID-cicd项目中根据OpenShift预制的模板创建Jenkins运行环境。
+```bash
+oc new-app jenkins-ephemeral -n ${USER_ID}-pipeline-jenkins
+```
+(注意: 这里我手动创建了jenkins的template，这样才能部署jenkins应用)
+
+3. 执行执行命令，查看cicd 的pod创建进度是否问running。
+```bash
+$ oc get pod -w -n ${USER_ID}-pipeline-jenkins 
+NAME               READY   STATUS      RESTARTS   AGE
+jenkins-1-deploy   0/1     Completed   0          8h
+jenkins-1-tpwtq    1/1     Running     0          8h
+```
+
+4. 查看Jenkins的访问route，然后用浏览器访问它。
+```
+$ oc get route jenkins -o template --template '{{.spec.host}}' -n ${USER_ID}-pipeline-jenkins
+```
+
+5. 执行以下命令，允许USER-ID-pipeline-jenkines项目的Jenkins系统账号可以访问其它项目，同时允许USER-ID-pipeline-test和USER-ID-pipeline-prod系统账号从USER-ID-pipeline-dev项目中拉取镜像。
+```bash
+$ oc policy add-role-to-user edit system:serviceaccount:${USER_ID}-pipeline-jenkins:jenkins -n ${USER_ID}-pipeline-dev
+$ oc policy add-role-to-user edit system:serviceaccount:${USER_ID}-pipeline-jenkins:jenkins -n ${USER_ID}-pipeline-test
+$ oc policy add-role-to-user edit system:serviceaccount:${USER_ID}-pipeline-jenkins:jenkins -n ${USER_ID}-pipeline-prod
+$ oc policy add-role-to-group system:image-puller system:serviceaccounts:${USER_ID}-pipeline-test -n ${USER_ID}-pipeline-dev
+$ oc policy add-role-to-group system:image-puller system:serviceaccounts:${USER_ID}-pipeline-prod -n ${USER_ID}-pipeline-dev
+```
+
+6. 将https://github.com/liuxiaoyu-git/cotd.git复制一份到自己的github账号。
+例如内网环境: http://192.168.120.13/xiaoyun/cotd.git
+
+7. 执行以下命令，在USER-ID-pipeline-dev项目中创建myapp测试应用，然后可通过route验证应用可访问。
+```bash
+$ oc new-app --name=myapp openshift/php:latest~http://192.168.120.13/xiaoyun/cotd.git --as-deployment-config -n ${USER_ID}-pipeline-dev
+```
+(注意：我手动创建php构建器)
+
+8. 查看pod状态，当运行myapp的pod为Running状态后在创建route，最后用浏览器访问route。
+```bash
+$ oc get pod -w -n ${USER_ID}-pipeline-dev
+NAME             READY   STATUS      RESTARTS   AGE
+myapp-1-build    0/1     Completed   0          2m45s
+myapp-1-deploy   0/1     Completed   0          36s
+myapp-1-fgh9v    1/1     Running     0          27s
+$ oc expose service myapp -n ${USER_ID}-pipeline-dev
+$ oc get route myapp -o template --template '{{.spec.host}}' -n ${USER_ID}-pipeline-dev
+```
+
+9. 页面会随机显示一个动物照片
+![](../../imgs/20200216174102574.png)
+
+10. 执行命令，禁止自动deployment。
+```bash
+$ oc get dc myapp -o yaml -n ${USER_ID}-pipeline-dev | sed 's/automatic: true/automatic: false/g' | oc replace -f -
+deploymentconfig.apps.openshift.io/myapp replaced
+```
+
+11. 下载https://raw.githubusercontent.com/liuxiaoyu-git/OpenShift-HOL/master/jenkins-pipeline-demo1.yaml文件。
+```bash
+$ curl -LO https://raw.githubusercontent.com/liuxiaoyu-git/OpenShift-HOL/master/jenkins-pipeline-demo1.yaml
+```
+
+12. 将jenkins-pipeline-demo1.yaml文件中的“USERID变量内容改为自己的用户名。另外还可确认这个Pipeline中包括2个stage，一个用来做build操作，一个用来做deploy操作。
+
+13. 然后执行以下命令，在USER-ID-pipeline-jenkins项目中创建BuildConfig，然后启动基于Pipeline的构建。
+```bash
+$ oc create -f jenkins-pipeline-demo1.yaml -n ${USER_ID}-pipeline-jenkins
+start-build jenkins-pipeline-dembuildconfig.build.openshift.io/jenkins-pipeline-demo created
+$ oc start-build jenkins-pipeline-demo -n ${USER_ID}-pipeline-jenkins
+build.build.openshift.io/jenkins-pipeline-demo-1 started
+```
+
+14. 在OpenShift控制台上进入“开发者”视图的“构建”菜单，然后切换到“user1-pipeline-jenkins”项目，进入名为“jenkins-pipeline-demo”的BuildConfig，再进入到“构建”标签，最后再进入“jenkins-pipeline-demo-1”的构建。此时会显示Pipeline的构建进度。
+
+![](../../imgs/2022-04-28-17-39-18.png)
+
+15. 点击上图的“View logs”链接会进入Jenkins（首次需要用OpenShift的用户登录，然后选择赋权访问），查看Pipeline的运行日志。
+
+![](../../imgs/20200216191848371.png)
+
+16. 在构建完后在浏览器中刷新应用页面，点击右上方的灰色图标
+
+17. 用浏览器访问cotd代码，修改打开item.php页面的显示文字信息, 然后提交代码
+
+18. 然后再次执行（12）中的start-build命令，在Jenkins Pipeline运行成功后可刷新并查看页面是否发生变化。
+
+19. 查看USER-ID-pipeline-test和USER-ID-pipeline-prod项目，确认没有任何对象。这是因为上面操作我们是通过手动部署的。
+```bash
+$ oc get all -n ${USER_ID}-pipeline-test
+No resources found in pipeline-test namespace.
+$ oc get all -n ${USER_ID}-pipeline-prod
+No resources found in pipeline-prod namespace.
+```
+
+20. 要将myapp部署运行到USER-ID-pipeline-test和USER-ID-pipeline-prod项目，还要执行以下命令，将名为“myapp:latest”的ImageStream新打两个标签“myapp:testready”和“myapp:prodready”。
+
+```bash
+$ oc tag myapp:latest myapp:testready myapp:prodready -n ${USER_ID}-pipeline-dev
+Tag myapp:testready set to myapp@sha256:566ee55311f0cd0a80291c2345e7a1b72ca3eb84455a032433e2e3d11f39efbb.
+Tag myapp:prodready set to myapp@sha256:566ee55311f0cd0a80291c2345e7a1b72ca3eb84455a032433e2e3d11f39efbb.
+$ oc get is -n ${USER_ID}-pipeline-dev
+NAME    IMAGE REPOSITORY                                                                             TAGS                         UPDATED
+myapp   default-route-openshift-image-registry.apps.cluster.example.opentlc.com/pipeline-dev/myapp   prodready,testready,latest   9 seconds ago
+```
+
+21. 执行以下命令，使用（19）的两个新ImageStreamTag在在USER-ID-pipeline-test和USER-ID-pipeline-prod项目中创建应用。
+```bash
+$ oc new-app ${USER_ID}-pipeline-dev/myapp:testready --name=myapp --as-deployment-config -n ${USER_ID}-pipeline-test
+$ oc new-app ${USER_ID}-pipeline-dev/myapp:prodready --name=myapp --as-deployment-config -n ${USER_ID}-pipeline-prod
+$ oc expose service myapp -n ${USER_ID}-pipeline-test
+$ oc expose service myapp -n ${USER_ID}-pipeline-prod
+$ oc get dc myapp -o yaml -n ${USER_ID}-pipeline-test | sed 's/automatic: true/automatic: false/g' | oc replace -f -
+$ oc get dc myapp -o yaml -n ${USER_ID}-pipeline-prod | sed 's/automatic: true/automatic: false/g' | oc replace -f -
+```
+
+22. 下载https://raw.githubusercontent.com/liuxiaoyu-git/OpenShift-HOL/master/jenkins-pipeline-demo2.yaml文件。此文件在jenkins-pipeline-demo1.yaml的基础让增加了将myapp部署到test和prod环境的步骤。
+
+```bash
+$ curl -LO https://raw.githubusercontent.com/liuxiaoyu-git/OpenShift-HOL/master/jenkins-pipeline-demo2.yaml
+```
+
+23. 同样将jenkins-pipeline-demo2.yaml文件中的“USERID”变量内容改为自己的用户编号。
+
+24. 然后执行以下命令，在USER-ID-pipeline-jenkins项目中替换已有的BuildConfig，然后启动Pipeline构建。
+```bash
+$ oc replace -f jenkins-pipeline-demo2.yaml -n ${USER_ID}-pipeline-jenkins
+$ oc start-build jenkins-pipeline-demo -n ${USER_ID}-pipeline-jenkins
+```
+
+25. 在OpenShift控制台上查看名为“jenkins-pipeline-demo-2”的构建执行情况。当出现 “Input Required”，点击该链接进入Jenkins。
+![](../../imgs/e7227026de3c4653aa58b4f5b84363c1.png)
+
+26. 在Jenkins中点击左侧的Console Output，在右侧找到下图位置，然后点击“Promote”链接，Pipeline继续得以运行直到显示“Finished: SUCCESS”。
+
+![](../../imgs/20200216224057654.png)
+
+27. 执行以下命令，访问3个环境的应用。
+```bash
+$ oc get route myapp -n ${USER_ID}-pipeline-dev -o template --template '{{.spec.host}}'
+$ oc get route myapp -n ${USER_ID}-pipeline-test -o template --template '{{.spec.host}}'
+$ oc get route myapp -n ${USER_ID}-pipeline-prod -o template --template '{{.spec.host}}'
+```
+
+28. 根据（17）的说明修改程序中的Version，然后再次执行（17）中的start-build命令运行Pipeline。在Jenkins Pipeline运行成功后可刷新并查看三个环境的应用页面是否发生变化。
 
 ## 首先裁剪镜像，同步镜像
 
