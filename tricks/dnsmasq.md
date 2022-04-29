@@ -35,3 +35,8 @@ docker run \
     --restart always \
     jpillora/dnsmasq
 ```
+
+## FAQ
+
+1. dns上游请求有问题，导致dnsmasq有问题, 连本地定义的dns都不处理!
+  暂不清楚原因，更换上游dns服务器解决

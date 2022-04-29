@@ -42,6 +42,7 @@
        * [创建自定义域名的路由](openshift/deploy-app/adam-doc-deploy.md)
        * [redis集群部署](openshift/deploy-app/redis-deploy.md)
        * [devops相关调研](openshift/devops/README.md)
+       * [openshift pipeline安装使用](openshift/operator-install/pipeline-install.md)
    * [operatorhub离线搭建使用](openshift/operatorhub-offline.md)
        * [elasticsearch安装](openshift/operator-install/elasticsearch.md)
        * [cluster logging 日志安装](openshift/operator-install/cluster-logging.md)

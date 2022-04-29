@@ -2,6 +2,17 @@
 
 将一些镜像方法记录下来
 
+java mvn项目编译方法 ![](../asserts/mvn-settings.xml)
+```bash
+docker run -it --rm \
+   --env http_proxy=http://proxy.iefcu.cn:20172 \
+   --env https_proxy=http://proxy.iefcu.cn:20127 \
+   -v /home/adam/workspaces/settings.xml:/usr/share/maven/conf/settings.xml \
+   -v $PWD:/app  -w /app \
+   hub.iefcu.cn/public/maven:3.8-jdk-8 \
+   mvn clean install -Dmaven.test.skip=true
+```
+
 [Authenticate Docker to Harbor Image Registry with a Robot Account](https://veducate.co.uk/authenticate-docker-harbor-robot/)
 
 ```bash

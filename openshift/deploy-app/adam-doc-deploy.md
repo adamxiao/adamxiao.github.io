@@ -2,7 +2,31 @@
 
 ## 镜像部署
 
-TODO:
+```bash
+docker run -d --name adam-doc --restart=always \
+	-p 4000:4000 \
+	-v ${PWD}:/srv/gitbook \
+	hub.iefcu.cn/public/gitbook \
+	bash -c 'gitbook install && \
+	gitbook serve --host 0.0.0.0'
+```
+
+创建docker-compose.adam-doc.yml文件进行部署
+```yaml
+version: '3.4'
+services:
+  adam-doc:
+    image: hub.iefcu.cn/xiaoyun/adam-doc
+    container_name: adam-doc
+    restart: always
+    ports:
+      - "4000:4000/tcp"
+    logging:
+      driver: json-file
+      options:
+        max-file: '3'
+        max-size: 10m
+```
 
 ## s2i部署
 
