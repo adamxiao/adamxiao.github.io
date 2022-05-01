@@ -179,6 +179,76 @@ spec:
       source: quay.io/xiaoyun/test
 ```
 
+#### 修改节点registries.conf配置
+
+```bash
+cat << EOF > registries.conf
+#unqualified-search-registries = ["registry.access.redhat.com", "docker.io"]
+#short-name-mode = ""
+
+[[registry]]
+  prefix = ""
+  location = "registry.kcp.local:5000"
+  insecure = true
+EOF
+
+FILE_BASE64=$(base64 -w 0 registries.conf)
+
+cat << EOF > ./50-master-container-registries.yaml
+apiVersion: machineconfiguration.openshift.io/v1
+kind: MachineConfig
+metadata:
+  labels:
+    machineconfiguration.openshift.io/role: master
+  name: 50-master-container-registries
+  annotations:
+    include.release.openshift.io/ibm-cloud-managed: "true"
+    include.release.openshift.io/self-managed-high-availability: "true"
+    include.release.openshift.io/single-node-developer: "true"
+    release.openshift.io/create-only: "true"
+spec:
+  config:
+    ignition:
+      version: 3.2.0
+    storage:
+      files:
+      - contents:
+          source: data:text/plain;charset=utf-8;base64,${FILE_BASE64}
+        filesystem: root
+        mode: 420
+        #path: /etc/containers/registries.conf
+        path: /etc/containers/registries.conf.d/kcp.conf
+EOF
+```
+
+#### 修改ssh key
+
+获取当前OpenShift已有SSH Key
+```bash
+oc get mc 99-master-ssh -o yaml > 99-master-ssh.yml
+oc get mc 99-worker-ssh -o yaml > 99-worker-ssh.yml
+```
+
+更新字段sshAuthorizedKeys
+```yaml
+。。。
+        sshAuthorizedKeys:
+        - ssh-rsa AAAAA...
+        - ssh-rsa AAAAB...
+。。。
+```
+
+应用配置
+```bash
+oc apply -f 99-master-ssh.yml
+oc apply -f 99-worker-ssh.yml
+```
+
+查看operator日志
+```bash
+oc -n openshift-machine-config-operator logs -c machine-config-daemon $(oc -n openshift-machine-config-operator get pod -l k8s-app=machine-config-daemon --field-selector spec.nodeName=${NODE} -o name) -f 
+```
+
 ## machine config 日志逻辑分析
 
 #### 下发一个配置chronyd配置文件

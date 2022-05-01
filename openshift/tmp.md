@@ -15,28 +15,7 @@ gitops相关, CI/CD, 自动识别编译构建镜像啥的
 TODO:
 * 时间同步配置验证
 * 时区配置验证, 以及容器时区
-
-* Documents整理
-* ssl证书， quay文档
-* uniface 8.1.8安装ubuntu
 * arm64盒子安装podman, libc6-dev
-* 参考 family-media-center, 写多个docker-compose.yaml配置，启动堡垒机服务 => 做成一个镜像(Dockerfile)
-https://github.com/crazygit/family-media-center
-写一个run.sh
-```bash
-docker-compose -f docker-compose.aria2.yml \
-               -f docker-compose.jellyfin.yml \
-               -f docker-compose.kodi.yml \
-               -f docker-compose.openwrt.yml \
-               -f docker-compose.samba.yml \
-               -f docker-compose.tiny_media_manager.yml \
-               -f docker-compose.watchtower.yml \
-               $@
-```
-
-openshift origin的构建编译环境？
-openshift/origin-release
-(Build environment for OpenShift Origin)
 
 
 https://www.one-tab.com/page/YfTvjlabR9OqHV1mRY4wqA?ext=de72ce03-98b7-4210-b30f-86afdf724045
@@ -44,10 +23,6 @@ https://www.one-tab.com/page/YfTvjlabR9OqHV1mRY4wqA?ext=de72ce03-98b7-4210-b30f-
 https://devopstales.github.io/home/openshift4-auth/
 [Part1b: Install Opeshift 4 with calico](https://devopstales.github.io/kubernetes/openshift4-calico/)
 
-
-2021今年买啥软路由？新年度软路由测试总结与推荐！！！
-
-https://www.youtube.com/watch?v=utWlY8_rpLg&ab_channel=jackstone
 
 ## scc深入了解
 
@@ -101,16 +76,6 @@ oc adm policy who-can use scc privileged
 
 ![](https://img2018.cnblogs.com/blog/922925/201908/922925-20190802211739347-306840075.png)
 
-#### 疑问
-
-* 初始化 Helm 并安装 Tiller 服务（需要事先配置好 kubectl）
-这个是干嘛用的? openshift需不需要这个？
-https://feisky.gitbooks.io/kubernetes/content/apps/helm.html
-https://www.cnblogs.com/wn1m/p/11291304.html
-
-目前 helm3 已经不依赖于 tiller，Release 名称可在不同 ns 间重用。
-[Helm3 不需要安装 tiller，下载到 Helm 二进制文件直接解压到 $PATH 下就可以使用了。](https://xie.infoq.cn/article/1497dec4312a1233b613939f2)
-
 ## 2022 Q1绩效考核
 
 *【日常】业绩:
@@ -142,14 +107,7 @@ https://www.cnblogs.com/wn1m/p/11291304.html
   建议部门服务上容器云平台，从更多的角度上找到容器云平台的最迫切的需求功能点。
 
 
-
-
-https://www.youtube.com/watch?v=nVzxwwkEZPo&ab_channel=TuTu%E7%94%9F%E6%B4%BB%E5%BF%97
-使用openwrt搭建lede系统，安装v2ray插件，实现软路由翻墙。
-
 旁路由 单臂路由了解
-
-发现一个节点有问题，有可能跟虚拟机的宿主机有关吧，只能ping，不能ssh，过一会好了。
 
 ![](2022-03-17-11-59-33.png)
 
@@ -163,36 +121,9 @@ https://access.redhat.com/documentation/zh-cn/openshift_container_platform/4.9/h
 etcd备份
 ![](2022-03-14-21-27-51.png)
 
-## oc通过证书请求
-oc adm certificate approve <csr_name>
-
-
-trusted ca
-https://docs.openshift.com/container-platform/4.7/cicd/builds/setting-up-trusted-ca.html
-
-目前openshift的arm64 opeatorhub中，有elasticsearch operator，
-但是却没有提供arm64的镜像，所以决定自己编译构建。
-（因为镜像上有github源码地址，所以可以自己构建）
-
 ## 获取Elasticserach镜像以及源码
 
 
 算法实验
 https://algorithm.yuanbin.me/zh-hans/faq/guidelines_for_contributing.html#
 https://github.com/billryan/algorithm-exercise
-
-markdown简单的世界
-https://wizardforcel.gitbooks.io/markdown-simple-world/content/4.html
-
-MARKDOWN语法
-  => 以及markdown分类
-https://kuang.netlify.app/markdown/markdown%E8%AF%AD%E6%B3%95.html
-
-## lftp用法，放到linux命令中去
-
-```bash
-lftp 10.0.0.5
-user dev2
-# 下载目录
-mirror xxx
-```
