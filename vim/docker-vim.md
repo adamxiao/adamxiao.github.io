@@ -8,6 +8,9 @@
 
 ```bash
 alias avi='docker run -ti -e TERM=xterm-256color --rm -v $(pwd):/data vim-env:base'
+
+# 由于docker容器tty size的问题，传入tty size进去
+alis vi='docker run -ti -e TERM=xterm-256color -e COLUMNS=$(tput cols) -e LINES=$(tput lines) --rm -v $(pwd):/data vim-env:base'
 ```
 
 ```bash
@@ -58,6 +61,19 @@ RUN apk add --no-cache vim
 #### 中文编码
 
 #### 不能使用链接文件
+
+## FAQ
+
+* 1.docker vim tty size不正确的问题
+
+偶现问题
+
+> 验证发现jare/vim-bundle没有问题, 且跟vim配置有关？ 使用podman没问题
+关键字《shell 终端大小bug》
+
+应该是docker里面的vim获取tty size失败导致的!
+[Docker 的 tty size 问题](https://diabloneo.github.io/2018/09/22/docker-tty-size-problem/)
+
 
 ## 参考资料
 
