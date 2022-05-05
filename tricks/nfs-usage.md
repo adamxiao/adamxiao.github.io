@@ -51,6 +51,7 @@ apt install nfs-kernel-server nfs-common
 /ubuntu-1804  *(ro,no_root_squash,sync)
 /ubuntu-2004  *(ro,no_root_squash,sync)
 /mnt/iso  *(ro,no_root_squash,sync)
+/home/data/adam  10.200.2.6(rw,no_root_squash,sync)
 ```
 
 
@@ -62,6 +63,8 @@ showmount -e 127.0.0.1
 nfs挂载
 ```
 mount -t nfs 10.20.1.100:/home/export/kylin-data /home/kylin-data -o rw,vers=4,noatime,nodiratime
+
+mount -t nfs 10.20.1.12:/home/data/adam /mnt -o rw,vers=4,noatime,nodiratime
 ```
 
 
