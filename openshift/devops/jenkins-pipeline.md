@@ -53,8 +53,14 @@ SONARQUBE=https://$(oc get route sonarqube -n ${USER_ID}-cicd -o template --temp
 * 2.登陆后点击页面右上方“+”图标，然后在下拉菜单中选择“迁移外部仓储”。
 * 3.在“克隆地址”栏中填https://github.com/liuxiaoyu-git/openshift-tasks，然后在“仓库名称”填openshift-tasks，最后点击“迁移仓储”。成功会看到gogs/openshift-tasks的Repository和相关应用代码。
 
+## 其他资料思路
+
+[jenkins X](https://jenkins-x.io/v3/mlops/mlquickstarts/)
+也是利用jenkins，tekton组件做事情
+
 ## 参考资料
 
 * [OpenShift 4 Hands-on Lab (7) - 用Jenkins Pipeline实现在不同运行环境中升迁部署应用](https://blog.csdn.net/weixin_43902588/article/details/104285933)
 * [OpenShift 4 Hands-on Lab (8) 基于Gogs+Nexus+Sonarqube的Jenkins CI/CD Pipeline ](https://blog.csdn.net/weixin_43902588/article/details/104407106)
 * [OpenShift 4 - DevSecOps Workshop (Jenkins版)](https://blog.csdn.net/weixin_43902588/article/details/119963225)
+* [OpenShift Pipelines with Jenkins, Tekton and more...](https://nubenetes.com/openshift-pipelines/)
