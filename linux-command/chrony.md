@@ -84,10 +84,12 @@ TODO:
 CHRONY_HOST=ntp.iefcu.cn
 
 cat << EOF > chroney.conf 
-server ${CHRONY_HOST} iburst
+server ntp.iefcu.cn iburst maxpoll 5
 driftfile /var/lib/chrony/drift
-makestep 1.0 3
+makestep 1.0 -1
 rtcsync
+allow all
+local stratum 9
 logdir /var/log/chrony
 EOF
 
