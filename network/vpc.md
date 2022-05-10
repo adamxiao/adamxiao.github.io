@@ -7,10 +7,13 @@
 * 弹性IP
 
 TODO:
+* 搜索《vpc网络》 => 了解了vpc的相关概念
 * 参考理解AWS的vpc概念?
 [AWS VPC 配置指南 (进阶篇) 三层架构的VPC设计](https://blog.csdn.net/u010478127/article/details/106750969)
 就理解了VPC和子网的一点点概念...
 * 搜索《vxlan实现vpc》看有什么资料?
+* 搜索《基于NEUTRON实现vpc》看有什么资料?
+* VTEP是什么东西?
 
 
 深信服实现只能从文档上看到一点点内容，目前大概率是参考ZStack来实现我们的vpc网络了.
@@ -24,6 +27,30 @@ TODO:
   怀疑是叠加了一层VPC网络概念
 * zstack 创建vxlanpool加载集群是什么意思?
   还要配置VTEP CIDR是啥?
+
+## 概念
+
+[(好)浅谈VPC二三，秒懂秒透](https://www.sdnlab.com/20510.html)
+VPC是这么一种云，它由公有云管理，运行在公共资源上，但是保证每个用户之间的资源是隔离，用户在使用的时候不受其他用户的影响，感觉像是在使用自己的私有云一样。
+
+由于每个用户都有专属的二层网络，那说明VPC模式下的可用二层网络的数量是远超经典模式的。虽然各家都没有公布自己的实现细节，但是这里有点类似VXLAN和VLAN的关系。VXLAN可以有1600万个二层网络，VLAN只有4000多个二层网络。公有云与私有云的区别在于用户数量巨大。如果采用VLAN，每个用户一个二层网络，那最多只能带4000多个用户，公有云许多用户还是只有1-2个云主机那种，那必然不能满足公有云的需求，所以在早期的经典网络模式下，不得不让多个用户挤在一个网络里面。而如果采用VXLAN之类的技术，则可以保证在一个region里面为1600万个用户每人分到一个二层网络。
+因为VPC是一个用户专属的网络，用户可以任意定义VPC内云主机的IP地址。二层隔离了，IP地址想怎么玩就怎么玩。而在经典网络模式下，大家挤在一个二层网络里面，IP地址首先要保证不要重合，这对用户和服务商来说都不是一件心情愉快的事情。
+
+AWS在2010年就已经开始应用VPC，而VXLAN标准是2014年[3]才终稿。AWS的VPC或许和VXLAN不一样，但是按照VXLAN理解VPC的overlay会更容易些。
+
+需要注意的是，VPC尽管是一个二层网络，但是AWS仍然是通过路由器连接一个VPC下的两个Subnet。
+
+[Amazon VPC 常见问题](https://aws.amazon.com/cn/vpc/faqs/)
+问：Amazon VPC 有哪些组成部分？
+Amazon VPC 由多个不同的对象组成，它们对拥有现有网络的客户而言并不陌生：
+* Virtual Private Cloud：AWS 云中逻辑隔离的虚拟网络。从所选范围内定义 VPC 的 IP 地址空间。
+* 子网：VPC 的 IP 地址范围内的一个区段，其中可放置隔离的资源组。
+* 互联网网关：公有 Internet 连接的 Amazon VPC 端。
+* NAT 网关：一款高度可用的托管网络地址转换 (NAT) 服务，便于私有子网中的资源访问互联网。
+* 虚拟私有网关：VPN 连接的 Amazon VPC 端。
+* 对等连接：对等连接使您可以通过私有 IP 地址在两个对等 VPC 之间路由流量。
+* VPC 终端节点：支持建立从您的 VPC 到 AWS 中托管的服务的私有连接，无需使用互联网网关、VPN、网络地址转换 (NAT) 设备或防火墙代理。
+* 仅传出互联网网关：有状态网关，仅提供从 VPC 到 Internet 的 IPv6 流量传出访问权限。
 
 ## ZStack vpc调研
 
@@ -136,8 +163,16 @@ VPC网络：作为VPC的私有网络，可挂载至VPC路由器使用，VPC子�
 
 #### VPC与互联网的连接
 
+## 其他
+
+https://cloud.tencent.com/developer/article/1004614
+这篇文章说市场上aws和腾讯云的vpc比较强...
+
+![](../imgs/vpc-overview-example.svg)
+
 
 ## 参考资料
 
 * [详解ZStack Cloud v4.0：自研VPC网络模型实践指南](https://blog.csdn.net/zstack_org/article/details/115832888)
 * [ZStack 1.10 网络设置（云路由）](https://newbee.gitbooks.io/zstack_product_manual/content/Network/VR-network.html)
+* [google cloud - VPC 网络概览](https://cloud.google.com/vpc/docs/vpc)

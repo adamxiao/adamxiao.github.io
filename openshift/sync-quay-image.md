@@ -18,15 +18,22 @@ docker run -d --name registry --restart=always \
 或者使用docker-compose启动registry私有镜像仓库
 ```
 version: '3.2'
-services:                                                                                                                                                                                                    registry:                                                                                                                                                                                                    image: hub.iefcu.cn/public/registry:2
-    container_name: registry                                                                                                                                                                                   restart: always
-    #environment:
-      #REGISTRY_HTTP_TLS_CERTIFICATE: /certs/ssl.cert                                                                                                                                                            #REGISTRY_HTTP_TLS_KEY: /certs/ssl.key
-      #REGISTRY_HTTP_ADDR: 0.0.0.0:443
+services:
+  registry:
+    #image: docker.io/library/registry:2
+    image: hub.iefcu.cn/public/registry:2
+    container_name: registry
+    restart: always
+    environment:
+      REGISTRY_HTTP_TLS_CERTIFICATE: /certs/ssl.cert
+      REGISTRY_HTTP_TLS_KEY: /certs/ssl.key
+      REGISTRY_HTTP_ADDR: 0.0.0.0:9443
     volumes:
-      - ./registry:/var/lib/registry:Z
-      #- ./certs:/certs:Z                                                                                                                                                                                        #- ./config.yml:/etc/docker/registry/config.yml:Z
-    ports:                                                                                                                                                                                                       #- 443:443                                                                                                                                                                                                 - 5000:5000
+      - ./registry/data/:/var/lib/registry:Z
+      - ./registry/certs:/certs:Z
+      #- ./registry/config.yml:/etc/docker/registry/config.yml:Z
+    ports:
+      - 9443:9443
     logging:
       driver: json-file
       options:
