@@ -339,3 +339,14 @@ cat > /etc/containers/registries.conf.d/traefik-mesh-mirror.conf << EOF
 
 EOF
 ```
+
+## FAQ
+
+#### 监控ServiceMonitor配置没有生效
+
+之前配置的ServiceMonitor配置到test命名空间中去了，导致没生效
+需要配置到default命令空间中(traefik mesh等部署在此命名空间)
+
+## 参考文档
+
+* [traefik mesh 官方文档 - Installation](https://doc.traefik.io/traefik-mesh/install/)

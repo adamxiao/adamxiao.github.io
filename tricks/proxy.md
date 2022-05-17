@@ -62,7 +62,7 @@ EOF
 
 ## docker使用代理
 
-关键字<docker pull with proxy settings>
+关键字`docker pull with proxy settings`
 参考: https://www.thegeekdiary.com/how-to-configure-docker-to-use-proxy/
 https://docs.docker.com/config/daemon/systemd/
 ```bash

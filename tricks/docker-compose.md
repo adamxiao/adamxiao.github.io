@@ -76,3 +76,39 @@ networks:
 #        - subnet: 192.168.100.1/24
 #          gateway: 192.168.100.1
 ```
+
+## 环境变量
+
+参考: https://docs.docker.com/compose/environment-variables/
+
+### Set environment variables in containers
+
+You can set environment variables in a service’s containers with the ‘environment’ key, just like with docker run -e VARIABLE=VALUE ...:
+
+```yaml
+web:
+  environment:
+    - DEBUG=1
+```
+
+### Pass environment variables to containers
+
+You can pass environment variables from your shell straight through to a service’s containers with the ‘environment’ key by not giving them a value, just like with docker run -e VARIABLE ...:
+
+```yaml
+web:
+  environment:
+    - DEBUG
+```
+
+The value of the DEBUG variable in the container is taken from the value for the same variable in the shell in which Compose is run.
+
+### The “env_file” configuration option
+
+You can pass multiple environment variables from an external file through to a service’s containers with the ‘env_file’ option, just like with docker run --env-file=FILE ...:
+
+```yaml
+web:
+  env_file:
+    - web-variables.env
+```

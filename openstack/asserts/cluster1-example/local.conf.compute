@@ -1,0 +1,17 @@
+[[local|localrc]]
+HOST_IP=10.90.3.32 # change this per compute node
+LOGFILE=/opt/stack/logs/stack.sh.log
+ADMIN_PASSWORD=admin
+DATABASE_PASSWORD=admin
+RABBIT_PASSWORD=admin
+SERVICE_PASSWORD=admin
+DATABASE_TYPE=mysql
+SERVICE_HOST=10.90.3.33
+MYSQL_HOST=$SERVICE_HOST
+RABBIT_HOST=$SERVICE_HOST
+GLANCE_HOSTPORT=$SERVICE_HOST:9292
+ENABLED_SERVICES=n-cpu,c-vol,placement-client,ovn-controller,ovs-vswitchd,ovsdb-server,q-ovn-metadata-agent
+NOVA_VNC_ENABLED=True
+NOVNCPROXY_URL="http://$SERVICE_HOST:6080/vnc_lite.html"
+VNCSERVER_LISTEN=$HOST_IP
+VNCSERVER_PROXYCLIENT_ADDRESS=$VNCSERVER_LISTEN

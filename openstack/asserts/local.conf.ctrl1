@@ -1,0 +1,22 @@
+[[local|localrc]]
+#Define images to be automatically downloaded during the DevStack built process.
+DOWNLOAD_DEFAULT_IMAGES=False
+IMAGE_URLS="http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-disk.img"
+
+#用gitclone.com吧，git clone https://gitclone.com/github.com/xxx/yyy.git
+GIT_BASE=https://gitclone.com/github.com
+NOVNC_REPO=https://gitclone.com/github.com/kanaka/noVNC.git
+SPICE_REPO=https://gitclone.com/github.com/git/spice/sice-html5.git
+
+#Credentials
+##根据具体情况设置主机ip
+HOST_IP=192.168.42.11
+##根据实际情况设定内网ip
+FIXED_RANGE=10.4.128.0/20
+##根据实际情况设定浮动ip
+FLOATING_RANGE=192.168.42.128/25
+LOGFILE=/opt/stack/logs/stack.sh.log
+ADMIN_PASSWORD=admin
+DATABASE_PASSWORD=admin
+RABBIT_PASSWORD=admin
+SERVICE_PASSWORD=admin

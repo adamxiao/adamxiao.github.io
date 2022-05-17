@@ -1,0 +1,20 @@
+[[local|localrc]]
+# Define images to be automatically downloaded during the DevStack built process.
+DOWNLOAD_DEFAULT_IMAGES=False
+IMAGE_URLS="http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-disk.img"
+
+# use TryStack git mirror
+GIT_BASE=http://git.trystack.cn
+NOVNC_REPO=http://git.trystack.cn/kanaka/noVNC.git
+SPICE_REPO=http://git.trystack.cn/git/spice/sice-html5.git
+
+
+# Credentials
+DATABASE_PASSWORD=admin
+ADMIN_PASSWORD=admin
+SERVICE_PASSWORD=admin
+SERVICE_TOKEN=admin
+RABBIT_PASSWORD=admin
+#FLAT_INTERFACE=enp0s3
+
+HOST_IP="10.90.3.33"

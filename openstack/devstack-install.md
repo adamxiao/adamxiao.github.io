@@ -1,23 +1,17 @@
-# openstack安装部署使用
-
-思路:
-* 1.devstack安装部署
+# devstack安装openstack集群
 
 疑问:
 * 1.在多节点配置时，一般保留私有地址的前十个, 什么意思?
+* 最后还是有github的etcd文件下载
+https://github.com/etcd-io/etcd/releases/download/v3.3.12/etcd-v3.3.12-linux-amd64.tar.gz
 
+## 单节点allinone安装
 
-## devstack安装openstack集群
+最新版devstack支持ubuntu 20.04, 旧版本ubuntu未适配了
 
-[openstack的DevStack安装](https://xn--helloworld-pf2pka.top/archives/178)
-
-#### 尝试添加计算节点
-
-## 安装devstack单节点
+### 安装基础系统ubuntu 20.04 server
 
 之前就尝试过, 现在使用ubuntu 20.04安装Yoga版本成功 - 2022-05-11
-
-#### 安装ubuntu 20.04 server版本
 
 * 下载ubuntu-20.04.4-live-server-amd64.iso
 * 选择语言English
@@ -36,6 +30,8 @@
 ```bash
 hostnamectl set-hostname xxx
 ```
+
+#### 修改ip地址
 
 [ubuntu server修改配置静态ip地址](https://www.myfreax.com/how-to-configure-static-ip-address-on-ubuntu-18-04/)
 
@@ -58,6 +54,191 @@ ip修改配置生效
 ```bash
 sudo netplan apply
 ```
+
+#### 修改apt软件源
+
+自己搭建的私有nexus源, 缓存之后速度非常快
+
+配置focal, ubuntu 20.04的源: /etc/apt/sources.list
+```
+deb http://docker.iefcu.cn:5565/repository/ubuntu-cn-proxy/ focal main restricted
+deb http://docker.iefcu.cn:5565/repository/ubuntu-cn-proxy/ focal-updates main restricted
+
+deb http://docker.iefcu.cn:5565/repository/ubuntu-cn-proxy/ focal universe
+deb http://docker.iefcu.cn:5565/repository/ubuntu-cn-proxy/ focal-updates universe
+
+deb http://docker.iefcu.cn:5565/repository/ubuntu-cn-proxy/ focal multiverse
+deb http://docker.iefcu.cn:5565/repository/ubuntu-cn-proxy/ focal-updates multiverse
+```
+
+### 安装准备工作
+
+#### 安装git基础软件
+
+```bash
+sudo apt install -y git
+```
+
+#### 创建stack用户
+
+创建一个用户来运行DevStack, 参考devstack的脚本[create-stack-user.sh](https://github.com/openstack/devstack/blob/master/tools/create-stack-user.sh)
+```bash
+sudo useradd -s /bin/bash -d /opt/stack -m stack
+echo "stack ALL=(ALL) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/stack
+```
+
+### 安装allinone环境
+
+#### 下载devstack工具
+
+切到stack用户, 下载DevStack
+```bash
+sudo su - stack
+git clone https://github.com/openstack-dev/devstack
+# 可选, 切到指定分支, 安装指定版本
+# git checkout stable/yoga
+```
+
+使用私有git代码
+```bash
+git clone http://gitlab.iefcu.cn/adam/devstack
+```
+
+#### 配置local.conf进行安装
+
+编写local.conf配置文件(注意修改ip等信息)
+```ini
+[[local|localrc]]
+# Define images to be automatically downloaded during the DevStack built process.
+DOWNLOAD_DEFAULT_IMAGES=False
+IMAGE_URLS="http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-disk.img"
+
+# use TryStack git mirror
+GIT_BASE=http://git.trystack.cn
+NOVNC_REPO=http://git.trystack.cn/kanaka/noVNC.git
+SPICE_REPO=http://git.trystack.cn/git/spice/sice-html5.git
+
+
+# Credentials
+DATABASE_PASSWORD=admin
+ADMIN_PASSWORD=admin
+SERVICE_PASSWORD=admin
+SERVICE_TOKEN=admin
+RABBIT_PASSWORD=admin
+#FLAT_INTERFACE=enp0s3
+
+HOST_IP="your vm ip"
+```
+
+尝试使用私有git代码仓库来部署openstack
+=> GIT_BASE字段, 项目名必须为openstack ...
+```ini
+[[local|localrc]]
+# Define images to be automatically downloaded during the DevStack built process.
+DOWNLOAD_DEFAULT_IMAGES=False
+IMAGE_URLS="http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-disk.img"
+
+# use TryStack git mirror
+GIT_BASE=http://gitlab.iefcu.cn
+NOVNC_REPO=http://gitlab.iefcu.cn/openstack/noVNC.git
+SPICE_REPO=http://gitlab.iefcu.cn/openstack/sice-html5.git
+
+
+# Credentials
+DATABASE_PASSWORD=admin
+ADMIN_PASSWORD=admin
+SERVICE_PASSWORD=admin
+SERVICE_TOKEN=admin
+RABBIT_PASSWORD=admin
+#FLAT_INTERFACE=enp0s3
+
+HOST_IP="your vm ip"
+```
+
+切换到files目录下，执行如下命令
+(注: devstack的stackrc配置文件定义了etcd的版本)
+```bash
+cd files/
+wget -c https://github.com/coreos/etcd/releases/download/v3.1.10/etcd-v3.1.10-linux-amd64.tar.gz
+wget -c https://github.com/coreos/etcd/releases/download/v3.1.7/etcd-v3.1.7-linux-amd64.tar.gz
+
+# 这里可以通过代理下载
+https_proxy=http://proxy.iefcu.cn:20172 wget https://github.com/etcd-io/etcd/releases/download/v3.3.12/etcd-v3.3.12-linux-amd64.tar.gz -O /opt/stack/devstack/files/etcd-v3.3.12-linux-amd64.tar.gz
+
+https_proxy=http://proxy.iefcu.cn:20172 wget http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-disk.img -O /opt/stack/devstack/files/cirros-0.3.4-x86_64-disk.img
+
+
+https://github.com/etcd-io/etcd/releases/download/v3.3.12/etcd-v3.3.12-linux-amd64.tar.gz
+++functions:get_extra_file:68               wget --progress=dot:giga -t 2 -c https://github.com/etcd-io/etcd/releases/download/v3.3.12/etcd-v3.3.12-linux-amd64.tar.gz -O /opt/stack/devstack/files/etcd-v3.3.12-linux-amd64.tar.gz
+
++functions:upload_image:142                wget --progress=dot:giga -c http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-disk.img -O /opt/stack/devstack/files/cirros-0.3.4-x86_64-disk.img
+```
+
+切回到/devstack目录下, cd ..
+
+运行 ./stack.sh
+
+安装完成
+```
+=========================
+DevStack Component Timing
+ (times are in seconds)
+=========================
+wait_for_service      16
+pip_install          398
+apt-get              983
+run_process           30
+dbsync                 6
+git_timed            690
+apt-get-update         6
+test_with_retry        5
+async_wait           138
+osc                  249
+-------------------------
+Unaccounted time     206
+=========================
+Total runtime        2727
+
+=================
+ Async summary
+=================
+ Time spent in the background minus waits: 398 sec
+ Elapsed time: 2727 sec
+ Time if we did everything serially: 3125 sec
+ Speedup:  1.14595
+
+
+
+This is your host IP address: 10.90.3.33
+This is your host IPv6 address: ::1
+Horizon is now available at http://10.90.3.33/dashboard
+Keystone is serving at http://10.90.3.33/identity/
+The default users are: admin and demo
+The password: admin
+
+Services are running under systemd unit files.
+For more information see:
+https://docs.openstack.org/devstack/latest/systemd.html
+
+DevStack Version: zed
+Change: d450e146ccc9b43ce151f57523e4e4c88b9fdafb Merge "Global option for enforcing scope (ENFORCE_SCOPE)" 2022-05-07 10:51:35 +0000
+OS Version: Ubuntu 20.04 focal
+
+2022-05-11 04:34:10.467 | stack.sh completed in 2727 seconds.
+```
+
+
+## 集群安装
+
+目前就是简单的添加额外的计算节点
+
+[openstack的DevStack安装](https://xn--helloworld-pf2pka.top/archives/178)
+
+#### 尝试添加计算节点
+
+## 安装devstack单节点
+
+之前就尝试过, 现在使用ubuntu 20.04安装Yoga版本成功 - 2022-05-11
 
 #### 安装准备工作
 
@@ -440,6 +621,25 @@ devstack@q-meta.service
 devstack@q-svc.service
 
 c-*是cinder，g-*是glance，n-*是nova，o-*是octavia，q-*是neutron
+
+最新版本(估计是yoga?)
+devstack@c-api.service
+devstack@c-sch.service
+devstack@c-vol.service
+devstack@dstat.service
+devstack@etcd.service
+devstack@g-api.service
+devstack@keystone.service
+devstack@n-api-meta.service
+devstack@n-api.service
+devstack@n-cond-cell1.service
+devstack@n-cpu.service
+devstack@n-novnc-cell1.service
+devstack@n-sch.service
+devstack@n-super-cond.service
+devstack@placement-api.service
+devstack@q-ovn-metadata-agent.service
+devstack@q-svc.service
 ```
 
 #### 网络不通
@@ -459,4 +659,23 @@ OPENSTACK_KEYSTONE_URL = "http://%s:5000/v3" % OPENSTACK_HOST
 
 https://www.daimajiaoliu.com/daima/4ed5946659003e8
 
+#### 导入openstack git仓库
+
+分析devstack的stackrc配置脚本(根据关键字《GIT_BASE》)
+* http://gitlab.iefcu.cn/adam/cinder.git
+* http://gitlab.iefcu.cn/adam/glance.git
+* http://gitlab.iefcu.cn/adam/horizon.git
+* http://gitlab.iefcu.cn/adam/keystone.git
+* http://gitlab.iefcu.cn/adam/neutron.git
+* http://gitlab.iefcu.cn/adam/nova.git
+* http://gitlab.iefcu.cn/adam/swift.git
+* http://gitlab.iefcu.cn/adam/placement.git
+* http://gitlab.iefcu.cn/adam/requirements.git
+* http://gitlab.iefcu.cn/adam/tempest.git
+
 ## 参考资料
+
+* [腾讯云上使用ubuntu18.04系统，用devstack安装openstack（成功,4核8GB）](https://blog.csdn.net/hunjiancuo5340/article/details/85005995)
+
+* [Ubuntu 20使用devstack快速安装openstack最新版](https://blog.51cto.com/u_15103026/2646849)
+* https://www.programminghunter.com/article/4154810115/
