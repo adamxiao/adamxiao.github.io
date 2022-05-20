@@ -61,14 +61,16 @@ sudo netplan apply
 
 配置focal, ubuntu 20.04的源: /etc/apt/sources.list
 ```
-deb http://docker.iefcu.cn:5565/repository/ubuntu-cn-proxy/ focal main restricted
-deb http://docker.iefcu.cn:5565/repository/ubuntu-cn-proxy/ focal-updates main restricted
-
-deb http://docker.iefcu.cn:5565/repository/ubuntu-cn-proxy/ focal universe
-deb http://docker.iefcu.cn:5565/repository/ubuntu-cn-proxy/ focal-updates universe
-
-deb http://docker.iefcu.cn:5565/repository/ubuntu-cn-proxy/ focal multiverse
-deb http://docker.iefcu.cn:5565/repository/ubuntu-cn-proxy/ focal-updates multiverse
+deb http://docker.iefcu.cn:5565/repository/ubuntu-cn-proxy focal main restricted
+deb http://docker.iefcu.cn:5565/repository/ubuntu-cn-proxy focal-updates main restricted
+deb http://docker.iefcu.cn:5565/repository/ubuntu-cn-proxy focal universe
+deb http://docker.iefcu.cn:5565/repository/ubuntu-cn-proxy focal-updates universe
+deb http://docker.iefcu.cn:5565/repository/ubuntu-cn-proxy focal multiverse
+deb http://docker.iefcu.cn:5565/repository/ubuntu-cn-proxy focal-updates multiverse
+deb http://docker.iefcu.cn:5565/repository/ubuntu-cn-proxy focal-backports main restricted universe multiverse
+deb http://docker.iefcu.cn:5565/repository/ubuntu-cn-proxy focal-security main restricted
+deb http://docker.iefcu.cn:5565/repository/ubuntu-cn-proxy focal-security universe
+deb http://docker.iefcu.cn:5565/repository/ubuntu-cn-proxy focal-security multiverse
 ```
 
 ### 安装准备工作
@@ -114,9 +116,14 @@ DOWNLOAD_DEFAULT_IMAGES=False
 IMAGE_URLS="http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-disk.img"
 
 # use TryStack git mirror
-GIT_BASE=http://git.trystack.cn
-NOVNC_REPO=http://git.trystack.cn/kanaka/noVNC.git
-SPICE_REPO=http://git.trystack.cn/git/spice/sice-html5.git
+#GIT_BASE=http://git.trystack.cn
+#NOVNC_REPO=http://git.trystack.cn/kanaka/noVNC.git
+#SPICE_REPO=http://git.trystack.cn/git/spice/sice-html5.git
+
+# use adam git mirror
+GIT_BASE=http://gitlab.iefcu.cn
+NOVNC_REPO=http://gitlab.iefcu.cn/openstack/noVNC.git
+SPICE_REPO=http://gitlab.iefcu.cn/openstack/sice-html5.git
 
 
 # Credentials
@@ -159,18 +166,13 @@ HOST_IP="your vm ip"
 (注: devstack的stackrc配置文件定义了etcd的版本)
 ```bash
 cd files/
-wget -c https://github.com/coreos/etcd/releases/download/v3.1.10/etcd-v3.1.10-linux-amd64.tar.gz
-wget -c https://github.com/coreos/etcd/releases/download/v3.1.7/etcd-v3.1.7-linux-amd64.tar.gz
-
 # 这里可以通过代理下载
 https_proxy=http://proxy.iefcu.cn:20172 wget https://github.com/etcd-io/etcd/releases/download/v3.3.12/etcd-v3.3.12-linux-amd64.tar.gz -O /opt/stack/devstack/files/etcd-v3.3.12-linux-amd64.tar.gz
-
-https_proxy=http://proxy.iefcu.cn:20172 wget http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-disk.img -O /opt/stack/devstack/files/cirros-0.3.4-x86_64-disk.img
+http_proxy=http://proxy.iefcu.cn:20172 https_proxy=http://proxy.iefcu.cn:20172 wget http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-disk.img -O /opt/stack/devstack/files/cirros-0.3.4-x86_64-disk.img
 
 
 https://github.com/etcd-io/etcd/releases/download/v3.3.12/etcd-v3.3.12-linux-amd64.tar.gz
 ++functions:get_extra_file:68               wget --progress=dot:giga -t 2 -c https://github.com/etcd-io/etcd/releases/download/v3.3.12/etcd-v3.3.12-linux-amd64.tar.gz -O /opt/stack/devstack/files/etcd-v3.3.12-linux-amd64.tar.gz
-
 +functions:upload_image:142                wget --progress=dot:giga -c http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-disk.img -O /opt/stack/devstack/files/cirros-0.3.4-x86_64-disk.img
 ```
 
@@ -516,6 +518,45 @@ VNCSERVER_PROXYCLIENT_ADDRESS=$VNCSERVER_LISTEN
 * ENABLED_SERVICES 计算节点只启用的服务?
   ENABLED_SERVICES=n-cpu,q-agt,c-vol,placement-client
 
+## 网络配置
+
+配置网络
+OpenStack至少需要两个网卡，一个用于连接外部网络，一个用于连接内部网络。
+
+外部网络
+公共网络，外部或Internet可以访问的网络。
+
+内部网络
+管理网络，用于OpenStack组件以及MySQL DB Server, RabbitMQ messaging server之间的通信。
+————————————————
+版权声明：本文为CSDN博主「Gane_Cheng」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。
+原文链接：https://blog.csdn.net/Gane_Cheng/article/details/53538203
+
+```
+## Neutron options
+Q_USE_SECGROUP=True
+FLOATING_RANGE="192.168.0.0/24"
+FIXED_RANGE="10.0.0.0/24"
+NETWORK_GATEWAY="10.0.0.2"
+Q_FLOATING_ALLOCATION_POOL=start=192.168.0.150,end=192.168.0.180
+PUBLIC_NETWORK_GATEWAY="192.168.0.1"
+Q_L3_ENABLED=True
+PUBLIC_INTERFACE=eth0
+Q_USE_PROVIDERNET_FOR_PUBLIC=True
+OVS_PHYSICAL_BRIDGE=br-ex
+PUBLIC_BRIDGE=br-ex
+OVS_BRIDGE_MAPPINGS=public:br-ex
+
+# #VLAN configuration.
+Q_PLUGIN=ml2
+ENABLE_TENANT_VLANS=True
+```
+
+https://www.cnblogs.com/jmilkfan-fanguiju/p/7532338.html
+1 单网卡的网络节点配置
+在有些开发者实验环境中，主机有且只有一个可用的网卡可用的情况。这种情况下物理网卡加入到Open vSwitch中，然后IP地址配在网桥中。这样这个接口充当着三个角色，为自己网络节点服务传输数据，为OpenStack API传输数据，为管理节点传输数据。
+警告：当配置单网卡模式的网络节点时，有可能会出现一个临时故障，有可能你的IP地址从你的机器的物理网卡中移除，然后配置在了OVS网桥上。如果你从其他机器用SSH链接到这台机器，可能有一定的风险导致你的SSH会话session中断（因为的arp缓存失效），这样的话将可能中断stack.sh脚本的运行，使整个部署处于一个未完成的状态。为了解决这种情况可以为stack.sh单独的开一个session这样能让stack.sh脚本继续运行。
+
 ## FAQ
 
 #### devstack最新版不支持ubuntu 18.04 server来安装了
@@ -672,6 +713,14 @@ https://www.daimajiaoliu.com/daima/4ed5946659003e8
 * http://gitlab.iefcu.cn/adam/placement.git
 * http://gitlab.iefcu.cn/adam/requirements.git
 * http://gitlab.iefcu.cn/adam/tempest.git
+
+#### 配置git镜像
+
+```
+GIT_BASE=http://gitlab.iefcu.cn
+NOVNC_REPO=http://gitlab.iefcu.cn/openstack/noVNC.git
+SPICE_REPO=http://gitlab.iefcu.cn/openstack/sice-html5.git
+```
 
 ## 参考资料
 

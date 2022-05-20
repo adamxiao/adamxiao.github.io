@@ -136,3 +136,12 @@ git cherry-pick A^..B
 14. git checkout previous branch
 git checkout -
 git checkout @{-1}
+
+## FAQ
+
+#### git pull: The requested URL returned error: 503
+
+git clone http://gitlab.iefcu.cn/openstack/devstack.git
+
+抓包发现没有80端口的包
+原来是开了代理, 代理访问不到这个git仓库

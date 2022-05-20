@@ -1,8 +1,6 @@
 # openstack网络调研
 
-TODO:
-
-* ovn单独安装到纯净的系统中测试使用?
+* ovn单独安装到纯净的系统中测试使用? => ok 验证可以
 [OVN实战---《A Primer on OVN》翻译](https://www.cnblogs.com/YaoDD/p/7474536.html)
 [OVN实战---《An Introduction to OVN Routing》翻译](https://www.cnblogs.com/YaoDD/p/7475728.html)
 
