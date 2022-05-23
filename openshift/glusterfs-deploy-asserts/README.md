@@ -13,6 +13,22 @@ oc create -f glusterfs-daemonset.json
 oc get pods
 # oc label node <...node...> storagenode=glusterfs 
 ```
+问题点：pod创建不成功。
+
+处理：我部署时新建了项目glusterfs-test，serviceAccount在此项目中没有权限导致pod创建失败。可用oc  event -w 查看。
+
+为sa在project下添加权限，我用的是default  sa 
+```
+oc adm policy add-scc-to-user anyuid system:serviceaccount:<project>:<sa-name>
+oc adm policy add-scc-to-user hostaccess system:serviceaccount:<project>:<sa-name>
+oc adm policy add-scc-to-user hostmount-anyuid system:serviceaccount:<project>:<sa-name>
+oc adm policy add-scc-to-user hostnetwork system:serviceaccount:<project>:<sa-name>
+oc adm policy add-scc-to-user machine-api-termination-handler system:serviceaccount:<project>:<sa-name>
+oc adm policy add-scc-to-user node-exporter system:serviceaccount:<project>:<sa-name>
+oc adm policy add-scc-to-user nonroot system:serviceaccount:<project>:<sa-name>
+oc adm policy add-scc-to-user privileged system:serviceaccount:<project>:<sa-name>
+oc adm policy add-scc-to-user restricted system:serviceaccount:<project>:<sa-name>
+```
 
 3. 部署配置heketi bootstrap容器
 
