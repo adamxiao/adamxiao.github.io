@@ -75,6 +75,12 @@ deb http://docker.iefcu.cn:5565/repository/ubuntu-cn-proxy focal-security multiv
 
 ### 安装准备工作
 
+#### 配置代理
+
+可选, 需要访问github, 下载apt, pypi软件包, 配置代理比较合适, openstack节点都可以不需要外网权限
+
+参考: [代理配置](../tricks/proxy.md)
+
 #### 安装git基础软件
 
 ```bash
@@ -109,6 +115,8 @@ git clone http://gitlab.iefcu.cn/adam/devstack
 #### 配置local.conf进行安装
 
 编写local.conf配置文件(注意修改ip等信息)
+尝试使用私有git代码仓库来部署openstack
+=> GIT_BASE字段, 项目名必须为openstack ...
 ```ini
 [[local|localrc]]
 # Define images to be automatically downloaded during the DevStack built process.
@@ -137,32 +145,8 @@ RABBIT_PASSWORD=admin
 HOST_IP="your vm ip"
 ```
 
-尝试使用私有git代码仓库来部署openstack
-=> GIT_BASE字段, 项目名必须为openstack ...
-```ini
-[[local|localrc]]
-# Define images to be automatically downloaded during the DevStack built process.
-DOWNLOAD_DEFAULT_IMAGES=False
-IMAGE_URLS="http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-disk.img"
-
-# use TryStack git mirror
-GIT_BASE=http://gitlab.iefcu.cn
-NOVNC_REPO=http://gitlab.iefcu.cn/openstack/noVNC.git
-SPICE_REPO=http://gitlab.iefcu.cn/openstack/sice-html5.git
-
-
-# Credentials
-DATABASE_PASSWORD=admin
-ADMIN_PASSWORD=admin
-SERVICE_PASSWORD=admin
-SERVICE_TOKEN=admin
-RABBIT_PASSWORD=admin
-#FLAT_INTERFACE=enp0s3
-
-HOST_IP="your vm ip"
-```
-
 切换到files目录下，执行如下命令
+(可选把, 为啥要这样做?)
 (注: devstack的stackrc配置文件定义了etcd的版本)
 ```bash
 cd files/
@@ -234,172 +218,26 @@ OS Version: Ubuntu 20.04 focal
 
 目前就是简单的添加额外的计算节点
 
-[openstack的DevStack安装](https://xn--helloworld-pf2pka.top/archives/178)
-
-#### 尝试添加计算节点
-
-## 安装devstack单节点
-
-之前就尝试过, 现在使用ubuntu 20.04安装Yoga版本成功 - 2022-05-11
-
-#### 安装准备工作
-
-配置代理, 参考: [代理配置](../tricks/proxy.md)
-
-安装git，升级pip，其他
-```bash
-# 切到root运行
-apt update
-apt install -y git
-apt install -y python-pip
-pip install --upgrade pip
-pip install -U os-testr
-```
-
-#### devstack安装准备
-
-创建一个用户来运行DevStack, 参考devstack的脚本[create-stack-user.sh](https://github.com/openstack/devstack/blob/master/tools/create-stack-user.sh)
-```bash
-sudo useradd -s /bin/bash -d /opt/stack -m stack
-echo "stack ALL=(ALL) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/stack
-```
-
-切到stack用户, 下载DevStack
-```bash
-sudo su - stack
-
-git clone https://github.com/openstack-dev/devstack
-```
-
-#### 配置local.conf进行安装
-
-编写local.conf配置文件(注意修改ip等信息)
-```ini
-[[local|localrc]]
-# Define images to be automatically downloaded during the DevStack built process.
-DOWNLOAD_DEFAULT_IMAGES=False
-IMAGE_URLS="http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-disk.img"
-
-# use TryStack git mirror
-GIT_BASE=http://git.trystack.cn
-NOVNC_REPO=http://git.trystack.cn/kanaka/noVNC.git
-SPICE_REPO=http://git.trystack.cn/git/spice/sice-html5.git
-
-
-# Credentials
-DATABASE_PASSWORD=admin
-ADMIN_PASSWORD=admin
-SERVICE_PASSWORD=admin
-SERVICE_TOKEN=admin
-RABBIT_PASSWORD=admin
-#FLAT_INTERFACE=enp0s3
-
-HOST_IP="your vm ip"
-```
-
-切换到files目录下，执行如下命令
-```bash
-cd files/
-wget -c https://github.com/coreos/etcd/releases/download/v3.1.10/etcd-v3.1.10-linux-amd64.tar.gz
-wget -c https://github.com/coreos/etcd/releases/download/v3.1.7/etcd-v3.1.7-linux-amd64.tar.gz
-```
-
-切回到/devstack目录下, cd ..
-
-运行 ./stack.sh
-
-安装完成
-```
-=========================
-DevStack Component Timing
- (times are in seconds)
-=========================
-wait_for_service      16
-pip_install          398
-apt-get              983
-run_process           30
-dbsync                 6
-git_timed            690
-apt-get-update         6
-test_with_retry        5
-async_wait           138
-osc                  249
--------------------------
-Unaccounted time     206
-=========================
-Total runtime        2727
-
-=================
- Async summary
-=================
- Time spent in the background minus waits: 398 sec
- Elapsed time: 2727 sec
- Time if we did everything serially: 3125 sec
- Speedup:  1.14595
-
-
-
-This is your host IP address: 10.90.3.33
-This is your host IPv6 address: ::1
-Horizon is now available at http://10.90.3.33/dashboard
-Keystone is serving at http://10.90.3.33/identity/
-The default users are: admin and demo
-The password: admin
-
-Services are running under systemd unit files.
-For more information see:
-https://docs.openstack.org/devstack/latest/systemd.html
-
-DevStack Version: zed
-Change: d450e146ccc9b43ce151f57523e4e4c88b9fdafb Merge "Global option for enforcing scope (ENFORCE_SCOPE)" 2022-05-07 10:51:35 +0000
-OS Version: Ubuntu 20.04 focal
-
-2022-05-11 04:34:10.467 | stack.sh completed in 2727 seconds.
-```
-
-#### xxx
+https://blog.csdn.net/m0_49212388/article/details/107606727
+请参考devstack官方文档[《Multi-Node Lab》](https://docs.openstack.org/devstack/latest/guides/multinode-lab.html)
 
 参考[openstack部署方式](https://zhuanlan.zhihu.com/p/44905003)
 选用[devstack](https://github.com/openstack/devstack)进行安装
 
 [openstack基础架构以及部署资料 (好)](https://cloud.tencent.com/developer/article/1026128)
 
-[腾讯云上使用ubuntu18.04系统，用devstack安装openstack（成功,4核8GB）](https://blog.csdn.net/hunjiancuo5340/article/details/85005995)
-
-## 多节点集群安装
-
-https://blog.csdn.net/m0_49212388/article/details/107606727
-请参考devstack官方文档[《Multi-Node Lab》](https://docs.openstack.org/devstack/latest/guides/multinode-lab.html)
-
-参考[devstack官方文档《Multi-Node Lab》](https://docs.openstack.org/devstack/latest/guides/multinode-lab.html)
-
 #### 集群节点配置准备
 
 * 修改hostname和ip
 * 配置ssh互相免密登录
+  (可选, 为后续vm迁移使用)
 * xxx
 
 注意，首先安装控制节点，再控制节点安装成功后，再安装nova计算节点，计算节点和控制节点之间要通讯正常。
 
-#### 克隆devstack, 准备stack等用户
+#### (可选)注入密钥
 
-跟单机环境一样?略
-```bash
-git clone https://github.com/openstack-dev/devstack -b stable/yoga
-
-devstack/tools/create-stack-user.sh
-
-mv devstack /opt/stack
-chown -R stack:stack /opt/stack/devstack
-sudo chmod -R 777 /opt/stack
-sudo echo "stack ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
-```
-
-创建stack用户
-```bash
-sudo useradd -s /bin/bash -d /opt/stack -m stack
-echo "stack ALL=(ALL) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/stack
-```
+未验证密钥真实用处
 
 注入密钥 => 测试ok
 ```bash
@@ -413,9 +251,7 @@ echo "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCaQ9Zpb5/nyiZEw9sR1mqpdpXgRi7WMnSeDy
 
 The cluster controller runs all OpenStack services.
 
-TODO: 使用本地gitlab仓库, 加速代码拉取?
-
-关键就是加了密钥和改动了local.conf吧?
+关键就是改动了local.conf吧?
 ```ini
 [[local|localrc]]
 #Define images to be automatically downloaded during the DevStack built process.
@@ -500,6 +336,8 @@ VNCSERVER_LISTEN=$HOST_IP
 VNCSERVER_PROXYCLIENT_ADDRESS=$VNCSERVER_LISTEN
 ```
 
+## 更多资料
+
 #### local.conf配置详解
 
 [Devstack配置文件local.conf参数说明](http://www.chenshake.com/local-conf-devstack-profile-parameter-description/)
@@ -518,7 +356,7 @@ VNCSERVER_PROXYCLIENT_ADDRESS=$VNCSERVER_LISTEN
 * ENABLED_SERVICES 计算节点只启用的服务?
   ENABLED_SERVICES=n-cpu,q-agt,c-vol,placement-client
 
-## 网络配置
+#### 网络配置
 
 配置网络
 OpenStack至少需要两个网卡，一个用于连接外部网络，一个用于连接内部网络。
@@ -557,70 +395,6 @@ https://www.cnblogs.com/jmilkfan-fanguiju/p/7532338.html
 在有些开发者实验环境中，主机有且只有一个可用的网卡可用的情况。这种情况下物理网卡加入到Open vSwitch中，然后IP地址配在网桥中。这样这个接口充当着三个角色，为自己网络节点服务传输数据，为OpenStack API传输数据，为管理节点传输数据。
 警告：当配置单网卡模式的网络节点时，有可能会出现一个临时故障，有可能你的IP地址从你的机器的物理网卡中移除，然后配置在了OVS网桥上。如果你从其他机器用SSH链接到这台机器，可能有一定的风险导致你的SSH会话session中断（因为的arp缓存失效），这样的话将可能中断stack.sh脚本的运行，使整个部署处于一个未完成的状态。为了解决这种情况可以为stack.sh单独的开一个session这样能让stack.sh脚本继续运行。
 
-## FAQ
-
-#### devstack最新版不支持ubuntu 18.04 server来安装了
-
-提示支持ubuntu focal(20.04)了...
-
-```
-+./stack.sh:main:230                       SUPPORTED_DISTROS='focal|f34|opensuse-15.2|opensuse-tumbleweed|rhel8'
-+./stack.sh:main:232                       [[ ! bionic =~ focal|f34|opensuse-15.2|opensuse-tumbleweed|rhel8 ]]
-+./stack.sh:main:233                       echo 'WARNING: this script has not been tested on bionic'
-WARNING: this script has not been tested on bionic
-+./stack.sh:main:234                       [[ '' != \y\e\s ]]
-+./stack.sh:main:235                       die 235 'If you wish to run this script anyway run with FORCE=yes'
-+functions-common:die:198                  local exitcode=0
-+functions-common:die:199                  set +o xtrace
-[Call Trace]
-./stack.sh:235:die
-[ERROR] ./stack.sh:235 If you wish to run this script anyway run with FORCE=yes
-```
-
-强制安装
-```bash
-FORCE=yes ./stack.sh
-```
-
-#### httplib2软件包冲突
-
-暂未解决, 这种类似问题以前遇到挺多, 必须熟悉过程才能解决
-
-```
-Installing collected packages: httplib2, cursive, glance
-  Attempting uninstall: httplib2
-    Found existing installation: httplib2 0.9.2
-ERROR: Cannot uninstall 'httplib2'. It is a distutils installed project and thus we cannot accurately determine which files belong to it which would lead to only a partial uninstall.
-```
-
-#### ovn-central软件包缺失
-
-debian11安装遇到的问题, 包名不一样呢, 看来devstack对debian的适配也不够好!
-
-```
-Package ovn-central is not available, but is referred to by another package.
-This may mean that the package is missing, has been obsoleted, or
-is only available from another source
-However the following packages replace it:
-  openvswitch-common
-
-Package ovn-controller-vtep is not available, but is referred to by another package.
-This may mean that the package is missing, has been obsoleted, or
-is only available from another source
-However the following packages replace it:
-  openvswitch-common
-
-Package ovn-host is not available, but is referred to by another package.
-This may mean that the package is missing, has been obsoleted, or
-is only available from another source
-However the following packages replace it:
-  openvswitch-common
-
-E: Package 'ovn-central' has no installation candidate
-E: Package 'ovn-controller-vtep' has no installation candidate
-E: Package 'ovn-host' has no installation candidate
-```
- 
 #### 查看openstack版本
 
 [查看Openstack版本信息](https://blog.csdn.net/tangyh521/article/details/78862129)
@@ -683,17 +457,6 @@ devstack@q-ovn-metadata-agent.service
 devstack@q-svc.service
 ```
 
-#### 网络不通
-
-原因是浮动ip范围占用了128~254的ip地址, 其他节点机器不能使用这个范围内的ip地址
-
-#### web登录提示证书不可用
-
-* 尝试1, 失败, 没找到相关修改的地方, 本来就是正确的keystone配置
-Openstack在dashboard界面登录提示无效证书
-修改/etc/openstack-dashboard/local_settings内容
-OPENSTACK_KEYSTONE_URL = "http://%s:5000/v3" % OPENSTACK_HOST
-
 #### 安装途中遇到的坑
 
 收集一点别人遇到的坑
@@ -722,9 +485,87 @@ NOVNC_REPO=http://gitlab.iefcu.cn/openstack/noVNC.git
 SPICE_REPO=http://gitlab.iefcu.cn/openstack/sice-html5.git
 ```
 
+## FAQ
+
+#### devstack最新版不支持ubuntu 18.04 server来安装了
+
+提示支持ubuntu focal(20.04)了...
+
+```
++./stack.sh:main:230                       SUPPORTED_DISTROS='focal|f34|opensuse-15.2|opensuse-tumbleweed|rhel8'
++./stack.sh:main:232                       [[ ! bionic =~ focal|f34|opensuse-15.2|opensuse-tumbleweed|rhel8 ]]
++./stack.sh:main:233                       echo 'WARNING: this script has not been tested on bionic'
+WARNING: this script has not been tested on bionic
++./stack.sh:main:234                       [[ '' != \y\e\s ]]
++./stack.sh:main:235                       die 235 'If you wish to run this script anyway run with FORCE=yes'
++functions-common:die:198                  local exitcode=0
++functions-common:die:199                  set +o xtrace
+[Call Trace]
+./stack.sh:235:die
+[ERROR] ./stack.sh:235 If you wish to run this script anyway run with FORCE=yes
+```
+
+强制安装
+```bash
+FORCE=yes ./stack.sh
+```
+
+#### (未解决)httplib2软件包冲突
+
+暂未解决, 这种类似问题以前遇到挺多, 必须熟悉过程才能解决
+
+```
+Installing collected packages: httplib2, cursive, glance
+  Attempting uninstall: httplib2
+    Found existing installation: httplib2 0.9.2
+ERROR: Cannot uninstall 'httplib2'. It is a distutils installed project and thus we cannot accurately determine which files belong to it which would lead to only a partial uninstall.
+```
+
+#### (未解决)ovn-central软件包缺失
+
+debian11安装遇到的问题, 包名不一样呢, 看来devstack对debian的适配也不够好!
+
+```
+Package ovn-central is not available, but is referred to by another package.
+This may mean that the package is missing, has been obsoleted, or
+is only available from another source
+However the following packages replace it:
+  openvswitch-common
+
+Package ovn-controller-vtep is not available, but is referred to by another package.
+This may mean that the package is missing, has been obsoleted, or
+is only available from another source
+However the following packages replace it:
+  openvswitch-common
+
+Package ovn-host is not available, but is referred to by another package.
+This may mean that the package is missing, has been obsoleted, or
+is only available from another source
+However the following packages replace it:
+  openvswitch-common
+
+E: Package 'ovn-central' has no installation candidate
+E: Package 'ovn-controller-vtep' has no installation candidate
+E: Package 'ovn-host' has no installation candidate
+```
+ 
+#### 网络不通
+
+原因是浮动ip范围占用了128~254的ip地址, 有特殊静态路由, 其他节点机器不能使用这个范围内的ip地址
+
+#### (未解决)web登录提示证书不可用
+
+* 尝试1, 失败, 没找到相关修改的地方, 本来就是正确的keystone配置
+Openstack在dashboard界面登录提示无效证书
+修改/etc/openstack-dashboard/local_settings内容
+OPENSTACK_KEYSTONE_URL = "http://%s:5000/v3" % OPENSTACK_HOST
+
+
 ## 参考资料
 
 * [腾讯云上使用ubuntu18.04系统，用devstack安装openstack（成功,4核8GB）](https://blog.csdn.net/hunjiancuo5340/article/details/85005995)
 
 * [Ubuntu 20使用devstack快速安装openstack最新版](https://blog.51cto.com/u_15103026/2646849)
 * https://www.programminghunter.com/article/4154810115/
+
+* [(好,最简单的配置)openstack的DevStack安装](https://xn--helloworld-pf2pka.top/archives/178)

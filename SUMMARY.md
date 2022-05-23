@@ -15,6 +15,7 @@
    * [openwrt安装使用](tricks/openwrt.md)
    * [vscode使用markdown说明](tricks/vscode-markdown.md)
 * [openstack安装使用](openstack/README.md)
+   * [devstack安装](openstack/devstack-install.md)
 * [docker使用](docker-usage/README.md)
    * [docker基本使用](docker.md)
    * [unzip镜像解压文件](docker-usage/docker-unzip.md)

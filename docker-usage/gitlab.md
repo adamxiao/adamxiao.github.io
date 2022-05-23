@@ -1,6 +1,6 @@
 # gitlab安装使用
 
-关键字<docker 部署gitlab>
+关键字《docker 部署gitlab》
 
 ## 安装gogs
 
@@ -17,7 +17,8 @@ https://codeantenna.com/a/nQwshmozny
 version: '2.3'
 services:
     mysql:
-      image: mysql:5.7
+      #image: mysql:5.7
+      image: hub.iefcu.cn/public/mysql:5.7
       restart: always
       environment:
         - MYSQL_ROOT_PASSWORD=root
@@ -26,11 +27,12 @@ services:
         - ./data/mysql:/var/lib/mysql
         - ./data/conf:/etc/mysql/conf.d
     gogs:
-      image: gogs/gogs:latest
+      #image: gogs/gogs:latest
+      image: hub.iefcu.cn/public/gogs:latest
       restart: always
       ports:
-        - "22:22"
-        - "80:3000"
+        - "22345:22"
+        - "3000:3000"
       volumes:
         - ./data/gogs:/data
       links:
@@ -38,6 +40,11 @@ services:
       depends_on:
         - mysql
 ```
+
+参数解析:
+* 端口映射
+  3000和22端口, 可以映射
+* mysql密码修改
 
 起来之后登录http://IP, 然后进行你gogs初始化的设置
 * 数据库的地址设置为mysql:3306
