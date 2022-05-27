@@ -1,5 +1,17 @@
 # openstack网络调研
 
+openstack yoga 一个网络中的多个子网如何手动选择, 难道是自动选择的吗?
+
+《深入理解Neutron网路实现》
+Neutron管理下面的实体：
+
+网络：隔离的 L2 域，可以是虚拟、逻辑或交换。
+子网：隔离的 L3 域，IP 地址块。其中每个机器有一个 IP，同一个子网的主机彼此 L3 可见。
+  => 要是没有在路由上挂载接口, L3是不是就不通了啊?
+  => 不同子网之间 L3 是互相不可见的，必须通过一个三层网关（即路由器）经过 L3 上进行通信。
+端口：网络上虚拟、逻辑或交换端口。 所有这些实体都是虚拟的，拥有自动生成的唯一标示id，支持CRUD功能，并在数据库中跟踪记录状态。
+
+
 * ovn单独安装到纯净的系统中测试使用? => ok 验证可以
 [OVN实战---《A Primer on OVN》翻译](https://www.cnblogs.com/YaoDD/p/7474536.html)
 [OVN实战---《An Introduction to OVN Routing》翻译](https://www.cnblogs.com/YaoDD/p/7475728.html)
