@@ -23,6 +23,23 @@ https://www.one-tab.com/page/YfTvjlabR9OqHV1mRY4wqA?ext=de72ce03-98b7-4210-b30f-
 https://devopstales.github.io/home/openshift4-auth/
 [Part1b: Install Opeshift 4 with calico](https://devopstales.github.io/kubernetes/openshift4-calico/)
 
+## 容器云后续可开展工作梳理
+
+* 做一个operator hub, 整理好离线安装部署文档
+  包含metallb, redis, es等内置提供的operator
+
+* promethues数据存储到pv中
+
+* 集群5节点高可用部署验证
+  处理禁止crio清理镜像的问题
+  处理时间同步问题
+
+* jenkins自动构建部署xxx应用
+  目前他们的应用上云还是比较复杂, 需要简化
+
+* 更多
+  日志，块存储, 用户认证租户权限...
+
 
 ## scc深入了解
 
