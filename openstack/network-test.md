@@ -1,5 +1,102 @@
 # openstack网络调研
 
+验证ovn dhcp:
+```
+ovn-nbctl ls-add dmz
+ovn-nbctl lsp-add dmz dmz-vm1
+ovn-nbctl lsp-set-addresses dmz-vm1 "02:ac:10:ff:01:30 172.16.255.130"
+#ovn-nbctl lsp-set-port-security dmz-vm1 "02:ac:10:ff:01:30 172.16.255.130"
+ovn-nbctl show
+
+dmzDhcp="$(ovn-nbctl create DHCP_Options cidr=172.16.255.128/26 \
+options="\"server_id\"=\"172.16.255.129\" \"server_mac\"=\"02:ac:10:ff:01:29\" \
+\"lease_time\"=\"3600\" \"router\"=\"172.16.255.129\"")"
+echo $dmzDhcp
+ovn-nbctl dhcp-options-list
+
+ovn-nbctl lsp-set-dhcpv4-options dmz-vm1 $dmzDhcp
+ovn-nbctl lsp-get-dhcpv4-options dmz-vm1
+```
+
+配置虚拟机验证dhcp
+```bash
+ip netns add vm1
+ovs-vsctl add-port br-int vm1 -- set interface vm1 type=internal
+ip link set vm1 address 02:ac:10:ff:01:30
+ip link set vm1 netns vm1
+ovs-vsctl set Interface vm1 external_ids:iface-id=dmz-vm1
+ip netns exec vm1 dhclient vm1
+ip netns exec vm1 ip addr show vm1
+ip netns exec vm1 ip route show
+```
+
+通过一次dhclient请求, 比较流表匹配规则差异, 得到ovn的dhcp最终实现流表规则如下:
+由于用到pause, 需要使用ovs2.6版本才能支持!
+https://stackoverflow.com/questions/50327210/pause-controller-action-in-open-vswitch
+It looks like support for the pause controller action was added in the version 2.6.0 of Open vSwitch. Otherwise, the following syntax should work:
+```
+table=0, n_packets=465, n_bytes=25446, priority=100,in_port=5 actions=load:0x1->NXM_NX_REG13[],load:0x3->NXM_NX_REG11[],load:0x2->NXM_NX_REG12[],load:0x5->OXM_OF_METADATA[],load:0x1->NXM_NX_REG14[],resubmit(,8)
+table=8, n_packets=465, n_bytes=25446, priority=50,reg14=0x1,metadata=0x5 actions=resubmit(,9)
+table=9, n_packets=465, n_bytes=25446, priority=0,metadata=0x5 actions=resubmit(,10)
+table=10, n_packets=465, n_bytes=25446, priority=0,metadata=0x5 actions=resubmit(,11)
+table=11, n_packets=465, n_bytes=25446, priority=0,metadata=0x5 actions=resubmit(,12)
+table=12, n_packets=450, n_bytes=24300, priority=0,metadata=0x5 actions=resubmit(,13)
+table=13, n_packets=465, n_bytes=25446, priority=0,metadata=0x5 actions=resubmit(,14)
+table=14, n_packets=465, n_bytes=25446, priority=0,metadata=0x5 actions=resubmit(,15)
+table=15, n_packets=465, n_bytes=25446, priority=0,metadata=0x5 actions=resubmit(,16)
+table=16, n_packets=465, n_bytes=25446, priority=0,metadata=0x5 actions=resubmit(,17)
+table=17, n_packets=465, n_bytes=25446, priority=0,metadata=0x5 actions=resubmit(,18)
+table=18, n_packets=465, n_bytes=25446, priority=0,metadata=0x5 actions=resubmit(,19)
+table=19, n_packets=465, n_bytes=25446, priority=0,metadata=0x5 actions=resubmit(,20)
+table=20, n_packets=465, n_bytes=25446, priority=0,metadata=0x5 actions=resubmit(,21)
+table=21, n_packets=465, n_bytes=25446, priority=0,metadata=0x5 actions=resubmit(,22)
+table=22, n_packets=5, n_bytes=1710, priority=100,udp,reg14=0x1,metadata=0x5,dl_src=02:ac:10:ff:01:30,nw_src=0.0.0.0,nw_dst=255.255.255.255,tp_src=68,tp_dst=67 actions=controller(userdata=00.00.00.02.00.00.00.00.00.01.de.10.00.00.00.63.ac.10.ff.82.33.04.00.00.0e.10.01.04.ff.ff.ff.c0.03.04.ac.10.ff.81.36.04.ac.10.ff.81,pause),resubmit(,23)
+table=23, n_packets=6, n_bytes=1908, priority=100,udp,reg0=0x8/0x8,reg14=0x1,metadata=0x5,dl_src=02:ac:10:ff:01:30,tp_src=68,tp_dst=67 actions=move:NXM_OF_ETH_SRC[]->NXM_OF_ETH_DST[],mod_dl_src:02:ac:10:ff:01:29,mod_nw_src:172.16.255.129,mod_tp_src:67,mod_tp_dst:68,move:NXM_NX_REG14[]->NXM_NX_REG15[],load:0x1->NXM_NX_REG10[0],resubmit(,32)
+table=32, n_packets=467, n_bytes=25938, priority=0 actions=resubmit(,33)
+table=33, n_packets=6, n_bytes=1908, priority=100,reg15=0x1,metadata=0x5 actions=load:0x1->NXM_NX_REG13[],load:0x3->NXM_NX_REG11[],load:0x2->NXM_NX_REG12[],resubmit(,34)
+table=34, n_packets=8, n_bytes=2544, priority=0 actions=load:0->NXM_NX_REG0[],load:0->NXM_NX_REG1[],load:0->NXM_NX_REG2[],load:0->NXM_NX_REG3[],load:0->NXM_NX_REG4[],load:0->NXM_NX_REG5[],load:0->NXM_NX_REG6[],load:0->NXM_NX_REG7[],load:0->NXM_NX_REG8[],load:0->NXM_NX_REG9[],resubmit(,40)
+table=40, n_packets=6, n_bytes=1908, priority=0,metadata=0x5 actions=resubmit(,41)
+table=41, n_packets=6, n_bytes=1908, priority=0,metadata=0x5 actions=resubmit(,42)
+table=42, n_packets=6, n_bytes=1908, priority=0,metadata=0x5 actions=resubmit(,43)
+table=43, n_packets=6, n_bytes=1908, priority=0,metadata=0x5 actions=resubmit(,44)
+table=44, n_packets=6, n_bytes=1908, priority=34000,udp,reg15=0x1,metadata=0x5,dl_src=02:ac:10:ff:01:29,nw_src=172.16.255.129,tp_src=67,tp_dst=68 actions=resubmit(,45)
+table=45, n_packets=6, n_bytes=1908, priority=0,metadata=0x5 actions=resubmit(,46)
+table=46, n_packets=6, n_bytes=1908, priority=0,metadata=0x5 actions=resubmit(,47)
+table=47, n_packets=6, n_bytes=1908, priority=0,metadata=0x5 actions=resubmit(,48)
+table=48, n_packets=6, n_bytes=1908, priority=0,metadata=0x5 actions=resubmit(,49)
+table=49, n_packets=6, n_bytes=1908, priority=50,reg15=0x1,metadata=0x5 actions=resubmit(,64)
+table=64, n_packets=6, n_bytes=1908, priority=100,reg10=0x1/0x1,reg15=0x1,metadata=0x5 actions=push:NXM_OF_IN_PORT[],load:0xffff->NXM_OF_IN_PORT[],resubmit(,65),pop:NXM_OF_IN_PORT[]
+table=65, n_packets=6, n_bytes=1908, priority=100,reg15=0x1,metadata=0x5 actions=output:5
+```
+
+dhcp方案:
+* 1.dnsmasq
+* 2.vr虚拟机里面配置dnsmasq
+* 3.ovs实现dhcp
+* 4.ovn实现dhcp
+
+高可用方案:
+多个dnsmasq副本
+
+[Neutron 理解（5）：Neutron 是如何向 Nova 虚机分配固定IP地址的 （How Neutron Allocates Fixed IPs to Nova Instance）](https://www.pianshen.com/article/456940669/)
+=> neutron节点部署运行dhcp agent
+
+[理解 OpenStack 高可用（HA）（1）：OpenStack 高可用和灾备方案 [OpenStack HA and DR]](https://www.cnblogs.com/sammyliu/p/4741967.html)
+（3）DHCP Agent 的 HA
+    DHCP 协议自身就支持多个 DHCP 服务器，因此，只需要在多个网卡控制节点上，通过修改配置，为每个租户网络创建多个 DHCP Agent，就能实现 DHCP 的 HA 了。
+
+[ovn学习-3-流表分析](https://blog.motitan.com/2017/08/29/ovn%E5%AD%A6%E4%B9%A0-3-%E6%B5%81%E8%A1%A8%E5%88%86%E6%9E%90/)
+看看怎么理解ovn的dhcp实现？
+
+[(好)使用ovn-trace分析OVN 逻辑流表（Logical Flow）](https://blog.csdn.net/zhengmx100/article/details/78140948)
+
+最近Gurucharan Shetty添加了在OVN logical network中对于multiple L3 gateway的支持。它能够基于源IP地址在gateway之间分发流量。
+我们并不需要知道这一改变的所有细节。我只想说明的是我们仅仅需要改动非常少量的代码就能实现这一特性。让我们来看一看diffstat。
+
+DHCP
+OVN支持DHCPv4和DHCPv6，所有这些都是通过logical flow实现的。在很多情况下，如果要改变它们的行为，只需要改变那些生成DHCP相关的logical flow的代码就可以了。
+=> dhcp功能确实是使用流表实现的！！！
+
 openstack yoga 一个网络中的多个子网如何手动选择, 难道是自动选择的吗?
 
 《深入理解Neutron网路实现》

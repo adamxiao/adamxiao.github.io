@@ -37,6 +37,15 @@ ovs-vsctl add-br br-int -- set Bridge br-int fail-mode=secure
 ovs-vsctl list-br
 ```
 
+## 确保central节点监控6642等接口
+
+在central节点上执行命令:
+(最后确保ovs监听6642端口)
+```bash
+ovn-nbctl set-connection ptcp:6641:192.168.100.121
+ovn-sbctl set-connection ptcp:6642:192.168.100.121
+```
+
 ## Connecting the Chassis Controllers to the Central Controller
 
 在ovn2, ovn3节点上执行, 注意最后的encap-ip填写自己的

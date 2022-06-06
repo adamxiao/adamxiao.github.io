@@ -30,3 +30,13 @@ https://unix.stackexchange.com/questions/298698/ssh-very-slow-connection
 
 查问题原理(非常好)
 https://blog.tanelpoder.com/posts/troubleshooting-linux-ssh-logon-delay-always-takes-10-seconds/
+
+## Could not open a connection to your authentication agent
+
+ssh-agent程序挂了没起来!
+
+https://stackoverflow.com/questions/17846529/could-not-open-a-connection-to-your-authentication-agent
+```
+eval `ssh-agent -s`
+ssh-add
+```
