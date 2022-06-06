@@ -1,5 +1,6 @@
 # web控制台
 
+最终使用wetty验证效果不错, 就是还需要调整一些小细节
 最终需求使用gotty实现实现不错, 就是输入法有点问题!
 
 * wetty
@@ -112,3 +113,34 @@ https://icode.best/i/89711634837507
 https://www.jianshu.com/p/4b2b7074d9e2
 https://blog.csdn.net/easylife206/article/details/103018688
 
+
+## FAQ
+
+#### 浏览器中的ctrl-w冲突使用
+
+(macos没有这个问题。。。)
+怎么办?
+
+https://blog.miniasp.com/post/2020/09/29/Disable-Ctrl-W-keyboard-shortcut-in-Google-Chrome
+安装插件, 禁用Ctrl+w, 改用Alt+w
+
+安裝 Better Ctrl-W 擴充套件
+
+開啟 Chrome 擴充功能的「鍵盤快速鍵」頁面
+
+chrome://extensions/shortcuts
+重新綁定快速鍵
+
+請將 Ctrl-W 綁定到 Do absolutely nothing 即可停用 Chrome 預設 Ctrl-W 快速鍵！
+
+再將 Alt-W 綁定到 Close highlighted tabs 即可用來取代原本關閉頁籤的快速鍵！
+
+[如何修改Chrome浏览器快捷键？](https://www.zhihu.com/question/21333830)
+=> 使用 Shortkeys 插件修改快捷键
+
+[xterm.js - Shield the shortcut key of browser](https://github.com/xtermjs/xterm.js/issues/2812)
+没办法屏蔽浏览器的快捷键啊
+
+[(非常好)Disable hardwired chrome hot key ctrl+w?](https://superuser.com/questions/569248/disable-hardwired-chrome-hot-key-ctrlw)
+https://github.com/thalesmello/better-ctrlw
+=> 写一个插件, 映射ctrl-w这个事件！

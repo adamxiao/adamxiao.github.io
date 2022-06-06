@@ -1,6 +1,21 @@
 # 创建虚拟路由虚拟机
 
-TODO:
+TODO(20220606):
+* 全新创建vr虚拟机配置验证 => doing
+  * 配置实现eip
+* kylin-vr新增参数 reload xxx.yaml => 必要性不大, 暂不做
+  * 直接作为base64参数输入?
+  * 覆盖已有配置文件
+  * 增量更新?
+* port forward实现 => 自测麻烦
+  * tcp, udp映射 => ok
+  * 单端口转发 => ok
+  * 端口范围转发(zstack的端口范围必须一致) => ok
+  * 端口映射需要ip增加支持! => ok
+  * 端口映射和ip映射冲突, 优先ip映射
+* 网关接口eth0动态获取出来! => ok
+
+done:
 * kylin-vr脚本新增参数, 适配不同的运行模式 => ok
   * 开机启动运行 --start
   * 配置更新模式 --reload
@@ -12,15 +27,7 @@ TODO:
 * kylin-vr配置多个eip生效验证 => ok
 * 多个程序同时调用kylin-vr脚本的冲突问题? => ok, 加锁处理？
   => 是否检测ip地址冲突, 不检查!
-* kylin-vr脚本日志输出到/var/log/xxx?
-
-```
-Another app is currently holding the yum lock; waiting for it to exit...
-  The other application is: yum
-    Memory :  27 M RSS (1.4 GB VSZ)
-    Started: Sun Jun  5 02:31:24 2022 - 05:09 ago
-    State  : Sleeping, pid: 3084
-```
+* kylin-vr脚本日志输出到/var/log/xxx? => 优先级低, 暂时不处理
 
 ## 测试用例
 
@@ -30,7 +37,7 @@ checklist:
 * 网卡添加正确
 * 子网ip地址配置正确
 * 配置先添加, 网卡后加 => 配置先加, 运行没有问题; 网卡加上触发配置成功;
-* 网卡先加, 配置后加
+* 网卡先加, 配置后加 => ok 没问题
 
 #### 删除子网
 
@@ -39,6 +46,21 @@ checklist:
 * 没有残留ip配置
 * 没有残留ip, iptables规则?
 
+* 删除完所有的子网, 系统正常
+* xxx
+
+#### 端口映射
+
+checklist:
+* tcp 80 -> vm 80 => ok
+* tcp 8080 -> vm 80 => ok
+* tcp 端口范围映射80~82 => ok
+  => 使用http协议测试tcp端口映射
+* udp 80 -> vm 80 => ok
+* udp 8080 -> vm 80 => ok
+* udp 端口范围80~82 => ok
+  => udp还得再理解一下
+
 ### kylin-vr脚本
 
 执行触发逻辑:
@@ -46,6 +68,7 @@ checklist:
 * 配置更新运行 => done, 为重新全量下发配置
   * XXX: 优化为增量更新配置?
 * 新增/删除网卡运行
+* 配置文件空 => 
 
 读取配置逻辑:
 * 读取配置, 生成vr相关配置 => done
@@ -146,6 +169,14 @@ http://blog.itpub.net/22664653/viewspace-2110638/
 计划使用fcntl文件锁
 http://blog.itpub.net/22664653/viewspace-2110638/
 
+```
+Another app is currently holding the yum lock; waiting for it to exit...
+  The other application is: yum
+    Memory :  27 M RSS (1.4 GB VSZ)
+    Started: Sun Jun  5 02:31:24 2022 - 05:09 ago
+    State  : Sleeping, pid: 3084
+```
+
 ## vr配置逻辑
 
 #### 网络配置
@@ -183,6 +214,42 @@ done
 ip route replace default via ${GATEWAY} dev ${DEVICE}
 # ip route add default via $gateway dev ${DEVICE}
 # ip route show default
+```
+
+#### 端口转发配置
+
+https://blog.csdn.net/u013401853/article/details/70848433
+
+单个端口映射
+　　一般而言要在路由器里实现一条端口映射规则，需要两个iptables规则，一条是目的地址转换一条是源地址转换。 如下（192.168.40.200是wan口地址，10.0.0.150是LAN侧主机地址）：
+```bash
+iptables -t nat -I PREROUTING -p tcp -d 192.168.40.200 --dport 23 -j DNAT --to 10.0.0.150:23
+iptables -t nat -I POSTROUTING -p tcp -s 10.0.0.150 --sport 23 -j SNAT --to 192.168.40.200:23
+```
+
+范围端口映射
+　　查看man iptables可知，范围端口映射规则也挺简单，匹配源时写为--sport port[:port]，target时写为[ipaddr][-ipaddr][:port[-port]]。即上面单个的端口映射规则改为这种形式：
+　　iptables -t nat -I PREROUTING -p tcp -d 192.168.40.200 --dport 23:100 -j DNAT --to 10.0.0.150:23-100
+
+　　重点不在于规则怎么写，而是范围端口映射时是怎么映射？因为它可以少对多也可以多对少。例如配置[10-12]映射到[100-102]，我怎么知道端口11会映射到具体那个端口，101吗？ [100-200]映射到[10-20]时又会怎么样呢？
+
+　　如果测试一下第一个问题会发现总是映射到100端口，不是想象的101端口。
+
+
+https://docs.azure.cn/zh-cn/articles/azure-operations-guide/virtual-network/aog-virtual-network-using-netcat-check-the-connectivity
+
+测试:
+```bash
+# 服务端监听tcp 8080端口
+nc -n -l 8080 -v
+# 客户端连接服务端
+nc <服务器端 IP 地址> <端口号>
+```
+
+udp协议类似
+```
+nc -n -k -lu <端口号> -v
+nc -u <服务器端 IP 地址> <端口号>
 ```
 
 ### 基础环境
@@ -267,6 +334,25 @@ virsh qemu-agent-command $domain --cmd '{"execute":"guest-exec","arguments":{"pa
 virsh qemu-agent-command $domain '{"execute":"guest-exec-status","arguments":{"pid":23478}}'
 ```
 
+
+使用firewalld配置iptables规则?
+```
+# /etc/firewalld/firewalld.conf
+# DefaultZone=trusted
+
+/etc/firewalld/direct.xml
+<?xml version="1.0" encoding="utf-8"?>
+<direct>
+  <rule priority="0" table="filter" ipv="ipv4" chain="INPUT">-i docker0 -j ACCEPT</rule>
+</direct>
+```
+
+禁用ipv6 《network-scripts disable ipv6》
+```
+# XXX: 禁用ipv6 <network-scripts disable ipv6>
+# https://www.looklinux.com/how-to-disable-ipv6-in-centos-and-redhat/
+# /etc/sysctl.conf
+```
 
 ## FAQ
 
