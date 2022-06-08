@@ -1,5 +1,18 @@
 # 创建虚拟路由虚拟机
 
+TODO(20220608):
+* kylin-vr整体rpm包安装粗略测试 => ok
+
+TODO(20220607):
+* kylin-vr异常测试
+  * 配置空不报错, 处理正常
+  * 没有网卡配置, 处理正常
+* kylin-vr程序打包好, 方便安装配置 => 优先级低
+  * 配置sysctl规则
+  * 配置udev规则
+* 全新创建vr虚拟机配置验证 => ok
+  * 配置实现eip => ok
+
 TODO(20220606):
 * 全新创建vr虚拟机配置验证 => doing
   * 配置实现eip
@@ -28,6 +41,88 @@ done:
 * 多个程序同时调用kylin-vr脚本的冲突问题? => ok, 加锁处理？
   => 是否检测ip地址冲突, 不检查!
 * kylin-vr脚本日志输出到/var/log/xxx? => 优先级低, 暂时不处理
+
+## 部署虚拟路由虚拟机极简步骤
+
+#### 1.安装centos7虚拟机镜像
+
+例如: 使用centos7官方云镜像 CentOS-7-x86_64-GenericCloud-2009.qcow2
+
+以及简单配置一下密码登录:
+```bash
+virsh set-user-password  e08979eb-99fd-390f-fee2-7e67b2b532b6  root xxxxxx
+```
+
+#### 2. 配置ip,安装kylin-vr软件
+
+修改 /etc/sysconfig/network-scripts/ifcfg-eth0 , 修改内容如下:
+```
+BOOTPROTO="static"
+
+IPADDR=10.90.3.37
+PREFIX=24
+GATEWAY=10.90.3.1
+DNS1=10.90.3.38
+```
+
+然后重启网络:
+```bash
+systemctl restart network
+```
+
+安装kylin-vr软件包(注意会下载依赖包, 需要能够访问到镜像仓库)
+```bash
+yum install -y http://10.20.1.99:8080/kylin-vr-0.1-1.x86_64.rpm
+```
+
+#### 3. 配置kylin-vr.yaml重启测试
+
+简单配置一下网卡ip地址, eip等
+```yaml
+if_list:
+   - ipaddr: 10.90.3.37
+     prefix: 24
+     mac: 52:54:84:00:08:45
+     gateway: 10.90.3.1
+   - ipaddr: 192.168.100.254
+     prefix: 24
+     mac: 52:54:84:11:00:03
+eip_list:
+  - eip: 10.90.2.250
+    vm-ip: 192.168.100.190
+  - eip: 10.90.2.251
+    vm-ip: 192.168.100.191
+port_forward_list:
+  - eip: 10.90.2.254
+    protocal: tcp
+    port: 80
+    end_port: 82
+    vm-port: 80
+    vm-ip: 192.168.100.190
+```
+
+最后**重启**生效!
+
+#### 4. 生成虚拟路由模板
+
+简单, 清空还原kylin-vr.yaml配置文件, 关机即可
+
+#### 附录: 制作kylin-vr的rpm包
+
+生成源码包
+```
+mkdir /tmp/kylin-vr-0.1
+# 生成源码文件
+cd /tmp/
+tar -cvzf kylin-vr-0.1.tar.gz kylin-vr-0.1
+kylin-vr-0.1/
+kylin-vr-0.1/kylin-vr.py
+...
+
+mv /tmp/kylin-vr-0.1.tar.gz ~/rpmbuild/SOURCES/
+```
+
+配置spec文件安装, 在相应附件中
 
 ## 测试用例
 
@@ -92,10 +187,10 @@ Before=firewalld.target
 Conflicts=shutdown.target
 DefaultDependencies=no
 Requires=dbus.socket
-TimeoutSec=0
 
 [Service]
 ExecStart=/usr/local/bin/kylin-vr.py
+TimeoutSec=0
 
 Type=oneshot
 
@@ -126,8 +221,10 @@ systemctl enable kylin-vr
 
 配置udev规则:
 ```
-[ssh_10.90.3.36] root@localhost: etc$cat /etc/udev/rules.d/80-local.rules
+cat > /etc/udev/rules.d/80-local.rules << EOF
 ACTION=="add", SUBSYSTEM=="net", RUN+="/usr/local/bin/kylin-vr.py -c reload"
+ACTION=="del", SUBSYSTEM=="net", RUN+="/usr/local/bin/kylin-vr.py -c reload"
+EOF
 ```
 
 考虑通知调用脚本kylin-vr实现
@@ -283,6 +380,7 @@ sed -i 's/^BLACKLIST_RPC/#&/' /etc/sysconfig/qemu-ga
 
 #### ip转发等其他配置
 
+配置 /etc/sysctl.conf
 ```
 net.ipv4.ip_forward = 1
 net.ipv6.conf.all.disable_ipv6 = 1

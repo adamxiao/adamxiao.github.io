@@ -144,3 +144,29 @@ chrome://extensions/shortcuts
 [(非常好)Disable hardwired chrome hot key ctrl+w?](https://superuser.com/questions/569248/disable-hardwired-chrome-hot-key-ctrlw)
 https://github.com/thalesmello/better-ctrlw
 => 写一个插件, 映射ctrl-w这个事件！
+
+http://www.kkh86.com/it/chrome-extension-doc/extensions/input.ime.html
+=> google 插件api文档
+chrome.input.ime.commitText
+
+[Shortkeys - 自定义修改谷歌浏览器快捷键](https://www.fkxz.cn/logpjaacgmcbpdkdchjiaagddngobkck/?btwaf=31654479)
+=> 使用shortkey定义快捷键, 运行js代码, 输入ctrl-w字符?
+
+https://www.zhihu.com/question/21333830
+推荐 Surfingkeys 插件，类Vimium插件，有上下翻页、用stack overflow搜索等等数不尽的快捷键，神器！
+
+如果是单纯想禁用快捷键的话, Disable keyboard shortcuts.
+
+[从零深入Chrome插件开发](https://xieyufei.com/2021/11/09/Chrome-Plugin.html)
+
+[chrome快捷键太反人类?不想安装额外插件?那就用TamperMonkey写个脚本](https://toffee24.github.io/blog/2019/07/19/chrome%E5%BF%AB%E6%8D%B7%E9%94%AE%E5%A4%AA%E5%8F%8D%E4%BA%BA%E7%B1%BB-%E4%B8%8D%E6%83%B3%E5%AE%89%E8%A3%85%E9%A2%9D%E5%A4%96%E6%8F%92%E4%BB%B6-%E9%82%A3%E5%B0%B1%E7%94%A8TamperMonkey%E5%86%99%E4%B8%AA%E8%84%9A%E6%9C%AC/)
+TamperMonkey
+
+https://baiyunju.cc/8606
+* 1：百度文库免费下载、内容自由复制、广告过滤等；
+* 2：全网VIP视频免费破解(综合线路电视剧免跳出选集)支持爱奇艺、腾讯、优酷、哔哩哔哩等；
+* 3：全网音乐、有声音频下载,支持网易云音乐、QQ音乐、酷狗、喜马拉雅、咪咕等；
+* 4：知乎使用增强：外链接直接跳出、问题,回答时间标注、知乎短视频下载等；
+* 5：短视频去水印下载(无限制下载)支持：抖音、快手；
+* 6：CSDN使用增强：广告移除、净化剪切板、未登录查看折叠评论等；
+* 7：京东、淘宝、天猫等优惠券查询……

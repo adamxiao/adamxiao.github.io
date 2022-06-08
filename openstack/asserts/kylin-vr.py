@@ -1,4 +1,5 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
+# -*- coding:utf-8 -*-
 
 import yaml
 from yaml.loader import SafeLoader
@@ -8,8 +9,6 @@ import argparse
 import os
 import time
 import fcntl
-
-# pip3 install pyyaml netifaces
 
 '''yaml
 if_list:

@@ -1,0 +1,21 @@
+if_list:
+   - ipaddr: 10.90.3.37
+     prefix: 24
+     mac: 52:54:84:00:08:44
+     gateway: 10.90.3.1
+   - ipaddr: 192.168.100.254
+     prefix: 24
+     mac: 52:54:84:11:00:02
+eip_list:
+  - eip: 10.90.2.250
+    vm-ip: 192.168.100.190
+  - eip: 10.90.2.251
+    vm-ip: 192.168.100.191
+port_forward_list:
+  # master1.kcp5-arm.iefcu.cn
+  - eip: 10.90.2.254
+    protocal: tcp
+    port: 80
+    end_port: 82
+    vm-port: 80
+    vm-ip: 192.168.100.190
