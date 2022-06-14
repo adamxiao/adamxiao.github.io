@@ -30,6 +30,9 @@ lftp 10.0.0.5
 同步目录
 ```
 mirror xxx xxx
+
+# 上传文件夹
+mirror -R registry-data .
 ```
 
 ## FAQ

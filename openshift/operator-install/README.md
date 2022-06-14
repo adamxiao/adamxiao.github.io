@@ -1,6 +1,7 @@
 # operator应用安装
 
 xxx
+      operatorframework.io/arch.arm64: supported
 
 elasticsearch这个operator标明不支持arm64, 所以web页面上不能安装？ => 确实是的!
 ```bash

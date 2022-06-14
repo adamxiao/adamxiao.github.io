@@ -50,3 +50,29 @@ docker build \
     --build-arg no_proxy=yumrepo.unikylin.com.cn,192.0.0.0/8 \
     -t hub.iefcu.cn/xiaoyun/unzip .
 ```
+
+## 7zip分段压缩
+
+https://www.cnblogs.com/ritte/p/11783020.html
+
+```
+7z a name.7z filename -v10m
+
+7z e data.7z   #不保持目录结构
+7z x data2.7z  #保持目录结构
+# 分段的只需要指定第一个就行了
+```
+
+rar
+```
+rar a -v10m 压缩包文件名 要压缩的文件
+这里的是限制一个文件大小为10m，然后进行分块压缩
+
+解压的话直接
+rar e 压缩包文件名.part1
+```
+
+tar
+```
+tar cf - xxx | split -b 2000m -
+```
