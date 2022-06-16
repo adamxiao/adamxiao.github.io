@@ -342,7 +342,7 @@ EOF
 oc -n grzs-traefik get svc traefik-ingress
 ```
 
-![](2022-03-01-15-41-29.png)
+![](../imgs/2022-03-01-15-41-29.png)
 
 
 ## 参考资料

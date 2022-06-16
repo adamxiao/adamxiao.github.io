@@ -81,7 +81,7 @@ scc可以和用户，组，服务帐号进行绑定!
 oc adm policy who-can use scc privileged
 ```
 
-![](2022-03-26-14-45-45.png)
+![](../imgs/2022-03-26-14-45-45.png)
 
 ## helm入门
 
@@ -126,17 +126,17 @@ oc adm policy who-can use scc privileged
 
 旁路由 单臂路由了解
 
-![](2022-03-17-11-59-33.png)
+![](../imgs/2022-03-17-11-59-33.png)
 
 这个页面多几个数据暂时，有节点数，啥的等。
 有几个宿主机，硬盘啥的。点进去能看到某一个宿主机的cpu，内存等使用率。
-![](2022-03-16-14-03-50.png)
+![](../imgs/2022-03-16-14-03-50.png)
 
 备份和恢复
 https://access.redhat.com/documentation/zh-cn/openshift_container_platform/4.9/html-single/backup_and_restore/index
 
 etcd备份
-![](2022-03-14-21-27-51.png)
+![](../imgs/2022-03-14-21-27-51.png)
 
 ## 获取Elasticserach镜像以及源码
 

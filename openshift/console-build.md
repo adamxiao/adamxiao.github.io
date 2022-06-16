@@ -88,4 +88,4 @@ export NPM_CONFIG_TARBALL=/opt/app-root/src/node-v14.18.0-headers.tar.gz
 ## 其他资料
 
 发现官网另外一个项目对console项目做的离线包处理。
-![](2022-03-02-09-38-37.png)
+![](../imgs/2022-03-02-09-38-37.png)

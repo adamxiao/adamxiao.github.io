@@ -128,9 +128,9 @@ heketi-cli device disable c3aac82f962174690a8ae545d130a28f
 [heketi] ERROR 2022/03/17 07:14:38 heketi/apps/glusterfs/device_entry.go:493:glusterfs.(*DeviceEntry).removeBricksFromDevice: Failed to remove device, error: Unable to get heal info of volume : vol_dd0dd2c46c741e6435fe339d39636e8b
 ```
 
-![](2022-03-17-15-20-57.png)
+![](../imgs/2022-03-17-15-20-57.png)
 
-![](2022-03-17-14-30-50.png)
+![](../imgs/2022-03-17-14-30-50.png)
 
 还有其他方法
 ```bash

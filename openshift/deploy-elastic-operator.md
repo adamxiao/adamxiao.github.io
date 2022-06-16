@@ -82,10 +82,10 @@ curl -v -u "elastic:$PASSWORD" -k "http://localhost:9200"
 ```
 
 建立路由访问es集群api
-![](2022-03-10-10-55-31.png)
+![](../imgs/2022-03-10-10-55-31.png)
 
 使用路由链接直接访问http://test1-es-test.apps.kcp4-arm.iefcu.cn/
-![](2022-03-10-10-55-55.png)
+![](../imgs/2022-03-10-10-55-55.png)
 
 更多ES api访问验证，参考ES官方api文档
 

@@ -5,7 +5,7 @@
 ### ocp安装流程
 
 先看这个官方的图，从图来讲流程
-![](2022-03-03-18-29-45.png)
+![](../imgs/2022-03-03-18-29-45.png)
 
 它的安装是先在一台机器（bastion）上准备 pxe 和相关的安装集群描述信息需要的文件（Ignition）以及 dns，负载均衡，然后引导主机（Bootstrap）通过 dhcp 或者 人为挂载 rhcos 的 iso 在安装界面手写 boot cmdline 从 bastion 指定获取 bootstrap.ign和 os.raw.gz 文件完成安装， 随后 master 节点启动会获取master.ign文件并且从 bootstrap 节点获取 machine-config 信息，随后 node 同理。
 
@@ -147,7 +147,7 @@ image-syncer --proc=6 --auth=./image-sync.json --images=./image-sync-list.json \
 **dns配置要求如下：**
 
 按照官方文档，使用 UPI 基础架构的 OCP 集群需要以下的 DNS 记录。在每条记录中，<cluster_name> 是集群名称，<base_domain> 是在 install-config.yaml 文件中指定的集群基本域，如下表所示：
-![](2022-03-03-18-54-17.png)
+![](../imgs/2022-03-03-18-54-17.png)
 
 
 
@@ -548,7 +548,7 @@ curl -k https://api-int.kcp3-arm.iefcu.cn:22623/config/master
 ```
 
 需要得到数据
-![](2022-03-01-21-48-56.png)
+![](../imgs/2022-03-01-21-48-56.png)
 
 #### 手动安装master
 
@@ -617,8 +617,8 @@ TODO:各种配置出错，可以到这里找原因和解决方法
 
 1. notReady
 node NotReady, 最后等了很久，发现有csr了，通过之后节点Ready了
-![](2022-03-01-21-54-38.png)
-![](2022-03-01-21-54-56.png)
+![](../imgs/2022-03-01-21-54-38.png)
+![](../imgs/2022-03-01-21-54-56.png)
 
 ```bash
 oc get csr | grep pending -i | awk '{print $1}' | sed 's/^/kubectl certificate approve /' | bash

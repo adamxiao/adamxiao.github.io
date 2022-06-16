@@ -18,11 +18,11 @@ kylin-monitor:$2y$05$IzGbG9RbAEX577z7RKeVEOl3V0AgfeIoCNq8yDiO9GZ8rnYly5Tlu
 
 到管理员，管理，集群设置，配置，OAuth，添加，HTPasswd认证
 
-![](2022-03-02-10-06-43.png)
+![](../imgs/2022-03-02-10-06-43.png)
 
 **注意名称改为kylin-monitor**
 
-![](2022-03-02-10-07-30.png)
+![](../imgs/2022-03-02-10-07-30.png)
 
 #### 3. 给这个用户查看监控的权限
 
@@ -54,13 +54,13 @@ oc scale --replicas=0 deployments/cluster-version-operator -n openshift-cluster-
 TODO: 通过命令行修改，简单一点，一行命令解决
 ```
 
-![](2022-03-02-10-09-21.png)
+![](../imgs/2022-03-02-10-09-21.png)
 
-![](2022-03-02-10-09-33.png)
+![](../imgs/2022-03-02-10-09-33.png)
 
-![](2022-03-02-10-09-45.png)
+![](../imgs/2022-03-02-10-09-45.png)
 
-![](2022-03-02-10-10-00.png)
+![](../imgs/2022-03-02-10-10-00.png)
 
 ## 使用方法
 
