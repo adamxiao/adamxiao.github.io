@@ -25,6 +25,39 @@ mkdir mirror
 oc adm -a ${LOCAL_SECRET_JSON} release mirror \
   --from=quay.io/${PRODUCT_REPO}/${RELEASE_NAME}:${OCP_RELEASE} \
   --to-dir=mirror/
+
+oc adm -a pull-secret.json release mirror \
+  --from=quay.kcp.cn:9443/kcp/kcp-release-4.9.0.4:latest \
+  --to-dir=mirror-kcp-release-0610/ --insecure
+
+oc adm -a pull-secret.json release mirror \
+  --from=quay.kcp.cn:9443/kcp/kcp-release-4.9.0.4:latest \
+  --to=quay.iefcu.cn/kcp/kcp-release-0610 --insecure --dry-run=true
+
+oc image mirror -a ./pull-secret.json --from-dir=mirror-kcp-release-0610/ 'file://openshift/release:4.9.0-
+rc.6-arm64*' quay.iefcu.cn/kcp/kcp-release-0610 --insecure
+```
+
+获取 ImageContentSourcePolicy
+```
+adam@adam-OptiPlex-3050:~/Downloads$ oc adm -a pull-secret.json release mirror \
+>   --from=quay.kcp.cn:9443/kcp/kcp-release-4.9.0.4:latest \
+>   --to=quay.iefcu.cn/kcp/kcp-release-0610 --insecure --dry-run=true
+
+spec:
+  repositoryDigestMirrors:
+  - mirrors:
+    - quay.iefcu.cn/kcp/kcp-release-0610
+    source: quay.kcp.cn:9443/kcp/kcp-release-4.9.0.4
+  - mirrors:
+    - quay.iefcu.cn/kcp/kcp-release-0610
+    source: quay.kcp.cn:9443/kcp/openshift4-aarch64
+  - mirrors:
+    - quay.iefcu.cn/kcp/kcp-release-0610
+    source: quay.kcp.cn:9443/kcp/kcp-console-0607
+  - mirrors:
+    - quay.iefcu.cn/kcp/kcp-release-0610
+    source: quay.kcp.cn:9443/kcp/oauth-server-arm
 ```
 
 示例用法

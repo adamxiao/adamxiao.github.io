@@ -22,6 +22,8 @@ export NO_PROXY=localhost,127.0.0.0/8,::1,192.0.0.0/8,10.0.0.0/8
 #export ALL_PROXY=socks5://localhost:port
 ```
 
+(注意: 不是所有的命令都支持完整的代理参数, 例如image-syncer不支持no_proxy)
+
 devstack安装openstack, 代理配置
 ```bash
 #!/bin/bash

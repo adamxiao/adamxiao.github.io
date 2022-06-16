@@ -39,6 +39,43 @@ $ sudo nmcli connection modify example +ipv4.routes "192.0.2.0/24 198.51.100.1"
 $ sudo nmcli connection modify example +ipv4.routes "192.0.2.0/24 198.51.100.1, 203.0.113.0/24 198.51.100.1"
 ```
 
+## 管理ovs接口
+
+关键字《nmcli config ovs bridge》
+
+参考: https://blog.oddbit.com/post/2020-02-15-configuring-open-vswitch-with/
+
+创建一个ovs桥:
+```bash
+nmcli c add type ovs-bridge conn.interface br-house con-name br-house
+nmcli c add type ovs-port conn.interface br-house master br-house con-name ovs-port-br-house
+nmcli c add type ovs-interface slave-type ovs-port conn.interface br-house master ovs-port-br-house  con-name ovs-if-br-house
+```
+Unlike ovs-vsctl, creating the bridge won’t automatically create an interface for you. The two additional commands above get us an actual interface named br-house (configured using DHCP, because we didn’t explicitly set ipv4.method on the interface).
+
+将物理网卡eth0加入到ovs桥
+```bash
+nmcli c add type ovs-port conn.interface eth0 master br-house con-name ovs-port-eth0
+nmcli c add type ethernet conn.interface eth0 master ovs-port-eth0 con-name ovs-if-eth0
+```
+
+And finally, we create some ports to expose specific vlans:
+```
+nmcli c add type ovs-port conn.interface vlan1 master br-house ovs-port.tag 1 con-name ovs-port-vlan1
+nmcli c add type ovs-interface slave-type ovs-port conn.interface vlan1 master ovs-port-vlan1 con-name ovs-if-vlan1 ipv4.method static ipv4.address 192.168.7.1/24
+
+nmcli c add type ovs-port conn.interface vlan101 master br-house ovs-port.tag 101 con-name ovs-port-vlan101
+nmcli c add type ovs-interface slave-type ovs-port conn.interface vlan101 master ovs-port-vlan101 con-name ovs-if-vlan101 ipv4.method static ipv4.address 192.168.11.1/24
+
+nmcli c add type ovs-port conn.interface vlan102 master br-house ovs-port.tag 102 con-name ovs-port-vlan102
+nmcli c add type ovs-interface slave-type ovs-port conn.interface vlan102 master ovs-port-vlan102 con-name ovs-if-vlan102 ipv4.method static ipv4.address 192.168.13.1/24
+```
+
+手动修改ip地址
+```
+nmcli c modify ovs-if-br-house ipv4.address 10.90.3.38/24 ipv4.method manual
+```
+
 ## 旧的网络管理方式
 
 https://www.skynats.com/blog/how-to-manage-networking-with-networkmanager/

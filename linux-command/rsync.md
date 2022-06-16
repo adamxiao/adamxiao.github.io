@@ -9,6 +9,8 @@
 rsync -a /opt/media/ remote_user@remote_host_or_ip:/opt/media/
 ```
 
+TODO: 列举-a参数的含义: achive
+
 如果您尚未为远程计算机设置无密码SSH登录，则会要求您输入用户密码。
 
 如果要将数据从远程传输到本地计算机，则需要使用远程位置作为源：

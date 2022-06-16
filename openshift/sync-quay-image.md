@@ -87,12 +87,11 @@ EOF
 cat > image-sync-list.json << EOF
 {
 "${src_hub}/xiaoyun/openshift4-aarch64":"${dst_hub}/kcp/openshift4-aarch64"
-,"${src_hub}/xiaoyun/openshift4-aarch64@sha256:3668ad5942cb4bfdeea526571b267a570ae1a1201843c68c364958ab2ec4af75":"${dst_hub}/kcp/openshift4-aarch64"
 
 ,"${src_hub}/xiaoyun/heketi:9":"${dst_hub}/kcp/heketi"
 ,"${src_hub}/xiaoyun/gluster-containers":"${dst_hub}/kcp/gluster-containers"
 
-,"${src_hub}/public/redhat-operator-index:v4.9":"${dst_hub}/kcp/redhat-operator-index:v4.9"
+,"${src_hub}/kcp/kylin-operator-index:v4.9":"${dst_hub}/kcp/kylin-operator-index:v4.9"
 ,"${src_hub}/kcp/metallb-operator-bundle":"${dst_hub}/kcp/metallb-operator-bundle"
 ,"${src_hub}/kcp/metallb-rhel8-operator":"${dst_hub}/kcp/metallb-rhel8-operator"
 ,"${src_hub}/kcp/metallb-rhel8":"${dst_hub}/kcp/metallb-rhel8"

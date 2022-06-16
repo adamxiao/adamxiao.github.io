@@ -1,5 +1,106 @@
 # MetalLB安装以及使用方法
 
+## metallb 重做支持arm64页面安装
+
+mkdir -p /tmp/metallb-test/metallb-bundle-rootfs
+oc image extract --confirm \
+  --path /:/tmp/metallb-test/metallb-bundle-rootfs \
+  hub.iefcu.cn/kcp/metallb-operator-bundle@sha256:549947c734afbb4fa16aa09293a92f30191270db67c3248847c58adcd7d54549
+
+根据里面的dockerfile, 创建新的镜像, 注意修改支持arm64即可
+hub.iefcu.cn/kcp/metallb-operator-bundle:v4.9
+
+然后再做一个新的operator index镜像
+
+可以在x86下制作arm64的operator index 镜像
+```
+opm index add \
+    --bundles hub.iefcu.cn/kcp/metallb-operator-bundle@sha256:74da72dd402e5a85b2ece72695c6772dd56d771fc4e482719a9ffefe9fed89bc \
+    --tag hub.iefcu.cn/kcp/kylin-operator-index:v4.9 \
+    --binary-image hub.iefcu.cn/public/redhat-operator-index:v4.9@sha256:fd45ebb5619656628b84266793ddf24ef6a393cd3a85bc1b5315d5500c0bf067
+
+    --bundles hub.iefcu.cn/kcp/metallb-operator-bundle:v4.9 \
+```
+
+使用镜像构建
+```
+docker run -it --privileged --rm hub.iefcu.cn/xiaoyun/podman-opm:amd64
+```
+
+或者使用docker构建, 需要下载opm二进制包
+
+## 问题
+
+#### 如何查看一个operator index有多少operator镜像(bundle)?
+
+1.通过安装operator index之后再查看?
+2.提取operator index的sqlite数据库文件查看? => 最准确, 核心就是整理
+```bash
+oc image extract --confirm \
+  --path /database/index.db:/tmp \
+  hub.iefcu.cn/public/redhat-operator-index:v4.9
+
+sqlite3 ./index.db 'select * from main.related_image;' | grep pipelines | grep bundle
+```
+3.运行operator, 使用grpcurl查看
+
+* hub.iefcu.cn/kcp/kylin-operator-index:v4.9
+  openshift-jenkins-operator
+* hub.iefcu.cn/kcp
+
+#### 如何查看bundle镜像的related image?
+
+#### 如何通过operator index的镜像?
+
+oc adm catalog
+
+## 简明安装部署步骤
+
+#### 1. 同步镜像
+
+TODO: 重要!!!
+* xx
+* xx
+
+
+需要同步的镜像列表
+* catalogsource镜像 => 很小
+* bundle镜像 => 小
+* operator相关镜像 => 大,重要
+
+#### 2. 创建catalogSource
+
+注意: 使用容器云平台能够拉取到的镜像仓库地址(因为这个镜像会频繁拉取更新的!)
+例如: registry.kcp.local:5000
+
+TODO: 可以直接通过页面的方式创建, 简单
+进入 管理->自定义资源定义: 搜索catalogsource:
+创建 CatalogSource:
+* CatalogSource 名称: kylin
+* 镜像: hub.iefcu.cn/kcp/kylin-operator-index:v4.9
+
+
+```bash
+cat << EOF | oc apply -f -
+apiVersion: operators.coreos.com/v1alpha1
+kind: CatalogSource
+metadata:
+  name: adam
+  namespace: openshift-marketplace
+spec:
+  displayName: adam
+  #image: 'hub.iefcu.cn/public/redhat-operator-index:v4.9'
+  #image: 'hub.iefcu.cn/kcp/adam-operatorhub:20220224'
+  image: 'registry.kcp.local:5000/kcp/redhat-operator-index:v4.9'
+  publisher: adam
+  sourceType: grpc
+EOF
+```
+
+#### 3. 安装operator
+
+通过页面安装, 不同的operator安装方法略有差别
+
 ## 安装方法
 
 web控制台安装暂时还没弄好, 先用CLI安装
@@ -45,6 +146,18 @@ spec:
     - hub.iefcu.cn/kcp
     - registry.kcp.local:5000/kcp
     source: registry.redhat.io/openshift4
+EOM
+
+cat <<EOM | oc apply -f -
+apiVersion: operator.openshift.io/v1alpha1
+kind: ImageContentSourcePolicy
+metadata:
+  name: hub-iefcu-cn-kcp
+spec:
+  repositoryDigestMirrors:
+  - mirrors:
+    - registry.kcp.local:5000/kcp
+    source: hub.iefcu.cn/kcp
 EOM
 ```
 

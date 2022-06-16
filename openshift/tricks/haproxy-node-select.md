@@ -8,10 +8,21 @@ https://docs.openshift.com/container-platform/4.6/rest_api/operator_apis/etcd-op
 
 ## TODO
 
+给节点打标签, 指定haproxy后续可以选择这些节点上调度运行
 ```bash
 oc label node <node-name> node-role.kubernetes.io/infra=
 
 oc label node master1.kcp4-arm.iefcu.cn node-role.kubernetes.io/infra=
+# 删除label
+oc label node master1.kcp3-arm.iefcu.cn node-role.kubernetes.io/infra-
+```
+
+配置haproxy的节点选择亲和性:
+```
+oc patch ingresscontroller/default -n  openshift-ingress-operator  --type=merge -p '{"spec":{"nodePlacement": {"nodeSelector": {"matchLabels": {"node-role.kubernetes.io/infra": ""}},"tolerations": [{"effect":"NoSchedule","key": "infra","value": "reserved"},{"effect":"NoExecute","key": "infra","value": "reserved"}]}}}'
+
+# 配置haproxy数量
+#oc patch ingresscontroller/default -n openshift-ingress-operator --type=merge -p '{"spec":{"replicas": 3}}'
 ```
 
 ## 之前的笔记

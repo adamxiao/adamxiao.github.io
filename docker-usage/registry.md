@@ -100,6 +100,65 @@ docker push quay.iefcu.cn:9443/public/registry:2
 docker pull quay.iefcu.cn:9443/public/registry:2
 ```
 
+## docker registry v2协议使用
+
+```
+curl http://127.0.0.1:5000/v2
+
+# 查询分类
+curl http://127.0.0.1:5000/v2/_catalog
+```
+
+* 查询镜像标签列表
+
+curl http://10.20.1.99:5000/v2/kcp/kylin-operator-index/tags/list
+
+#### 删除镜像
+
+搜索关键字《curl 删除registry镜像》《skopeo 删除registry镜像》
+https://m.tongfu.net/home/35/blog/513697.html
+
+思路
+* 使用registry v2 api来处理
+* 使用skopeo工具处理
+* 新建registry, 只保留需要的镜像?
+
+https://codeleading.com/article/9341997515/
+3、使用delete-docker-registry-image进行删除镜像
+
+
+配置registry允许删除
+https://github.com/distribution/distribution/issues/1573
+
+REGISTRY_STORAGE_DELETE_ENABLED=true
+
+https://m.tongfu.net/home/35/blog/513697.html
+2.8 垃圾回收
+```
+docker exec registry bin/registry garbage-collect /etc/docker/registry/config.yml
+```
+
+设置config.yml，在storage节点添加delete配置设置为true。
+```
+storage:
+  delete:
+    enabled: true
+```
+
+关键字《curl 删除registry镜像》
+
+坑挺多, 尝试用skopeo来删除
+
+(注意: 可能需要配置信任http仓库)
+```
+skopeo delete docker://localhost:5000/kcp/kylin-operator-index:v4.9
+```
+
+https://dockone.io/question/1227
+registry v2 删除镜像后，catalog仍然可以看到，如何解决
+
+
+暴力方法
 
 ## 使用quay搭建
 
