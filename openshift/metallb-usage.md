@@ -344,6 +344,14 @@ oc -n grzs-traefik get svc traefik-ingress
 
 ![](../imgs/2022-03-01-15-41-29.png)
 
+## FAQ
+
+#### 修改地址池的ip地址,svc不生效
+
+修改地址池的ip地址从A改为B，结果svc重新创建, 地址还是A
+重启controller, 地址分配为B，但是实际访问不生效
+重启speaker, 地址B能够在外部访问了!
+
 
 ## 参考资料
 
