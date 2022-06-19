@@ -24,7 +24,7 @@
 
 架构如下:
 
-![](https://segmentfault.com/img/remote/1460000022808582)
+![](../../imgs/redis-arch.png)
 
 
 参考: [Redis 你了解 Redis 的三种集群模式吗？](https://segmentfault.com/a/1190000022808576)

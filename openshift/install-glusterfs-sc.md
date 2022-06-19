@@ -84,6 +84,10 @@ oc create -f heketi-deployment.json
 修改slow-sc.yaml中的ip地址，使用heketi svc的ip地址
 (TODO: 确认一下是否可以使用heketi svc的内部域名?)
 
+是否可以扩展卷?
+https://kubernetes.io/docs/concepts/storage/persistent-volumes/
+allowVolumeExpansion: true
+
 ```
 oc create -f slow-sc.yaml
 # 以及配置存储类为默认存储类

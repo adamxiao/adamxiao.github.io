@@ -375,3 +375,13 @@ Run status group 3 (all jobs):
 Disk stats (read/write):
   vda: ios=23456/22025, merge=1/142, ticks=19416922/1137063, in_queue=10276494, util=83.19%
 ```
+
+
+## 参考资料
+
+关键字《容器里使用fio》
+
+* [[技术干货] FIO测试工具使用指导](https://bbs.huaweicloud.com/forum/thread-90290-1-1.html)
+* [慢磁盘导致etcd不健康问题排查](https://chanjarster.github.io/post/slow-disk-etcd-troubleshooting/)
+* [Docker容器的IO基准](http://www.dockone.io/article/754)
+* [重学 Docker 之 容器进阶（三）](https://blog.lichao.xin/back-end/docker/docker-06/)

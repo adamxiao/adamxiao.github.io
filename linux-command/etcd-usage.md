@@ -71,7 +71,21 @@ https://chanjarster.github.io/post/slow-disk-etcd-troubleshooting/
 docker logs --since '2021-04-26T16:00:00' --until '2021-04-26T16:30:00' etcd 2>&1 | less
 存在大量落磁盘太慢的错误，以及请求超时的错误（etcd响应慢）。
 
+同时根据 这篇文章 查询 wal_fsync 和 disk_commit 两个指标的P99值正常情况应该是在 25毫秒以内的。
 
+查询wal_fsync，发现P99高达8秒：：
+```
+histogram_quantile(0.99, rate(etcd_disk_wal_fsync_duration_seconds_bucket[5m]))
+```
+![](../imgs/2022-06-17-09-01-25.png)
+
+可以测试磁盘IO， 发现也确实不快
+```
+fio -filename=/var/test.file -direct=1 \
+ -iodepth 1 -thread -rw=write \
+ -ioengine=psync -bs=16k -size=2G -numjobs=10 \
+ -runtime=60 -group_reporting -name=test_w
+```
 
 ## 参考资料
 

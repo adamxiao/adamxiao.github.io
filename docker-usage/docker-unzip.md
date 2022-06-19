@@ -76,3 +76,9 @@ tar
 ```
 tar cf - xxx | split -b 2000m -
 ```
+
+split 分片, 例如平均分3片, 以数字结尾, 取xxx前缀名称
+```
+cat xxx | split -n 3 -d
+split -n 3 -d xxx xxx-
+```
