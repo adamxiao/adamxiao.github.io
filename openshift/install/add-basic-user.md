@@ -41,3 +41,72 @@ oc adm policy add-cluster-role-to-user cluster-monitoring-view kylin-monitor
 ```bash
 oc adm policy add-cluster-role-to-user cluster-monitoring-view kylin-monitor
 ```
+
+## 通过命令行新增用户
+
+#### 创建htpasswd secret
+
+```
+oc create secret generic htpass-secret --from-file=htpasswd=<path_to_users.htpasswd> -n openshift-config 
+```
+
+或者这种方法
+```
+apiVersion: v1
+kind: Secret
+metadata:
+  name: htpass-secret
+  namespace: openshift-config
+type: Opaque
+data:
+  htpasswd: <base64_encoded_htpasswd_file_contents>
+```
+
+#### 创建provider
+
+```
+apiVersion: config.openshift.io/v1
+kind: OAuth
+metadata:
+  name: cluster
+spec:
+  identityProviders:
+  - name: my_htpasswd_provider 
+    mappingMethod: claim 
+    type: HTPasswd
+    htpasswd:
+      fileData:
+        name: htpass-secret 
+```
+
+或者oc edit oauth cluster
+
+#### htpasswd密码文件修改
+
+1.新增用户
+```
+$ htpasswd -bB users.htpasswd <username> <password>
+```
+
+2.删除用户
+```
+$ htpasswd -D users.htpasswd <username>
+```
+
+#### 更新用户密码
+
+获取现有密码文件
+```
+oc get secret htpass-secret -ojsonpath={.data.htpasswd} -n openshift-config | base64 --decode > users.htpasswd
+```
+
+更新密码文件信息之后更新
+```
+oc create secret generic htpass-secret --from-file=htpasswd=users.htpasswd --dry-run=client -o yaml -n openshift-config | oc replace -f -
+```
+
+注意: 删除用户之后, 还需要清理
+
+## 参考资料
+
+* [Configuring an HTPasswd identity provider](https://docs.openshift.com/container-platform/4.9/authentication/identity_providers/configuring-htpasswd-identity-provider.html)

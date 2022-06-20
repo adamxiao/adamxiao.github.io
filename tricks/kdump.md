@@ -2,6 +2,17 @@
 
 ## kylin coreos配置kdump
 
+开启kdump服务:
+安装rpm-ostree override replace kexec-tools-2.0.20-16.kb3.ky3.aarch64.rpm 后，重启系统
+mount -o remount,rw /boot
+mount -o remount,rw /usr
+按kdump1.png中所示修改kdumpctl，重启kdump服务
+
+简单配置1024M内存, 内核就预留了内存, 但是kdump服务由于kexec版本问题, 起不来, 替换kexec版本之后可以了!
+```
+crashkernel=1024M
+```
+
 https://access.redhat.com/documentation/zh-cn/red_hat_enterprise_linux/8/html/managing_monitoring_and_updating_the_kernel/configuring-kdump-on-the-command-line_managing-monitoring-and-updating-the-kernel
 
 发现没有内存
