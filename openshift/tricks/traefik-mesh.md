@@ -16,7 +16,10 @@ Traefik Mesh: Simpler Service Mesh
 
 参考 https://blog.csdn.net/weixin_43902588/article/details/104585541
 ```bash
+# arm64
 wget https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/helm/3.7.1/helm-linux-arm64.tar.gz
+# x86
+wget https://mirror.openshift.com/pub/openshift-v4/x86_64/clients/helm/3.7.1/helm-linux-amd64.tar.gz
 ```
 
 #### 同步traefik mesh相关镜像

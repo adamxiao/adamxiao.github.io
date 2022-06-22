@@ -62,6 +62,28 @@ provisioner: kubernetes.io/host-path
 ```
 该场景仅能用于单节点的 k8s 测试环境中
 
+0s          Warning   ProvisioningFailed   persistentvolumeclaim/test1   Failed to create provisioner: provisioning in volume plugin "kubernetes.io/host-path" is disabled
+=> 应该是功能未开启
+https://github.com/kubernetes-sigs/kind/pull/397
+kind creates a default host-path StorageClass but cannot create
+PersistentVolumes because the enable-hostpath-provisioner flag is not
+set on kube-controller-manager.
+
+This configures kubeadm to enable that feature.
+
+=> minikube开启了这个功能!
+Kubernetes : Dynamic Storage Provisioning using host-path
+https://stackoverflow.com/questions/43250021/kubernetes-dynamic-storage-provisioning-using-host-path
+```
+kubectl apply -f https://raw.githubusercontent.com/kubernetes-incubator/external-storage/master/docs/demo/hostpath-provisioner/pod.yaml
+```
+=> 404 not found
+
+https://dzone.com/articles/dynamically-provisioning-hostpath-based-volumes-on
+=> 创建一个pod处理这个pvc Dynamically
+
+
+
 ## 其他存储介绍
 
 [Rancher入门到精通-2.0 K8S 六种存储解决方案的性能比较测试 原创](https://blog.51cto.com/waxyz/5336846)

@@ -2,9 +2,17 @@
 
 ## 1. 配置htpasswd用户
 
+安装htpasswd工具
+```
+# debian系列
+sudo apt install apache2-utils
+# centos系列
+sudo yum install -y apache2-utils
+```
+
 新增admin超级管理员用户
 ```bash
-htpasswd -c -B -b users.htpasswd admin ksvd2020
+htpasswd -c -B -b users.htpasswd admin xxx
 # 输入内容如下:
 admin:$2y$05$oANlQ7bXuJQqbytIFkA7OO5Mf5pROsxoIgVU1UYdQrMTkrl2CNVi6
 ```
