@@ -364,6 +364,34 @@ spec:
 
 ## redis-cli命令使用
 
+获取从信息
+```
+127.0.0.1:6379> INFO replication
+# Replication
+role:slave
+master_host:redis-node-1.redis-headless.redis.svc.cluster.local
+master_port:6379
+master_link_status:up
+master_last_io_seconds_ago:1
+master_sync_in_progress:0
+slave_read_repl_offset:669785
+slave_repl_offset:669785
+slave_priority:100
+slave_read_only:1
+replica_announced:1
+connected_slaves:0
+master_failover_state:no-failover
+master_replid:7246075702d4b3c9cd95243d962b75da98c9fc31
+master_replid2:0000000000000000000000000000000000000000
+master_repl_offset:669785
+second_repl_offset:-1
+repl_backlog_active:1
+repl_backlog_size:1048576
+repl_backlog_first_byte_offset:1
+repl_backlog_histlen:669785
+```
+
+
 获取集群信息
 ```
 # redis-cli -c -h 192.168.0.100 -p 7000 cluster info
@@ -519,6 +547,51 @@ redis镜像不对，没有健康检测脚本
 
 在运行环境编译 redis镜像才行
 
+#### 3. redis 哨兵集群有问题, 每个节点都变成主了!
+
+原因确实是dns解析有问题，删除重启另外两个pod即可!
+
+redis容器日志如下: dns解析有问题？
+```
+[core@master1 ~]$ oc -n redis logs --tail 20 redis-node-2 redis
+ 01:23:40.32 INFO  ==> about to run the command: timeout 220 redis-cli -h redis.redis.svc.cluster.local -p 26379 sentinel get-master-addr-by-name mymaster
+Could not connect to Redis at redis.redis.svc.cluster.local:26379: Temporary failure in name resolution
+ 01:24:10.36 INFO  ==> Configuring the node as master
+1:C 28 Jun 2022 01:24:10.441 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+1:C 28 Jun 2022 01:24:10.441 # Redis version=6.2.7, bits=64, commit=00000000, modified=0, pid=1, just started
+1:C 28 Jun 2022 01:24:10.441 # Configuration loaded
+1:M 28 Jun 2022 01:24:10.442 * monotonic clock: POSIX clock_gettime
+1:M 28 Jun 2022 01:24:10.460 # A key '__redis__compare_helper' was added to Lua globals which is not on the globals allow list nor listed on the deny list.
+1:M 28 Jun 2022 01:24:10.460 * Running mode=standalone, port=6379.
+1:M 28 Jun 2022 01:24:10.460 # WARNING: The TCP backlog setting of 511 cannot be enforced because /proc/sys/net/core/somaxconn is set to the lower value of 128.
+1:M 28 Jun 2022 01:24:10.460 # Server initialized
+1:M 28 Jun 2022 01:24:10.466 * Reading RDB preamble from AOF file...
+1:M 28 Jun 2022 01:24:10.466 * Loading RDB produced by version 6.2.7
+1:M 28 Jun 2022 01:24:10.466 * RDB age 414839 seconds
+1:M 28 Jun 2022 01:24:10.466 * RDB memory usage when created 1.91 Mb
+1:M 28 Jun 2022 01:24:10.466 * RDB has an AOF tail
+1:M 28 Jun 2022 01:24:10.466 # Done loading RDB, keys loaded: 1, keys expired: 0.
+1:M 28 Jun 2022 01:24:10.466 * Reading the remaining AOF tail...
+1:M 28 Jun 2022 01:24:10.467 * DB loaded from append only file: 0.003 seconds
+1:M 28 Jun 2022 01:24:10.467 * Ready to accept connections
+```
+
+哨兵日志
+```
+[core@master1 ~]$ oc -n redis logs --tail 20 redis-node-2 sentinel
+ 01:23:58.23 INFO  ==> about to run the command: redis-cli -h redis.redis.svc.cluster.local -p 26379 sentinel get-master-addr-by-name mymaster
+Could not connect to Redis at redis.redis.svc.cluster.local:26379: Temporary failure in name resolution
+1:X 28 Jun 2022 01:24:28.502 # oO0OoO0OoO0Oo Redis is starting oO0OoO0OoO0Oo
+1:X 28 Jun 2022 01:24:28.502 # Redis version=6.2.7, bits=64, commit=00000000, modified=0, pid=1, just started
+1:X 28 Jun 2022 01:24:28.502 # Configuration loaded
+1:X 28 Jun 2022 01:24:28.503 * monotonic clock: POSIX clock_gettime
+1:X 28 Jun 2022 01:24:28.504 # A key '__redis__compare_helper' was added to Lua globals which is not on the globals allow list nor listed on the deny list.
+1:X 28 Jun 2022 01:24:28.504 * Running mode=sentinel, port=26379.
+1:X 28 Jun 2022 01:24:28.504 # WARNING: The TCP backlog setting of 511 cannot be enforced because /proc/sys/net/core/somaxconn is set to the lower value of 128.
+1:X 28 Jun 2022 01:24:28.505 # Sentinel ID is 9fe32540b27937ed9f341b0f610a0d8df405bb63
+1:X 28 Jun 2022 01:24:28.505 # +monitor master mymaster redis-node-2.redis-headless.redis.svc.cluster.local 6379 quorum 2
+```
+
 ## 其他
 
 [redis desktop manager连接redis集群_redis集群](https://www.cxyzjd.com/article/weixin_42298507/113315629)
@@ -625,6 +698,33 @@ oc new-project redis-sentinel
 oc adm policy add-scc-to-user anyuid -n redis-sentinel -z redis
 ./helm install redis redis
 ```
+
+关键字《headless service 是什么》
+[Headless Service使用场景](https://blog.csdn.net/qq_33326449/article/details/117401847)
+有状态应用，例如数据库
+
+例如主节点可以对数据库进行读写操作，而其它的两个工作节点只能读，在这里客户端就没必要指定pod服务的集群地址，直接指定数据库Pod ip地址即可，这里需要绑定dns，客户端访问dns，dns会自动返回pod IP地址列表
+
+* 无头服务不需要指定集群地址
+* 无头服务适用有状态应用例如数据库
+* 无头服务dns查询会返回pod列表，开发人员可以自定义负载均衡策略
+* 普通Service可以通过负载均衡路由到不同的容器应用
+
+#### 参考文档
+
+https://docs.bitnami.com/kubernetes/infrastructure/redis/get-started/understand-cluster-topologies/
+https://docs.bitnami.com/google-templates/infrastructure/redis/get-started/understand-cluster-config/
+https://docs.bitnami.com/kubernetes/infrastructure/redis-cluster/get-started/compare-solutions/
+[Deploy a Redis Sentinel Kubernetes cluster using Bitnami Helm charts](https://docs.bitnami.com/tutorials/deploy-redis-sentinel-production-cluster/)
+[[bitnami/redis] How to Access Redis Master Node in the Redis Sentinel Deployment outside the K8s Cluster](https://github.com/bitnami/charts/issues/4082)
+
+关键字《redis sentinel headless service》
+其他
+直接通过statefulset来部署redis复制集群
+https://www.containiq.com/post/deploy-redis-cluster-on-kubernetes
+
+https://www.linkedin.com/pulse/creating-redis-cluster-kubernetes-shishir-khandelwal
+proxy cluster
 
 ## ucloud/redis-operator部署哨兵模式
 

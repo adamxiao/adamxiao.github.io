@@ -1,5 +1,7 @@
 # 临时计划
 
+同网段pc scp到eip服务器，结果却到了gw router上！！！！
+
 ## openshift 备份恢复
 
 关键字《openshift 备份恢复》

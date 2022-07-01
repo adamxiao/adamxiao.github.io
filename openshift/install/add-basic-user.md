@@ -7,7 +7,7 @@
 # debian系列
 sudo apt install apache2-utils
 # centos系列
-sudo yum install -y apache2-utils
+sudo yum install -y httpd-tools
 ```
 
 新增admin超级管理员用户
@@ -55,7 +55,7 @@ oc adm policy add-cluster-role-to-user cluster-monitoring-view kylin-monitor
 #### 创建htpasswd secret
 
 ```
-oc create secret generic htpass-secret --from-file=htpasswd=<path_to_users.htpasswd> -n openshift-config 
+oc create secret generic htpass-secret --from-file=htpasswd=users.htpasswd -n openshift-config 
 ```
 
 或者这种方法
@@ -72,6 +72,7 @@ data:
 
 #### 创建provider
 
+通过oc edit oauth cluster, 修改新增
 ```
 apiVersion: config.openshift.io/v1
 kind: OAuth
@@ -79,7 +80,7 @@ metadata:
   name: cluster
 spec:
   identityProviders:
-  - name: my_htpasswd_provider 
+  - name: htpasswd
     mappingMethod: claim 
     type: HTPasswd
     htpasswd:
@@ -87,7 +88,11 @@ spec:
         name: htpass-secret 
 ```
 
-或者oc edit oauth cluster
+通过oc patch修改oauth资源配置
+```
+oc patch oauths cluster  --type merge --patch \
+  '{"spec":{"identityProviders":[{ "name":"htpasswd", "mappingMethod":"claim", "type":"HTPasswd", "htpasswd":{"fileData":{"name":"htpass-secret"}} }]}}'
+```
 
 #### htpasswd密码文件修改
 

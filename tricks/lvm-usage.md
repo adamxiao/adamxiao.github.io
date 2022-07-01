@@ -61,7 +61,75 @@ lvremove /dev/vg1000/lvol0 #删除逻辑卷"lvol0" 
 lvs # 查看逻辑卷组
 ```
 
+### 扩容逻辑卷分区大小
 
+lvm就是做这个事情的，防止磁盘空间不够了，需要重新安装系统的那种需求
+
+```
+vgextend  卷名 sd*
+lvextend 逻辑卷名
+lvextend -h
+```
+
+实际操作
+```
+[System not activated][root@test ~]# vgs
+  VG #PV #LV #SN Attr   VSize   VFree
+  ko   1   3   0 wz--n- <98.00g    0
+[System not activated][root@test ~]# vgextend ko /dev/vdb
+  Physical volume "/dev/vdb" successfully created.
+  Volume group "ko" successfully extended
+
+[System not activated][root@test ~]# lvs
+  LV   VG Attr       LSize  Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert
+  data ko -wi-ao---- 44.02g
+  root ko -wi-ao---- 50.00g
+  swap ko -wi-ao----  3.97g
+[System not activated][root@test ~]# vgs
+  VG #PV #LV #SN Attr   VSize   VFree
+  ko   2   3   0 wz--n- 597.99g <500.00g
+[System not activated][root@test ~]# lvextend -L +100G /dev/mapper/ko-data
+  Size of logical volume ko/data changed from 44.02 GiB (11270 extents) to 144.02 GiB (36870 extents).
+  Logical volume ko/data successfully resized.
+[System not activated][root@test ~]# lvs
+  LV   VG Attr       LSize   Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert
+  data ko -wi-ao---- 144.02g
+  root ko -wi-ao----  50.00g
+  swap ko -wi-ao----   3.97g
+
+[System not activated][root@test ~]# xfs_growfs /dev/mapper/ko-data
+xfs_growfs: /dev/mapper/ko-data is not a mounted XFS filesystem
+[System not activated][root@test ~]# resize2fs /dev/mapper/ko-data
+resize2fs 1.45.6 (20-Mar-2020)
+Filesystem at /dev/mapper/ko-data is mounted on /data; on-line resizing required
+old_desc_blocks = 6, new_desc_blocks = 19
+The filesystem on /dev/mapper/ko-data is now 37754880 (4k) blocks long.
+
+[System not activated][root@test ~]# df -h | grep data
+/dev/mapper/ko-data  142G  154M  136G   1% /data
+```
+
+关键字《lvm分区增大》
+
+[Linux下对LVM逻辑卷分区大小调整 [针对xfs和ext4文件系统]](https://www.cnblogs.com/kevingrace/p/5825963.html)
+
+
+特别注意的是：
+```
+resize2fs 命令            针对的是ext2、ext3、ext4文件系统
+xfs_growfs 命令         针对的是xfs文件系统
+```
+
+关键字《centos qcow2 分区增大》
+https://opengers.github.io/openstack/openstack-instance-disk-resize-and-convert/
+```
+#我们把40G加到分区2上     
+#growpart /dev/vda 2
+CHANGED: partition=2 start=33556480 old: size=50329600 end=83886080 new: size=134210315,end=167766795
+
+#然后扩容分区2文件系统    
+#xfs_growfs /
+```
 
 ## FAQ
 
