@@ -62,6 +62,7 @@ XXX: 配置镜像仓库只读
 
 ./config.yml:/etc/docker/registry/config.yml:Z
 ```yaml
+storage:
   maintenance:
     readonly:
       enabled: false
@@ -98,6 +99,62 @@ health:
 docker tag registry:2 quay.iefcu.cn:9443/public/registry:2
 docker push quay.iefcu.cn:9443/public/registry:2
 docker pull quay.iefcu.cn:9443/public/registry:2
+```
+
+## 配置registry
+
+参考[官方配置文档](https://docs.docker.com/registry/configuration/)
+Override specific configuration options
+In a typical setup where you run your Registry from the official image, you can specify a configuration variable from the environment by passing -e arguments to your docker run stanza or from within a Dockerfile using the ENV instruction.
+
+To override a configuration option, create an environment variable named REGISTRY_variable where variable is the name of the configuration option and the _ (underscore) represents indention levels. For example, you can configure the rootdirectory of the filesystem storage backend:
+
+```
+storage:
+  filesystem:
+    rootdirectory: /var/lib/registry
+```
+To override this value, set an environment variable like this:
+
+```
+REGISTRY_STORAGE_FILESYSTEM_ROOTDIRECTORY=/somewhere
+```
+
+#### 配置只读仓库
+
+docker-compose配置环境变量
+```
+REGISTRY_STORAGE_MAINTENANCE_READONLY_ENABLED: 'true'
+```
+报错: panic: readonly config key must contain additional keys
+
+查找资料验证发现配置如下即可: https://github.com/distribution/distribution/issues/1736
+```
+REGISTRY_STORAGE_MAINTENANCE_READONLY: "{'enable': 'true'}"
+```
+
+#### 配置权限认证
+
+生成htpasswd认证文件, 然后配置registry开启htpasswd认证
+```
+htpasswd -c -B -b users.htpasswd admin xxx
+```
+
+使用docker-compose参数
+```
+- ./registry/users.htpasswd:/auth/users.htpasswd:Z
+
+REGISTRY_AUTH: 'htpasswd'
+REGISTRY_AUTH_HTPASSWD_REALM: 'Registry Realm'
+REGISTRY_AUTH_HTPASSWD_PATH: /auth/users.htpasswd
+```
+
+使用命令行参数
+```
+-v /var/lib/registry_auth/:/auth/ \
+-e "REGISTRY_AUTH=htpasswd" \
+-e "REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm" \
+-e "REGISTRY_AUTH_HTPASSWD_PATH=/auth/users.htpasswd" \
 ```
 
 ## docker registry v2协议使用
