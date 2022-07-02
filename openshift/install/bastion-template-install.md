@@ -107,3 +107,17 @@ ftp://10.0.0.5/02-研发二部/01-仅部门内可见/xiaoyun/北京容器云平�
 * rhcos-4.9.0-x86_64-live.x86_64.iso => x86平台的iso，987M
 
 * docker => 容器镜像文件, 9.7G
+
+## 安装完后续操作
+
+* 注意修改时间, 堡垒机时间, xxx时间 => done
+* 注意现在的release, master安装不能加selinux=0, 这里后续需要更新release
+  提取openshift-install也比较慢, 需要适配做一个新的release!
+* kylin-logo => done
+* 增加修改ip, dns => done, 只有master节点需要, done
+* 禁止清理镜像 => master done
+* 搭建内置dns,registry => done
+* 限定haproxy内置调度 => done
+* 添加额外worker节点 => done
+=> 优化堡垒机程序以及文档
+
