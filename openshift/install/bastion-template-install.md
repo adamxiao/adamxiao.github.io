@@ -7,6 +7,7 @@ TODO:
 * 1.修改release
 * 2.修改openshift-install的缓存
 * 3.增加master安装脚本(增加修改说明)
+* 堡垒机安装httpd-tools, 方便添加htpasswd用户
 
 ## 准备一个堡垒机环境，基于x86的，gitlab代码如下:
 
