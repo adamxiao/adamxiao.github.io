@@ -75,3 +75,16 @@ fstab数据分区自动挂载, blkid查看uuid
 # /adam data partition
 UUID=33e9ae3c-24bb-4fd5-bfb8-f90dc5275379 /adam           ext4    defaults        0       2
 ```
+
+## 其他
+
+#### uniface ubuntu 22.04起不来
+
+export GDK_BACKEND=x11
+```
+if [ -d "/opt/ksvd/usr/lib/ksvd_client" ];
+then
+    export GDK_BACKEND=x11
+fi
+```
+
