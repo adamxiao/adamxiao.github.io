@@ -1,5 +1,45 @@
 # 基于ovs的namespace中的dhcp服务
 
+TODO:
+* 1.错误码返回?
+  例如创建接口时, 发现接口已经存在?
+
+## 接口设计
+
+提供接口
+* 新增dhcp => ok
+  生成dnsmasq服务配置, 并启动dnsmasq服务
+* 新增虚拟机ip, mac绑定 => ok
+  重新生成dnsmasq配置, 通知程序重新加载配置
+* 销毁dhcp => ok
+  停止dnsmasq服务, 销毁相关配置
+* 列表所有dhcp服务
+  列表当前存在的所有dnsmasq服务, 以及状态
+  is-active：目前有没有正在运行中。
+
+### 测试用例
+
+#### 创建dhcp, 已经存在netns
+
+已存在其他残留数据的场景
+* 存在netns
+  => 使用这个现有的netns! 加上日志, 不应该出现这种情况
+* 存在dhcp接口
+  => FIXME: 直接删除旧接口!
+* 存在dhcp配置
+  => 不处理
+* 存在dhcp服务配置
+  => 认为服务已存在, 无法创建(考虑最后请dhcp服务配置文件)
+
+只要存在netns, 则检查服务是否存在, 不存在则认为是残留数据
+存在服务认为dhcp服务存在, 不处理
+
+#### 清理dhcp, 清理掉所有的数据
+
+最后清理dhcp服务配置文件
+
+## 其他
+
 ExecStartPre
 ExecStartPost
 
@@ -140,4 +180,49 @@ ExecStart=/usr/sbin/dnsmasq -k
 
 [Install]
 WantedBy=multi-user.target
+```
+
+TODO: 是否考虑开机启动? => no? 
+* 代码兼容清理旧数据
+```
+[ssh_10.90.2.11] root@node1: ~$systemctl cat vpc-subnet1
+# /usr/lib/systemd/system/vpc-subnet1.service
+[Unit]
+Description=DHCP server
+After=network.target
+
+[Service]
+ExecStart=/usr/sbin/ip netns exec vpc-subnet1 /usr/sbin/dnsmasq -k --conf-file=/var/lib/ksvd/dnsmasq/vpc-subnet1/dnsmasq.conf
+
+[Install]
+WantedBy=multi-user.target
+```
+
+
+python 子网掩码转换
+参考: https://www.jianshu.com/p/8955e91a45af
+```python
+# 子网掩码地址转长度
+def netmask_to_bit_length(netmask):
+  """
+  >>> netmask_to_bit_length('255.255.255.0')
+  24
+  >>>
+  """
+  # 分割字符串格式的子网掩码为四段列表
+  # 计算二进制字符串中 '1' 的个数
+  # 转换各段子网掩码为二进制, 计算十进制
+  return sum([bin(int(i)).count('1') for i in netmask.split('.')])
+
+# 子网掩码长度转地址
+def bit_length_to_netmask(mask_int):
+  """
+  >>> bit_length_to_netmask(24)
+  '255.255.255.0'
+  >>>
+  """
+  bin_array = ["1"] * mask_int + ["0"] * (32 - mask_int)
+  tmpmask = [''.join(bin_array[i * 8:i * 8 + 8]) for i in range(4)]
+  tmpmask = [str(int(netmask, 2)) for netmask in tmpmask]
+  return '.'.join(tmpmask)
 ```
