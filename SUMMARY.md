@@ -67,3 +67,5 @@
    * [openshift日志](openshift/logs/README.md)
    * [kubernets client api使用](openshift/tricks/kubernetes-client-api.md)
    * [machine config原理调研](openshift/machine-config.md)
+* [服务器虚拟化相关](openstack/README.md)
+   * [基于ovs的namespace中的dhcp服务](openstack/ovs-namespace-dhcp.md)
