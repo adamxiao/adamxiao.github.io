@@ -49,9 +49,9 @@ tag:faa91684f700,option:mtu,1500
 # 测试:
 # 没有文件的情况; 文件为空内容的情况; 语法异常的情况; 配置缺失的情况;
 # 读取配置文件
-def load_config():
-  # Open the file and load the file
-  with open('/etc/kylin-dhcp/kylin-dhcp.yaml') as f:
+def load_config(conf_file):
+  # 传入配置文件, 例如: /etc/kylin-dhcp/kylin-dhcp.yaml
+  with open(conf_file) as f:
     data = yaml.load(f, Loader=SafeLoader)
     # print(data)
     return data
@@ -272,12 +272,12 @@ def gen_flag():
 
 
 # 重新生成dhcp配置, 重新加载dhcp配置
-def reload_dhcp(device):
+def reload_dhcp(conf_file):
   if not check_flag():
     gen_flag()
-  data = load_config()
+  data = load_config(conf_file)
   if not data:
-    print('load config failed!')
+    print('load config %s failed!' % conf_file)
     return
 
   l3_name = get_l3_name(data)
@@ -286,12 +286,12 @@ def reload_dhcp(device):
 
 
 # 创建dhcp并启动dhcp服务
-def create_dhcp(device):
+def create_dhcp(conf_file):
   if not check_flag():
     gen_flag()
-  data = load_config()
+  data = load_config(conf_file)
   if not data:
-    print('load config failed!')
+    print('load config %s failed!' % conf_file)
     return
 
   l3_name = get_l3_name(data)
@@ -319,11 +319,8 @@ def destroy_dhcp(network):
   if network:
     l3_name = 'vpc-' + network
   else:
-    data = load_config()
-    if not data:
-      print('load config failed!')
-      return
-    l3_name = get_l3_name(data)
+    print('empty network!')
+    return
 
   # 对应创建dhcp的反向操作
   # 1. 停止dhcp服务, 以及销毁dhcp服务配置
@@ -338,7 +335,7 @@ def destroy_dhcp(network):
 
 # 获取所有的dhcp服务列表, 以及状态
 def list_all_dhcp_status():
-  list_cmd = "systemctl list-unit-files | grep vpc- | awk '{print $1}'"
+  list_cmd = "systemctl list-unit-files | grep ^vpc- | awk '{print $1}'"
   proc = subprocess.Popen(list_cmd, shell=True, stdout = subprocess.PIPE)
   dhcp_list = []
   while True:
@@ -388,7 +385,7 @@ def main():
   parser.add_argument('-c', '--command', help='sub command', \
         choices=['create', 'destroy', 'reload', 'status'], \
         default='reload')
-  parser.add_argument('-d', '--device', help='specify interface name. Example: -c init -d eth2')
+  parser.add_argument('-y', '--yaml', help='specify dhcp config yaml. Example: -c init -y xxx.yaml')
   parser.add_argument('-n', '--network', help='specify vpc network name. Example: -c destroy -n subnet1')
   args = parser.parse_args()
 
@@ -397,13 +394,13 @@ def main():
 
   cmd = args.command if args.command else 'init'
   if 'create' == cmd:
-    create_dhcp(args.device)
+    create_dhcp(args.yaml)
   elif 'destroy' == cmd:
     destroy_dhcp(args.network)
   elif 'status' == cmd:
     list_all_dhcp_status()
   else: # reload
-    reload_dhcp(args.device)
+    reload_dhcp(args.yaml)
 
 if __name__ == '__main__':
   main()
