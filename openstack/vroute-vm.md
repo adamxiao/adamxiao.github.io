@@ -1,5 +1,30 @@
 # 创建虚拟路由虚拟机
 
+## 外部提供接口设计
+
+提供接口
+* 生效配置
+  参数为kylin-vr配置文件, 实现为生效配置
+* 其他子接口设计
+  * 关联vpc网络(一个或多个)
+  * 新增EIP配置(一个或多个)
+  * 新增端口转发配置(一个或多个)
+
+问题:
+* 写空配置文件。。。
+  * 句柄文件泄漏?
+* 配置文件出错, reload失败?
+* reload失败怎么看日志?
+
+关键字《python string format already has {》
+https://blog.finxter.com/how-to-format-a-string-that-contains-curly-braces-in-python/
+* Method 1: Using Double Curly Braces
+* Method 2: Using The Old String Formatting Style (%)
+* Method 3: Using The JSON Library
+* Method 4: Using Template Strings
+
+## TODO:
+
 TODO(20220608):
 * kylin-vr整体rpm包安装粗略测试 => ok
 
