@@ -115,3 +115,7 @@ virsh qemu-agent-command $domain '{"execute":"guest-exec-status","arguments":{"p
 #### mac地址错误, 添加网卡失败
 
 libvirt: Domain Config error : XML 错误：意外单播 mac 地址，找到多播 '11:11:22:22:33:00'
+
+## 其他资料
+
+[Installation of a libvirt VM over a serial console](https://p5r.uk/blog/2020/libvirt-vm-installation-over-serial-console.html)
