@@ -82,3 +82,35 @@ split 分片, 例如平均分3片, 以数字结尾, 取xxx前缀名称
 cat xxx | split -n 3 -d
 split -n 3 -d xxx xxx-
 ```
+
+## unzip中文乱码
+
+
+[Linux下使用unzip解压缩中文乱码问题](https://blog.csdn.net/gatieme/article/details/44807105)
+
+使用python来处理
+```python
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+# uzip.py
+
+import os
+import sys
+import zipfile
+
+print "Processing File " + sys.argv[1]
+
+file=zipfile.ZipFile(sys.argv[1],"r");
+for name in file.namelist():
+    utf8name=name.decode('gbk')
+    print "Extracting " + utf8name
+    pathname = os.path.dirname(utf8name)
+    if not os.path.exists(pathname) and pathname!= "":
+        os.makedirs(pathname)
+    data = file.read(name)
+    if not os.path.exists(utf8name):
+        fo = open(utf8name, "w")
+        fo.write(data)
+        fo.close
+file.close()
+```

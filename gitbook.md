@@ -12,6 +12,7 @@ docker run -it --rm -v $PWD:/srv/gitbook hub.iefcu.cn/public/gitbook bash
 ```
 
 自己构建gitbook镜像, 创建Dockerfile内容如下：
+(参考fellah/gitbook的构建镜像的Dockerfile)
 ```dockerfile
 #FROM node:6-slim
 FROM hub.iefcu.cn/public/node:6-slim
@@ -39,13 +40,6 @@ CMD /usr/local/bin/gitbook serve
 然后一键构建gitbook镜像
 ```bash
 docker build -t hub.iefcu.cn/xiaoyun/gitbook .
-
-# 或者使用buildx一键构建多架构镜像
-#docker buildx build \
-        #--build-arg http_proxy=http://proxy.iefcu.cn:20172 --build-arg https_proxy=http://proxy.iefcu.cn:20172 \
-        #--build-arg no_proxy=yumrepo.unikylin.com.cn,192.0.0.0/8 \
-        #--platform=linux/arm64,linux/amd64 \
-        #-t hub.iefcu.cn/xiaoyun/gitbook . --push
 ```
 
 或者一键构建多架构gitbook镜像
@@ -54,9 +48,14 @@ docker build -t hub.iefcu.cn/xiaoyun/gitbook .
 docker buildx build \
     --build-arg http_proxy=http://proxy.iefcu.cn:20172 \
     --build-arg https_proxy=http://proxy.iefcu.cn:20172 \
-    --build-arg no_proxy=yumrepo.unikylin.com.cn,192.0.0.0/8 \                                                                                                                                                         --platform=linux/arm64,linux/amd64 \
+    --build-arg no_proxy=yumrepo.unikylin.com.cn,192.0.0.0/8 \
+    --platform=linux/arm64,linux/amd64 \
     -t hub.iefcu.cn/xiaoyun/gitbook . --push
 ```
+
+## gitbook使用sequence
+
+在vscode的markdown preview天然就有sequence的插件
 
 ## gitbook导出pdf
 
@@ -142,3 +141,12 @@ https://zhousiwei.gitee.io/ibooks/notes/gitbook_config.html
 * 4、GitBook插件列表: 
 * prism 基于 Prism 的代码高亮 ➡️ https://github.com/gaearon/gitbook-plugin-prism
 
+## 其他
+
+https://juejin.cn/post/7017785120195084302
+gitbook的入坑之路
+
+产生这个报错的原因在于，nodejs 的版本不对，不支持这个 gitbook.
+有两个解决办法：
+一，切换 nodejs 的版本：
+切换成 nodejs 的 v10.21.0 版本就会成功。
