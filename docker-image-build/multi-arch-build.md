@@ -107,3 +107,27 @@ done
 
 docker manifest push ${DOCKER_REPO}:${VERSION}
 ```
+
+## centos使用qemu-user-static
+
+1、注册qemu解释器
+```bash
+#docker run --rm --privileged multiarch/qemu-user-static:register --reset
+docker run --rm --privileged hub.iefcu.cn/multiarch/qemu-user-static:register --reset
+```
+
+2、运行arm64v8/ubuntu:18.04时将本地qemu-aarch64-static映射到容器内
+(或者直接构建进容器镜像里面去)
+```
+docker run --rm -t -v /usr/bin/qemu-aarch64-static:/usr/bin/qemu-aarch64-static arm64v8/ubuntu:18.04 uname -m
+aarch64
+```
+
+3、如果需要以arm64v8/ubuntu:18.04为基础制作新的镜像，在Dockerfile中就需要将 qemu-aarch64-static添加到/usr/bin/下：
+```
+ADD qemu-aarch64-static /usr/bin
+```
+
+## 参考资料
+
+* [在x86服务器上 搭建基于docker的arm64程序编译和运行环境](https://blog.csdn.net/u011337602/article/details/103810657)
