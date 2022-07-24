@@ -21,6 +21,14 @@ dhcp-option=subnet3_20,option:domain-search,iefcu.cn
 
 #### 启动dnsmasq容器服务
 
+docker创建macvlan网络
+```bash
+docker network create -d macvlan \
+  --subnet=10.20.1.1/20 \
+  --gateway=10.20.1.1 -o parent=enp2s0 macvlan-enp2s0
+```
+
+启动dnsmasq服务
 ```bash
 docker run \
     --name dnsmasq \

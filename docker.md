@@ -1,5 +1,27 @@
 # docker 入门
 
+## 容器工作环境
+
+#### ubuntu tmux 终端工作环境
+
+编写脚本run-adam-ubuntu.sh
+```bash
+docker run -it --privileged --name adam --restart=always \
+  -v $HOME/Downloads:/home/adam/Downloads \
+  -v $HOME/Documents:/home/adam/Documents \
+  -v $HOME/workspaces:/home/adam/workspaces \
+  -v $HOME/bin:/home/adam/bin \
+  -v $HOME/.gitconfig:/home/adam/.gitconfig \
+  -v $HOME/.ssh:/home/adam/.ssh \
+  -w /home/adam/ y.iefcu.cn:9443/public/adam-ubuntu
+
+alias adam='docker exec -it adam zsh'
+```
+
+最后每次进入容器环境, 就可以使用`adam`命令进入
+
+## docker简单使用
+
 https://yeasy.gitbooks.io/docker_practice/content/image/build.html
 
 1. docker镜像层数查看
