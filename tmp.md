@@ -1,5 +1,96 @@
 # 临时计划
 
+TODO:
+* xxx
+
+pvc应用部署特别慢
+有时候还挂载不上(nextcloud容器里面没有pvc目录内容?)
+=> 感觉都是glusterfs问题?
+
+思路:
+* 可能没法远程查看日志!
+* 尝试复现问题?
+  => delete pod,让有pvc的pod不停的启动挂载
+* 理清启动pvc容器的流程,到时候就有精确的日志可以分析?
+* 可能是mount挂载失败,但是返回成功,导致的?
+  又或者挂载成功,glusterfs啥的又退出重启导致的?
+  分析glusterfsd的日志,对着哪个时间点分析
+
+=> 看journel日志好像都挂载成功了(127.log)?是否挂载成功又断开导致的?(有奇怪日志如下)
+```
+Jul 25 16:12:02 worker2.kcp5.iefcu.cn hyperkube[2997]: I0725 16:12:02.873423    2997 reconciler.go:196] "operationExecutor.UnmountVolume started for volume \"nextcloud-data\" (UniqueName: \"kubernetes.io/glusterfs/8751621b-213f-4619-8200-10f2a4ec6abb-pvc-2fc465c6-77d6-424d-acb7-d2831fb9eed8\") pod \"8751621b-213f-4619-8200-10f2a4ec6abb\" (UID: \"8751621b-213f-4619-8200-10f2a4ec6abb\") "
+Jul 25 16:12:02 worker2.kcp5.iefcu.cn hyperkube[2997]: W0725 16:12:02.900200    2997 mount_helper_common.go:133] Warning: "/var/lib/kubelet/pods/8751621b-213f-4619-8200-10f2a4ec6abb/volumes/kubernetes.io~glusterfs/pvc-2fc465c6-77d6-424d-acb7-d2831fb9eed8" is not a mountpoint, deleting
+Jul 25 16:12:02 worker2.kcp5.iefcu.cn hyperkube[2997]: I0725 16:12:02.900357    2997 operation_generator.go:866] UnmountVolume.TearDown succeeded for volume "kubernetes.io/glusterfs/8751621b-213f-4619-8200-10f2a4ec6abb-pvc-2fc465c6-77d6-424d-acb7-d2831fb9eed8" (OuterVolumeSpecName: "nextcloud-data") pod "8751621b-213f-4619-8200-10f2a4ec6abb" (UID: "8751621b-213f-4619-8200-10f2a4ec6abb"). InnerVolumeSpecName "pvc-2fc465c6-77d6-424d-acb7-d2831fb9eed8". PluginName "kubernetes.io/glusterfs", VolumeGidValue "2008"
+```
+=> 佐治说127的/var/log/glusterfs这个目录为空, 本来也应该为空,我搞错了
+
+查看journel日志,发现时kubelet挂载存储的
+```
+Jul 27 07:22:47 master2.kcp2-arm.iefcu.cn systemd[1]: var-lib-kubelet-pods-c4f9b4dc\x2d7f0b\x2d4963\x2d808a\x2d6a0cce4bce56-volumes-kubernetes.io\x7eprojected-kube\x2dapi\x2daccess\x2d7ggnw.mount: Succeeded.
+Jul 27 07:22:47 master2.kcp2-arm.iefcu.cn systemd[2788385]: var-lib-kubelet-pods-c4f9b4dc\x2d7f0b\x2d4963\x2d808a\x2d6a0cce4bce56-volumes-kubernetes.io\x7eglusterfs-pvc\x2d62459741\x2d87ad\x2d489c\x2da28d\x2d17ef3ed15882.mount: Succeeded.
+Jul 27 07:22:47 master2.kcp2-arm.iefcu.cn systemd[1]: var-lib-kubelet-pods-c4f9b4dc\x2d7f0b\x2d4963\x2d808a\x2d6a0cce4bce56-volumes-kubernetes.io\x7eglusterfs-pvc\x2d62459741\x2d87ad\x2d489c\x2da28d\x2d17ef3ed15882.mount: Succeeded.
+Jul 27 07:22:47 master2.kcp2-arm.iefcu.cn hyperkube[1998]: I0727 07:22:47.264124    1998 operation_generator.go:866] UnmountVolume.TearDown succeeded for volume "kubernetes.io/projected/c4f9b4dc-7f0b-4963-808a-6a0cce4bce56-kube-api-access-7ggnw" (OuterVolumeSpecName: "kube-api-access-7ggnw") pod "c4f9b4dc-7f0b-4963-808a-6a0cce4bce56" (UID: "c4f9b4dc-7f0b-4963-808a-6a0cce4bce56"). InnerVolumeSpecName "kube-api-access-7ggnw". PluginName "kubernetes.io/projected", VolumeGidValue ""
+Jul 27 07:22:47 master2.kcp2-arm.iefcu.cn hyperkube[1998]: W0727 07:22:47.295471    1998 mount_helper_common.go:133] Warning: "/var/lib/kubelet/pods/c4f9b4dc-7f0b-4963-808a-6a0cce4bce56/volumes/kubernetes.io~glusterfs/pvc-62459741-87ad-489c-a28d-17ef3ed15882" is not a mountpoint, deleting
+Jul 27 07:22:47 master2.kcp2-arm.iefcu.cn hyperkube[1998]: I0727 07:22:47.295885    1998 operation_generator.go:866] UnmountVolume.TearDown succeeded for volume "kubernetes.io/glusterfs/c4f9b4dc-7f0b-4963-808a-6a0cce4bce56-pvc-62459741-87ad-489c-a28d-17ef3ed15882" (OuterVolumeSpecName: "redis-data") pod "c4f9b4dc-7f0b-4963-808a-6a0cce4bce56" (UID: "c4f9b4dc-7f0b-4963-808a-6a0cce4bce56"). InnerVolumeSpecName "pvc-62459741-87ad-489c-a28d-17ef3ed15882". PluginName "kubernetes.io/glusterfs", VolumeGidValue "2003"
+Jul 27 07:22:48 master2.kcp2-arm.iefcu.cn systemd[1]: Started Kubernetes transient mount for /var/lib/kubelet/pods/431acc92-183f-4efa-8dba-ce51f91e86d8/volumes/kubernetes.io~glusterfs/pvc-62459741-87ad-489c-a28d-17ef3ed15882.
+Jul 27 07:22:49 master2.kcp2-arm.iefcu.cn hyperkube[1998]: I0727 07:22:49.060162    1998 glusterfs.go:399] successfully mounted directory /var/lib/kubelet/pods/431acc92-183f-4efa-8dba-ce51f91e86d8/volumes/kubernetes.io~glusterfs/pvc-62459741-87ad-489c-a28d-17ef3ed15882
+```
+
+挂载失败的日志
+```
+Jul 23 09:40:11 worker1.kcp5.iefcu.cn hyperkube[2995]: E0723 09:40:11.439654    2995 mount_linux.go:184] Mount failed: exit status 1
+Jul 23 09:40:11 worker1.kcp5.iefcu.cn hyperkube[2995]: Mounting command: systemd-run
+Jul 23 09:40:11 worker1.kcp5.iefcu.cn hyperkube[2995]: Mounting arguments: --description=Kubernetes transient mount for /var/lib/kubelet/pods/42058c08-d033-400b-9e89-838f7c7cb9d8/volumes/kubernetes.io~glusterfs/pvc-2fc465c6-77d6-424d-acb7-d2831fb9eed8 --scope -- mount -t glusterfs -o auto_unmount,backup-volfile-servers=192.168.1.131:192.168.1.130:192.168.1.129,log-file=/var/lib/kubelet/plugins/kubernetes.io/glusterfs/pvc-2fc465c6-77d6-424d-acb7-d2831fb9eed8/nextcloud-8658d9f6ff-bwns9-glusterfs.log,log-level=ERROR 192.168.1.130:vol_4d078ecee37c902bf1d174ca8b81bb67 /var/lib/kubelet/pods/42058c08-d033-400b-9e89-838f7c7cb9d8/volumes/kubernetes.io~glusterfs/pvc-2fc465c6-77d6-424d-acb7-d2831fb9eed8
+Jul 23 09:40:11 worker1.kcp5.iefcu.cn hyperkube[2995]: Output: Running scope as unit: run-r7e062fe5e1d84d04863fd8cd730607ca.scope
+Jul 23 09:40:11 worker1.kcp5.iefcu.cn hyperkube[2995]: [2022-07-23 01:40:03.368032] E [glusterfsd.c:828:gf_remember_backup_volfile_server] 0-glusterfs: failed to set volfile server: File exists
+Jul 23 09:40:11 worker1.kcp5.iefcu.cn hyperkube[2995]: Mounting glusterfs on /var/lib/kubelet/pods/42058c08-d033-400b-9e89-838f7c7cb9d8/volumes/kubernetes.io~glusterfs/pvc-2fc465c6-77d6-424d-acb7-d2831fb9eed8 failed.
+Jul 23 09:40:11 worker1.kcp5.iefcu.cn hyperkube[2995]: I0723 09:40:11.439768    2995 glusterfs_util.go:37] failure, now attempting to read the gluster log for pod nextcloud-8658d9f6ff-bwns9
+Jul 23 09:40:11 worker1.kcp5.iefcu.cn hyperkube[2995]: W0723 09:40:11.446549    2995 mount_helper_common.go:133] Warning: "/var/lib/kubelet/pods/42058c08-d033-400b-9e89-838f7c7cb9d8/volumes/kubernetes.io~glusterfs/pvc-2fc465c6-77d6-424d-acb7-d2831fb9eed8" is not a mountpoint, deleting
+Jul 23 09:40:11 worker1.kcp5.iefcu.cn hyperkube[2995]: E0723 09:40:11.447983    2995 nestedpendingoperations.go:301] Operation for "{volumeName:kubernetes.io/glusterfs/42058c08-d033-400b-9e89-838f7c7cb9d8-pvc-2fc465c6-77d6-424d-acb7-d2831fb9eed8 podName:42058c08-d033-400b-9e89-838f7c7cb9d8 nodeName:}" failed. No retries permitted until 2022-07-23 09:40:11.947922717 +0800 CST m=+3120.720192199 (durationBeforeRetry 500ms). Error: MountVolume.SetUp failed for volume "pvc-2fc465c6-77d6-424d-acb7-d2831fb9eed8" (UniqueName: "kubernetes.io/glusterfs/42058c08-d033-400b-9e89-838f7c7cb9d8-pvc-2fc465c6-77d6-424d-acb7-d2831fb9eed8") pod "nextcloud-8658d9f6ff-bwns9" (UID: "42058c08-d033-400b-9e89-838f7c7cb9d8") : mount failed: mount failed: exit status 1
+```
+
+宿主机特定目录下也确实可以看到容器里面的目录
+```
+[root@master2 core]# cd /var/lib/kubelet/pods/431acc92-183f-4efa-8dba-ce51f91e86d8/volumes/kubernetes.io~glusterfs/pvc-62459741-87ad-489c-a28d-17ef3ed15882/
+[root@master2 pvc-62459741-87ad-489c-a28d-17ef3ed15882]# ls
+adam.txt  appendonly.aof  dump.rdb
+```
+
+使用crictl查看容器相关信息
+```bash
+crictl ps | grep redis
+crictl inspect 2e0bf0adf3e68
+
+# 可以看到里面的挂载信息
+    "mounts": [
+      {
+        "containerPath": "/data",
+        "hostPath": "/var/lib/kubelet/pods/431acc92-183f-4efa-8dba-ce51f91e86d8/volumes/kubernetes.io~glusterfs/pvc-62459741-87ad-489c-a28d-17ef3ed15882",
+        "propagation": "PROPAGATION_PRIVATE",
+        "readonly": false,
+        "selinuxRelabel": false
+      },
+```
+
+10.90.4.62 => 10.90.4.63
+=> 去除--tls参数即可成功
+```
+virsh migrate 25588abb-3abf-3e52-1fe0-0d28ef6c1896 --p2p --unsafe --tls qemu+tcp://10.90.4.63/system tcp://10.90.4.63
+
+error: 内部错误：qemu unexpectedly closed the monitor: 2022-07-20T08:33:00.363302Z qemu-kvm: Not a migration stream
+2022-07-20T08:33:00.363486Z qemu-kvm: load of migration failed: Invalid argument
+```
+
+分析原因:
+* 1.libvirt没有配置正确
+* 2.证书路径不对, 证书不对
+* 3.xxx
+
+确认:
+1.看目的libvirt的日志
+  源日志,目的, libvirt, qemu
+
+
 同网段pc scp到eip服务器，结果却到了gw router上！！！！
 
 ## openshift 备份恢复

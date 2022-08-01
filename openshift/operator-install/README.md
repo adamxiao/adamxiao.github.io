@@ -17,6 +17,12 @@ oc -n openshift-operators get clusterserviceversion -o yaml
     name: elasticsearch-operator.5.3.4-13
 ```
 
+#### 其他镜像
+
+可能是ocp编译相关的数据
+https://github.com/openshift/ocp-build-data.git
+例如 ./modifications/update-console-sources 中有更新console编译环境的操作。。。
+
 #### openshift-install编译
 
 源码： https://github.com/openshift/installer#release-4.8
@@ -392,4 +398,41 @@ ENTRYPOINT ["/coredns"]
 # 缺点： 没有shell
 # ...
 podman build -f Dockerfile.adam -t hub.iefcu.cn/xiaoyun/ocp-build:4.8.9-x86_64-coredns .
+```
+
+#### cluster-network-operator
+
+适配kylin coreos使用
+
+创建dockerfile
+```
+FROM hub.iefcu.cn/xiaoyun/openshift4-aarch64:4.9.0-rc.6-arm64-cluster-network-operator
+COPY ./multus.yaml /bindata/network/multus/multus.yaml
+```
+
+提取multus.yaml并修改
+```
+oc image extract --path  /bindata/network/multus/multus.yaml:/tmp/tmpdir hub.iefcu.cn/xiaoyun/openshift4-aarch64:4.9.0-rc.6-arm64-cluster-network-operator
+```
+
+修改内容如下:
+```diff
+diff --git a/multus.yaml b/multus.yaml
+index 4ac2461..df3769b 100644
+--- a/multus.yaml
++++ b/multus.yaml
+@@ -35,6 +35,8 @@ data:
+     case "${ID}" in
+       rhcos) rhelmajor=8
+       ;;
++      KylinSecOS) rhelmajor=8
++      ;;
+       rhel) rhelmajor=$(echo "${VERSION_ID}" | cut -f 1 -d .)
+       ;;
+       fedora)
+```
+
+最后可以简单构建一个镜像
+```
+docker build -f ./Dockerfile -t hub.iefcu.cn/xiaoyun/ocp-build:4.9.0-rc.6-arm64-cluster-network-operator .
 ```
