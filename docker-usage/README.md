@@ -142,7 +142,7 @@ alias adam='docker exec -it adam zsh'
 
 安装了我的常用vim基本插件, 方便我在哪里使用vim效果都一样
 
-* 源码: https://github.com/adamxiao/vim-env (分支base)
+* 源码: vim-env仓库 (分支base)
 
 ```bash
 alias vi='docker run -ti -e TERM=xterm-256color -e COLUMNS=$(tput cols) -e LINES=$(tput lines) --rm -v $(pwd):/data hub.iefcu.cn/public/vim-env:base'

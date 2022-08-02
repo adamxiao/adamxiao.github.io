@@ -63,7 +63,7 @@ docker exec -it ubuntu_sphinx bash
 ```
 FROM ubuntu:18.04
 
-MAINTAINER  Adam Xiao "http://github.com/adamxiao"
+MAINTAINER  Adam Xiao "iefcuxy@gmail.com"
 
 ARG DEBIAN_FRONTEND=noninteractive
 

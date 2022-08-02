@@ -1,7 +1,7 @@
 # vim usage
 
 ## vim configure
-详细配置存储在[github](https://github.com/adamxiao/ubuntu_10.04_etc)上
+
 ```vim
 " 扩展*, 选中文本搜索
 vnoremap <silent> * y/<C-R>=substitute(escape(@", '^$~.*\\/[]'), "\n", '\\n', 'g')<CR><CR>

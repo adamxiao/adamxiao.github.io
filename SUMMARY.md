@@ -28,6 +28,7 @@
    * [docker多架构镜像编译方法](docker-image-build/multi-arch-build.md)
    * [使用podman镜像编译构建镜像](docker-image-build/use-podman-build-image.md)
 * [openshift使用](openshift/README.md)
+   * [k8s原理与使用简介 - 分享](openshift/k8s-usage-share-ppt.md)
    * [openshift基本安装](openshift/install/README.md)
        * [离线安装部署kcp文档](openshift/ocp-install.md)
        * [定制安装部署kcp技巧](openshift/ocp-custom-install.md)
