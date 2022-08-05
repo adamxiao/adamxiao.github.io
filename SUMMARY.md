@@ -70,3 +70,4 @@
    * [machine config原理调研](openshift/machine-config.md)
 * [服务器虚拟化相关](openstack/README.md)
    * [基于ovs的namespace中的dhcp服务](openstack/ovs-namespace-dhcp.md)
+   * [搭建ipsan存储服务的方法](tricks/san-server-setup.md)

@@ -1,5 +1,36 @@
 # k8s原理与使用简介分享ppt
 
+分享目标:
+* 了解k8s架构
+* 简单入门使用k8s
+* 为什么要用k8s?
+  * k8s部署容器应用的目的
+* 为什么要了解k8s的架构
+  * 了解原理,设计实现,参考k8s的逻辑,可以编写自己的逻辑
+* 可以这样做,以及为什么要这样做?
+
+TODO: 加一个pod亲和性?
+
+关键字[k8s介绍]
+=> 这篇文章非常好, 可以提取一些内容出来讲!
+[Kubernetes 介绍篇：是什么？为什么要用？](https://xie.infoq.cn/article/406b2d6d573d727425ac8fa73)
+亮点 1： Kubernetes以“一切以服务（Service）为中心，一切围绕服务运转”作为指导思想的创新型产品。它在功能和架构设计上始终遵循着这一指导思想，构建在Kubernetes上的系统不仅可以独立运行在物理机、虚拟机集群或企业私有云上，也可以被托管在公有云上。
+
+
+亮点 2： Kubernetes是一个开放的开发平台。与 J2EE 不同，它不局限于任何一种语言，没有限定任何编程接口，所以不论是用 Java、Go、C++还是 Python 编写的程序，都可以被映射为Kubernetes的 Service，并通过标准的 TCP 通讯协议进行交互。此外，Kubernetes平台对现有的编程语言、编程框架、中间件没有任何侵入性，做到了零侵入，因此现有的系统也很容易改造升级并迁移到Kubernetes平台之上。
+
+
+
+亮点 3： Kubernetes的另一个亮点是自动化。在Kubernetes的解决方案中，一个可以自我扩展、自我诊断，并且容易升级，在收到服务扩容的请求后，Kubernetes会触发调度流程，最终在选定的目标节点上启动相应数据的服务实例副本，这些服务实例副本在启动成功后会自动加入负载均衡器中并生效，整个过程无须额外的人工操作。另外，Kubernetes会定时巡查每个服务的所有实例的可用性，确保服务实例的数量始终保持为预期的数量，当它发现某个实例不可用时，会自动重启该实例或者其他节点上重新调度、运行一个新实例，这样一个复杂的过程无须人工干预即可全部自动完成。
+
+
+
+亮点 4： Kubernetes是一个完备的分布式系统支撑平台。具备完备的集群管理能力，包括多层次的安全防护和准入机制、多租户应用支撑能力、透明的服务注册和服务发现机制、内建的智能负载均衡器、强大的故障发现和自我修复能力、服务滚动升级和在线扩容能力、可扩展的资源自动调度机制，以及多粒度的资源配额管理能力。同时，Kubernetes提供了完善的管理工具，这些涵盖了包括开发、部署测试、运维监控在内的各个环节。因此，Kubernetes是一个全新的基于容器技术的分布式架构解决方案，并且是一个一站式的完备的分布式系统开发和支持平台。
+
+
+随着容器化部署环境限制、语言差异、容器数量的庞大、负载均衡、故障检测、故障修复等问题，倘若将过多的精力、时间放在这些地方，其工作量将会多大，将会让很多企业、产品对容器望而止步。在容器化的时代，Kubernetes足以免去上述面临的问题，让容器化使用变得的更加容易、轻松，只需花费更多的时间去完成业务功能的开发。
+
+
 分享＜k8s原理与使用简介＞大纲:
 * k8s基本概念: pod, deployment, statefull介绍
 * k8s kubelet拉起容器原理
@@ -10,15 +41,46 @@
 目标: 参考k8s, 编写自己的逻辑;
 直接使用k8s部署应用; => 演示k8s的pod的高可用
 
+statefulSet pod启动顺序依赖控制
+readinessProbe
+livenessProbe
+```
+  readinessProbe:
+	exec:
+	  command:
+		- sh
+		- '-c'
+		- /health/ping_sentinel.sh 5
+	initialDelaySeconds: 20
+	timeoutSeconds: 1
+	periodSeconds: 5
+	successThreshold: 1
+	failureThreshold: 5
+
+  livenessProbe:
+	exec:
+	  command:
+		- sh
+		- '-c'
+		- /health/ping_sentinel.sh 5
+	initialDelaySeconds: 20
+	timeoutSeconds: 5
+	periodSeconds: 5
+	successThreshold: 1
+	failureThreshold: 5
+```
+
+/opt/bitnami/scripts/start-scripts/start-sentinel.sh
+
 复杂问题:
 * 传统复杂应用如何上云
 * 块存储使用
 
 ## k8s介绍
 
-#### k8s是什么?
+#### k8s介绍
 
-k8s是google 2014年开源的容器管理框架;
+* k8s全称kubernets, 是google 2014年开源的容器管理框架;
 
 #### k8s架构
 
@@ -102,10 +164,33 @@ $ kubectl create -f docs/user-guide/nginx-deployment.yaml --record
 deployment "nginx-deployment" created
 ```
 
+## pod状态和生命周期管理
 
 #### Pod 概览
 
 Pod 是 kubernetes 中你可以创建和部署的最小也是最简的单位。Pod 代表着集群中运行的进程。
+
+#### Pod 的生命周期
+
+Pod 的生命周期
+本文讲解的是 Kubernetes 中 Pod 的生命周期，包括生命周期的不同阶段、存活和就绪探针、重启策略等。
+
+Pod phase
+Pod 的 status 字段是一个 PodStatus 对象，PodStatus中有一个 phase 字段。
+
+Pod 的相位（phase）是 Pod 在其生命周期中的简单宏观概述。该字段并不是对容器或 Pod 的综合汇总，也不是为了做为综合状态机。
+
+Pod 相位的数量和含义是严格指定的。除了本文档中列举的状态外，不应该再假定 Pod 有其他的 phase 值。
+
+下面是 phase 可能的值：
+
+* 挂起（Pending）：Pod 已被 Kubernetes 系统接受，但有一个或者多个容器镜像尚未创建。等待时间包括调度 Pod 的时间和通过网络下载镜像的时间，这可能需要花点时间。
+* 运行中（Running）：该 Pod 已经绑定到了一个节点上，Pod 中所有的容器都已被创建。至少有一个容器正在运行，或者正处于启动或重启状态。
+* 成功（Succeeded）：Pod 中的所有容器都被成功终止，并且不会再重启。
+* 失败（Failed）：Pod 中的所有容器都已终止了，并且至少有一个容器是因为失败终止。也就是说，容器以非0状态退出或者被系统终止。
+* 未知（Unknown）：因为某些原因无法取得 Pod 的状态，通常是因为与 Pod 所在主机通信失败。
+下图是Pod的生命周期示意图，从图中可以看到Pod状态的变化。
+![](../imgs/kubernetes-pod-life-cycle.jpg)
 
 ## 服务发现与路由
 
@@ -119,6 +204,11 @@ service的概念种类:
 TODO: 高可用集群vip访问容器应用介绍...
 四层负载均衡
 
+port-forward访问pod里面的服务
+```
+kubectl port-forward --namespace metallb-system svc/redis-master --address 0.0.0.0 6379:6379
+```
+
 ## kubelet拉起容器原理分享
 
 * kubelet向apiserver注册
@@ -129,17 +219,17 @@ TODO: 高可用集群vip访问容器应用介绍...
 journalctl -f -u kubelet
 
 尝试注册成功
-Aug 02 07:59:42 worker1.kcp2-arm.iefcu.cn hyperkube[1761]: I0802 07:59:42.563365    1761 kubelet_node_status.go:73] "Attempting to register node" node="worker1.kcp2-arm.iefcu.cn"
-Aug 02 07:59:42 worker1.kcp2-arm.iefcu.cn hyperkube[1761]: I0802 07:59:42.613548    1761 manager.go:311] Recovery completed
-Aug 02 07:59:42 worker1.kcp2-arm.iefcu.cn hyperkube[1761]: I0802 07:59:42.632054    1761 kubelet_node_status.go:111] "Node was previously registered" node="worker1.kcp2-arm.iefcu.cn"
-Aug 02 07:59:42 worker1.kcp2-arm.iefcu.cn hyperkube[1761]: I0802 07:59:42.632297    1761 kubelet_node_status.go:76] "Successfully registered node" node="worker1.kcp2-arm.iefcu.cn"
+I0802 07:59:42.563365    1761 kubelet_node_status.go:73] "Attempting to register node" node="worker1.kcp2-arm.iefcu.cn"
+I0802 07:59:42.613548    1761 manager.go:311] Recovery completed
+I0802 07:59:42.632054    1761 kubelet_node_status.go:111] "Node was previously registered" node="worker1.kcp2-arm.iefcu.cn"
+I0802 07:59:42.632297    1761 kubelet_node_status.go:76] "Successfully registered node" node="worker1.kcp2-arm.iefcu.cn"
 
 同步pod
-Jul 24 03:06:40 master1.kcp2-arm.iefcu.cn hyperkube[2204]: I0724 03:06:40.248762    2204 kubelet.go:430] "Attempting to sync node with API server"
-Jul 24 03:06:40 master1.kcp2-arm.iefcu.cn hyperkube[2204]: I0724 03:06:40.298598    2204 kubelet.go:291] "Adding static pod path" path="/etc/kubernetes/manifests"
-Jul 24 03:06:40 master1.kcp2-arm.iefcu.cn hyperkube[2204]: I0724 03:06:40.298663    2204 file.go:69] "Watching path" path="/etc/kubernetes/manifests"
-Jul 24 03:06:40 master1.kcp2-arm.iefcu.cn hyperkube[2204]: I0724 03:06:40.298703    2204 kubelet.go:302] "Adding apiserver pod source"
-Jul 24 03:06:40 master1.kcp2-arm.iefcu.cn hyperkube[2204]: I0724 03:06:40.298723    2204 apiserver.go:42] "Waiting for node sync before watching apiserver pods"
+I0724 03:06:40.248762    2204 kubelet.go:430] "Attempting to sync node with API server"
+I0724 03:06:40.298598    2204 kubelet.go:291] "Adding static pod path" path="/etc/kubernetes/manifests"
+I0724 03:06:40.298663    2204 file.go:69] "Watching path" path="/etc/kubernetes/manifests"
+I0724 03:06:40.298703    2204 kubelet.go:302] "Adding apiserver pod source"
+I0724 03:06:40.298723    2204 apiserver.go:42] "Waiting for node sync before watching apiserver pods"
 ```
 
 ## 部署应用
@@ -184,11 +274,30 @@ oc expose service adam-doc
 
 部署redis helm应用
 ```
+# 先离线下载redis charts目录
+# git clone http://192.168.120.13/xiaoyun/bitnami-redis-charts redis
 oc new-project redis-sentinel
 oc adm policy add-scc-to-user anyuid -n redis-sentinel -z redis
 ./helm install redis redis
 ```
-TODO: 看一下这个helm charts中的内容分享
+除此之外还有secret,configmap,serviceaccount等对象配置
+```
+[core@master1 ~]$ oc get all
+NAME               READY   STATUS    RESTARTS   AGE
+pod/redis-node-0   2/2     Running   0          6d7h
+pod/redis-node-1   2/2     Running   2          6d7h
+pod/redis-node-2   2/2     Running   0          6d4h
+
+NAME                                                             TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)              AGE
+service/glusterfs-dynamic-2c7e1a81-e61e-486e-bbd5-4515029ab5a7   ClusterIP   172.30.87.216   <none>        1/TCP                6d7h
+service/glusterfs-dynamic-62459741-87ad-489c-a28d-17ef3ed15882   ClusterIP   172.30.121.74   <none>        1/TCP                6d7h
+service/glusterfs-dynamic-eae8a942-e5c2-4673-bd3e-125f0b64e980   ClusterIP   172.30.54.18    <none>        1/TCP                6d7h
+service/redis                                                    ClusterIP   172.30.3.232    <none>        6379/TCP,26379/TCP   6d7h
+service/redis-headless                                           ClusterIP   None            <none>        6379/TCP,26379/TCP   6d7h
+
+NAME                          READY   AGE
+statefulset.apps/redis-node   3/3     6d7h
+```
 
 
 部署redis operator来部署redis应用  

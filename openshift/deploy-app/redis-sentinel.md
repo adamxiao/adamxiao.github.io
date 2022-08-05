@@ -60,3 +60,4 @@ FQDN： $(podname).(headless server name).namespace.svc.cluster.local
 
 * [【redis可高用】在Kubernetes中部署基于Sentinel模式的高可用的redis](https://www.kubernetes.org.cn/7659.html)
 * [](https://www.jb51.net/article/210827.htm)
+* [Redis哨兵模式（sentinel）学习总结及部署记录（主从复制、读写分离、主从切换）](https://www.cnblogs.com/kevingrace/p/9004460.html)
