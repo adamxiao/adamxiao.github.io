@@ -7,21 +7,34 @@
 
 #### 安装命令
 
-安装`yum install -y targetcli`
-   机器上有targetcli命令，表示安装成功
+机器上有targetcli命令，表示安装成功
+```bash
+yum install -y targetcli
+```
+
+安装更多包, 例如: /etc/iscsi/initiatorname.iscsi
+```bash
+yum install iscsi*
+
+iscsi-initiator-utils
+iscsi-initiator-utils-devel
+iscsi-initiator-utils-iscsiuio
+```
 
 #### 修改本机器的iqn
 
 修改iqn为iqn.1994-05.com.redhat:sanserver1
-```
-[root@localhost ~]#cat /etc/iscsi/initiatorname.iscsi 
+```bash
+sed -i -e 's/:\w\+$/:sanserver1/' /etc/iscsi/initiatorname.iscsi
+
+cat /etc/iscsi/initiatorname.iscsi 
 InitiatorName=iqn.1994-05.com.redhat:sanserver1
 ```
 
 #### 启动target服务
-```
-systemctl enable target.service
-systemctl start target.service
+
+```bash
+systemctl enable --now target.service
 ```
 
 #### 关闭防火墙
@@ -33,16 +46,45 @@ systemctl stop firewalld.service
 
 #### 创建一个块lun，然后将客户端的iqn关联到这个lun
 
-命令如下：  
+命令如下:
 ```
 targetcli
 cd backstores/block
-create block1 /dev/sdc
-cd /iscsi/iqn.1994-05.com.redhat:sanserver1/tpg1/luns/
-create /backstores/block/block1
+create block1 /dev/vdb
 cd /iscsi
 create iqn.1994-05.com.redhat:sanserver1
+cd /iscsi/iqn.1994-05.com.redhat:sanserver1/tpg1/luns/
+create /backstores/block/block1
 cd /iscsi/iqn.1994-05.com.redhat:sanserver1/tpg1/acls/
-create iqn.1994-05.com.redhat:node126
+create iqn.1994-05.com.redhat:sanclient1
 exit 
+```
+
+#### (或者)创建一个文件Lun，然后将客户端的iqn关联到这个lun
+
+命令如下：  
+```
+targetcli
+cd backstores/fileio
+create ipsan_h3c /data/ipsan_h3c 200G
+create iqn.1994-05.com.redhat:sanserver1
+cd /iscsi/iqn.1994-05.com.redhat:sanserver1/tpg1/luns/
+create /backstores/fileio/ipsan_h3c
+cd /iscsi/iqn.1994-05.com.redhat:sanserver1/tpg1/acls/
+create iqn.1994-05.com.redhat:sanclient1
+exit 
+```
+
+#### 客户端关联使用
+
+首先修改客户端的iqn, 跟上面的iqn一致
+```bash
+sed -i -e 's/:\w\+$/:sanclient1/' /etc/iscsi/initiatorname.iscsi
+cat /etc/iscsi/initiatorname.iscsi 
+```
+
+然后关联使用
+```bash
+iscsiadm -m discovery -t st -p 10.90.3.28
+iscsiadm -m node -L all
 ```
