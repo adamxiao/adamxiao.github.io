@@ -66,7 +66,8 @@ exit
 ```
 targetcli
 cd backstores/fileio
-create ipsan_h3c /data/ipsan_h3c 200G
+create ipsan_h3c /data/ipsan_h3c 1G
+cd /iscsi
 create iqn.1994-05.com.redhat:sanserver1
 cd /iscsi/iqn.1994-05.com.redhat:sanserver1/tpg1/luns/
 create /backstores/fileio/ipsan_h3c
