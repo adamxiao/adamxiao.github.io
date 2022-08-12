@@ -350,6 +350,11 @@ oc get svc
 oc descirbe pod xxx
 # 获取事件,-w等待新的事件
 oc get event -w
+
+# 直接简单创建运行pod测试
+kubectl run --namespace default adam-redis-client --rm --tty -i --restart='Never' \
+    --labels="redis-client=true" \
+    --image hub.iefcu.cn/public/redis:adam-redis6.2 -- bash
 ```
 
 

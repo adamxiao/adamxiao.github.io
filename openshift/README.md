@@ -61,6 +61,39 @@ oc -n nginx create secret tls hub-iefcu-tls --cert=./hub.iefcu.cn_bundle.crt --k
 oc -n nginx create secret tls iefcu-tls --cert=./fullchain.cer --key=./iefcu.cn.key
 ```
 
+更新configmap
+```
+oc -n nginx create configmap nginx-conf --from-file=conf.d/ -o yaml --dry-run=client | oc replace -f -
+```
+
+通过metallb创建一个vip
+```
+cat << EOF | oc apply -f -
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-vip
+  namespace: nginx
+  labels:
+    app: nginx
+  annotations:
+    metallb.universe.tf/address-pool: metallb-addr35
+spec:
+  ports:
+  - name: https
+    protocol: TCP
+    port: 443
+    targetPort: 443
+  - name: http
+    protocol: TCP
+    port: 80
+    targetPort: 80
+  type: LoadBalancer
+  selector:
+    app: nginx
+EOF
+```
+
 访问方式:
 * http://hub.iefcu.cn
 * http://gitlab.iefcu.cn

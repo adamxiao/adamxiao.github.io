@@ -137,6 +137,19 @@ git cherry-pick A^..B
 git checkout -
 git checkout @{-1}
 
+#### git project migrate
+
+关键字[git project offline migrate]
+
+https://gitenterprise.me/2016/03/30/how-to-migrate-a-git-repository/
+
+* Step 1 – Mirror clone
+  `git clone --mirror ssh://myuser@gitent-scm.com/git/myorg/myrepo.git`
+* Step 2 – Create empty repo on the new Git Server
+* Step 3 – Push to the new Git Server
+  `git push --mirror git@github.myorg/myrepo.git`
+* Step 4 – Import into GerritHub.io (Optional)
+
 ## FAQ
 
 #### git pull: The requested URL returned error: 503
