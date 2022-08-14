@@ -30,6 +30,12 @@ oc expose service adam-doc
 
 访问方式 `http://doc.iefcu.cn`
 
+权限问题, 给root权限
+```bash
+# 给adam-doc项目的default服务帐号anyuid权限
+oc adm policy add-scc-to-user anyuid -n adam-doc -z default
+```
+
 #### work-doc
 
 使用镜像: `hub.iefcu.cn/xiaoyun/work-doc`
@@ -98,3 +104,18 @@ EOF
 * http://hub.iefcu.cn
 * http://gitlab.iefcu.cn
 * ...
+
+#### haproxy应用
+
+使用镜像: `docker.io/library/haproxy:lts`
+mirror镜像: `hub.iefcu.cn/public/haproxy:lts`
+
+加权限
+k8s ip_unprivileged_port_start
+```
+spec:
+  securityContext:
+    sysctls:
+    - name: net.ipv4.ip_unprivileged_port_start
+      value: "0"
+```
