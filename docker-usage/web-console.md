@@ -82,10 +82,29 @@ gotty的其他用法: k8s中使用gotty
 
 参考github的使用方法:
 ```
-docker run --rm -p 3000:3000 wettyoss/wetty --ssh-host 10.20.1.99 --ssh-port 22345 --ssh-user adam
+docker run --rm -p 3000:3000 docker.io/wettyoss/wetty --ssh-host 10.20.1.99 --ssh-port 22345 --ssh-user adam
 ```
 
-效果不错
+效果不错, 访问方式: http://10.20.1.99:3000/wetty
+
+通过源码构建wetty镜像(由于有特殊权限要求，需要--privileged权限,所以使用buildx构建)
+```
+docker buildx build --allow security.insecure \
+        --build-arg http_proxy=http://proxy.iefcu.cn:20172 \
+        --build-arg https_proxy=http://proxy.iefcu.cn:20172 \
+        --platform=linux/arm64,linux/amd64 \
+        -f containers/wetty/Dockerfile \
+        -t hub.iefcu.cn/xiaoyun/wetty . --push
+```
+
+源码构建wetty多架构镜像: https://github.com/butlerx/wetty.git
+```
+commit 62fac799da92aa5d6e03c210ec248d643566a9bb (HEAD -> main, origin/main, origin/HEAD)
+Author: Cian Butler <butlerx@notthe.cloud>
+Date:   Wed Aug 17 19:16:33 2022 +0100
+
+    Release 2.4.3
+```
 
 ## 其他
 

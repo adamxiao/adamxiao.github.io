@@ -156,3 +156,80 @@ export PATH=/usr/lib/ksvd/bin/:$PATH
 if [[ -f /usr/bin/vim ]]; then alias vi=vim; fi
 if [[ -f /usr/bin/docker ]]; then alias vi='docker run -ti -e TERM=xterm-256color -e COLUMNS=$(tput cols) -e LINES=$(tput lines) --rm -v $(pwd):/data hub.iefcu.cn/public/vim-env:base'; fi
 ```
+
+## FAQ
+
+#### Build --privileged
+
+podman build --cap-add待验证ok
+https://man7.org/linux/man-pages/man7/capabilities.7.html
+```bash
+podman build --cap-add CAP_SYS_ADMIN \
+        --build-arg http_proxy=http://proxy.iefcu.cn:20172 \
+        --build-arg https_proxy=http://proxy.iefcu.cn:20172 \
+        -f containers/wetty/Dockerfile \
+        -t hub.iefcu.cn/xiaoyun/wetty:arm64 .
+```
+
+使用docker buildx: https://docs.docker.com/engine/reference/commandline/buildx_build/
+[docker build should support privileged operations #1916](https://github.com/moby/moby/issues/1916)
+[Build with docker and --privileged](https://stackoverflow.com/questions/48098671/build-with-docker-and-privileged)
+
+```
+docker buildx create --use --name insecure-builder --buildkitd-flags '--allow-insecure-entitlement security.insecure'
+docker buildx build --allow security.insecure .
+
+docker buildx build --allow security.insecure \
+        --build-arg http_proxy=http://proxy.iefcu.cn:20172 \
+        --build-arg https_proxy=http://proxy.iefcu.cn:20172 \
+        --platform=linux/arm64,linux/amd64 \
+        -f containers/wetty/Dockerfile \
+        -t hub.iefcu.cn/xiaoyun/wetty . --push
+```
+
+#### 清理空间
+
+[Is it safe to clean docker/overlay2/](https://stackoverflow.com/questions/46672001/is-it-safe-to-clean-docker-overlay2)
+
+Docker uses /var/lib/docker to store your images, containers, and local named volumes. Deleting this can result in data loss and possibly stop the engine from running. The overlay2 subdirectory specifically contains the various filesystem layers for images and containers.
+
+To cleanup unused containers and images, see docker system prune. There are also options to remove volumes and even tagged images, but they aren't enabled by default due to the possibility of data loss:
+
+```
+$ docker system prune --help
+
+Usage:  docker system prune [OPTIONS]
+
+Remove unused data
+
+Options:
+  -a, --all             Remove all unused images not just dangling ones
+      --filter filter   Provide filter values (e.g. 'label=<key>=<value>')
+  -f, --force           Do not prompt for confirmation
+      --volumes         Prune volumes
+```
+
+What a prune will never delete includes:
+
+* running containers (list them with docker ps)
+* logs on those containers (see this post for details on limiting the size of logs)
+* filesystem changes made by those containers (visible with docker diff)
+
+To completely refresh docker to a clean state, you can delete the entire directory, not just sub-directories like overlay2:
+```
+# danger, read the entire text around this code before running
+# you will lose data
+sudo -s
+systemctl stop docker
+rm -rf /var/lib/docker
+systemctl start docker
+exit
+```
+
+The engine will restart in a completely empty state, which means you will lose all:
+
+* images
+* containers
+* named volumes
+* user created networks
+* swarm state

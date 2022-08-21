@@ -45,10 +45,23 @@ oc adm policy add-scc-to-user anyuid -n adam-doc -z default
 #### wetty
 
 使用镜像: `docker.io/wettyoss/wetty`
-mirror镜像: `hub.iefcu.cn/public/wetty`
+mirror镜像: `hub.iefcu.cn/xiaoyun/wetty`
+
+配置部署，自定义一些命令参数
+```yaml
+command:
+  - yarn
+  - start
+  - '--ssh-host'
+  - 10.20.1.99
+  - '--ssh-port'
+  - '22345'
+  - '--ssh-user'
+  - adam
+```
 
 ```
-oc new-project wetty
+oc new-project adam-wetty
 docker run --rm -p 3000:3000 wettyoss/wetty --ssh-host 10.20.1.99 --ssh-port 22345 --ssh-user adam
 ```
 
