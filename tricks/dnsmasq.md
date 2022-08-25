@@ -48,3 +48,38 @@ docker run \
 
 1. dns上游请求有问题，导致dnsmasq有问题, 连本地定义的dns都不处理!
   暂不清楚原因，更换上游dns服务器解决
+
+#### ping很久10s才超时返回
+
+发现ping不仅解析了域名，而且还通过ip反响查询域名了! `in-addr.arpa`
+[ping首包慢的问题（及icmp对应关系）](https://blog.51cto.com/xzq2000/2402249)(关键字《ping 响应很慢》就搜到这篇文章了)
+
+原因:
+* 因为dnsmasq解析dns反向查询超时不返回导致
+
+思路:
+* 禁用掉dnsmasq的dns反向查询功能 => 未查到相关资料
+  关键字《dnsmasq disable PTR queries》 => no
+  关键字《dnsmasq disable reverse DNS queries》
+  《prevent reverse DNS queries 》
+* ping不使用dns反响查询功能
+  [ping 反向解析](https://www.csdn.net/tags/MtjaEgxsMzY5NDgtYmxvZwO0O0OO0O0O.html)
+  ping -n即可
+
+使用dig命令可以手动执行dns反向查询
+```
+dig 域名  
+dig ftp6.wslog.chinanetcenter.com
+dig ftp6.wslog.chinanetcenter.com +short
+dig ftp6.wslog.chinanetcenter.com  @8.8.8.8 
+dig反向解析：
+dig -x 113.107.44.229  ip反向解析
+dig  229.44.107.113.in-addr.arpa ptr
+```
+
+解决方法:
+加一个反向dns记录: https://www.cnblogs.com/saneri/p/14141397.html
+https://wener.me/notes/service/dns/dnsmasq
+```
+ptr-record=110.100.168.192.in-addr.arpa,www.xxx-host.com
+```

@@ -1,5 +1,20 @@
 # libvirt用法
 
+## 在线添加网卡
+
+virsh attach-device  e973ac81-6199-3177-6a19-21dece2693e6 if.xml --live
+Device attached successfully
+
+```xml
+    <interface type='bridge'>
+      <mac address='52:54:84:01:03:04'/>
+      <source bridge='mdvs2'/>
+      <virtualport type='openvswitch' />
+      <model type='virtio'/>
+      <driver name='vhost'/>
+    </interface>
+```
+
 配置ovs桥
 ```
 <interface type='bridge'>
