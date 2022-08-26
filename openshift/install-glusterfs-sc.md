@@ -94,6 +94,44 @@ oc create -f slow-sc.yaml
 kubectl patch storageclass slow -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
 ```
 
+## 使用数据存储网部署glusterfs集群
+
+#### 清理旧数据
+
+* 清理heketi部署:
+`oc delete -f heketi-deployment.json`
+
+* 清理glusterfs旧数据
+```
+oc rsh glusterfs-xxx
+rm -rf /var/lib/glusterfs/*
+systemctl restart glusterd
+```
+
+* 清理磁盘lvm卷
+```
+lvremove -y vg_xx
+vgremove vg_xxx
+pvremove /dev/vda
+```
+
+#### 准备存储网
+
+* 虚拟机添加存储网卡
+* 配置存储网卡ip地址
+```
+sudo nmcli c add con-name enp6s0 type ethernet ifname enp6s0
+sudo nmcli c mod enp6s0 ipv4.addresses 192.168.99.101/24 ipv4.method manual
+sudo nmcli c mod enp6s0 ipv6.method disabled
+# confirm /etc/NetworkManager/system-connections/enp6s0.nmconnection
+sudo nmcli c up enp6s0
+```
+
+#### 配置新的heketi+glusterfs集群
+
+主要注意修改topology-sample.json, 将里面的ip地址，配置为数据接口的ip地址
+
+
 ## 修改glusterfs节点ip
 
 ```bash
