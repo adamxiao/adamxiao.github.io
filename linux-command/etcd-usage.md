@@ -6,6 +6,39 @@
 etcdctl endpoint status -w table
 ```
 
+问题: etcd member list 和endpoint的区别?
+```
+[root@master1 /]# etcdctl member list -w table
++------------------+---------+--------------------+-------------------------+-------------------------+------------+
+|        ID        | STATUS  |        NAME        |       PEER ADDRS        |      CLIENT ADDRS       | IS LEARNER |
++------------------+---------+--------------------+-------------------------+-------------------------+------------+
+| 141adac8c067b6dd | started | master1.kcp.xxx.cn | https://10.90.4.98:2380 | https://10.90.4.98:2379 |      false |
+| 63b75c3d731594fc | started |     etcd-bootstrap | https://10.90.4.97:2380 | https://10.90.4.97:2379 |      false |
++------------------+---------+--------------------+-------------------------+-------------------------+------------+
+[root@master1 /]# etcdctl endpoint status -w table
++-------------------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+
+|        ENDPOINT         |        ID        | VERSION | DB SIZE | IS LEADER | IS LEARNER | RAFT TERM | RAFT INDEX | RAFT APPLIED INDEX | ERRORS |
++-------------------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+
+| https://10.90.4.98:2379 | 141adac8c067b6dd |   3.5.0 |   40 MB |      true |      false |       113 |      47587 |              47587 |        |
++-------------------------+------------------+---------+---------+-----------+------------+-----------+------------+--------------------+--------+
+```
+
+原来使用环境变量控制endpoint的输出
+```
+ETCDCTL_ENDPOINTS=https://10.90.4.98:2379,https://10.90.4.97:2379 etcdctl endpoint status -w table
+```
+
+learner测试
+```
+# 增加一个节点作为learner
+member add --learner
+
+# 当learner的日志赶上了leader的进度时，将learner提升为有投票权的成员，然后该成员将计入法定人数
+member promote
+
+etcd server 会验证 promote 请求以确保真实
+```
+
 输出示例
 ```
 etcdctl endpoint status -w table
@@ -87,6 +120,39 @@ fio -filename=/var/test.file -direct=1 \
  -runtime=60 -group_reporting -name=test_w
 ```
 
+#### 【深入浅出etcd系列】2. 心跳和选举
+
+[【深入浅出etcd系列】2. 心跳和选举](https://bbs.huaweicloud.com/blogs/110887)
+
+2. leader的任务：发送心跳
+当集群已经产生了leader，则leader会在固定间隔内给所有节点发送心跳。其他节点收到心跳以后重置心跳等待时间，只要心跳等待不超时，follower的状态就不会改变。
+
+etcd日志显示leader发送心跳失败！！！因为低速磁盘: overloaded likely from slow disk","
+```
+{"level":"warn","ts":"2022-08-30T09:19:17.672Z","caller":"wal/wal.go:802","msg":"slow fdatasync","took":"1.263337456s","expected-duration":"1s"}
+{"level":"warn","ts":"2022-08-30T09:17:30.387Z","caller":"etcdserver/raft.go:369","msg":"leader failed to send out heartbeat on time; took too long, leader is overloaded likely from slow disk","to":"63b75c3d731594fc","heartbeat-interval":"100ms","expected-duration":"200ms","exceeded-duration":"61.150187ms"}
+```
+
+etcd显示太慢，切主: leader 63b75c3d731594fc at term 154
+丢弃读请求: dropping index reading msg
+```
+{"level":"warn","ts":"2022-08-30T09:19:19.245Z","logger":"raft","caller":"etcdserver/zap_raft.go:85","msg":"141adac8c067b6dd stepped down to follower since quorum is not active"}
+{"level":"info","ts":"2022-08-30T09:19:19.245Z","logger":"raft","caller":"etcdserver/zap_raft.go:77","msg":"141adac8c067b6dd became follower at term 152"}
+
+{"level":"warn","ts":"2022-08-30T09:19:24.521Z","caller":"etcdserver/v3_server.go:815","msg":"waiting for ReadIndex response took too long, retrying","sent-request-id":13176832041700219758,"retry-timeout":"500ms"}
+{"level":"info","ts":"2022-08-30T09:19:24.521Z","logger":"raft","caller":"etcdserver/zap_raft.go:77","msg":"141adac8c067b6dd no leader at term 153; dropping index reading msg"}
+{"level":"info","ts":"2022-08-30T09:19:24.595Z","logger":"raft","caller":"etcdserver/zap_raft.go:77","msg":"141adac8c067b6dd [term: 153] received a MsgVote message with higher term from 63b75c3d731594fc [term: 154]"}
+{"level":"info","ts":"2022-08-30T09:19:24.595Z","logger":"raft","caller":"etcdserver/zap_raft.go:77","msg":"141adac8c067b6dd became follower at term 154"}
+{"level":"info","ts":"2022-08-30T09:19:24.595Z","logger":"raft","caller":"etcdserver/zap_raft.go:77","msg":"141adac8c067b6dd [logterm: 152, index: 48930, vote: 0] cast MsgVote for 63b75c3d731594fc [logterm: 152, index: 48930] at term 154"}
+{"level":"warn","ts":"2022-08-30T09:19:25.021Z","caller":"etcdserver/v3_server.go:815","msg":"waiting for ReadIndex response took too long, retrying","sent-request-id":13176832041700219758,"retry-timeout":"500ms"}
+{"level":"info","ts":"2022-08-30T09:19:25.021Z","logger":"raft","caller":"etcdserver/zap_raft.go:77","msg":"141adac8c067b6dd no leader at term 154; dropping index reading msg"}
+{"level":"info","ts":"2022-08-30T09:19:25.273Z","logger":"raft","caller":"etcdserver/zap_raft.go:77","msg":"raft.node: 141adac8c067b6dd elected leader 63b75c3d731594fc at term 154"}
+```
+
+https://juejin.cn/post/7035179267918938119
+
 ## 参考资料
 
 * https://www.kubernetes.org.cn/7569.html
+* [etcd 问题、调优、监控](http://www.xuyasong.com/?p=1983)
+
