@@ -79,6 +79,20 @@ oc edit kubecontrollermanager/cluster
 oc -n openshift-kube-controller-manager logs --tail 10 -f kube-controller-manager-master1.kcp2-arm.iefcu.cn
 ```
 
+#### controller保证副本数量可用性验证
+
+实际测试验证，rc在节点掉线，会保证pod数量为3吗? => 会，但是貌似时间有点长!!!十几分钟?
+=> 《深信服PaaS平台KubeManager6.0技术方案建议书》
+如果Pod所在的Worker宕机，则会将这个Worker上的所有Pod重新调度到其他节点上。
+```
+[core@master1 ~]$ oc get pods
+NAME                                READY   STATUS        RESTARTS   AGE
+nginx-deployment-55976fb44f-ckddx   1/1     Running       7          25d
+nginx-deployment-55976fb44f-h5zpq   1/1     Running       0          4m16s
+nginx-deployment-55976fb44f-rflz8   1/1     Terminating   7          25d
+```
+
+
 #### etcd坏了一个
 
 ```

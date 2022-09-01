@@ -1,5 +1,70 @@
 # openshift-sdn详解
 
+#### daemonset pod获取节点ip
+
+openshift-sdn节点就是这样获取的
+
+https://stackoverflow.com/questions/52047434/how-do-you-get-the-node-ip-from-inside-a-pod
+```
+- env:
+  - name: NODE_IP
+    valueFrom:
+      fieldRef:
+         status.hostIP
+```
+
+[Understanding what metadata can be injected](https://wangwei1237.github.io/Kubernetes-in-Action-Second-Edition/docs/Passing_pod_metadata_to_the_application_via_the_Downward_API.html)
+还可以注入其他信息: xxx
+
+
+k8s这样加入来的
+https://github.com/kubernetes/kubernetes/pull/42717
+```
+	case "status.hostIP":
+		hostIP, err := kl.getHostIPAnyWay()
+		if err != nil {
+			return "", err
+		}
+		return hostIP.String(), nil
+```
+
+https://golang.hotexamples.com/ru/examples/k8s.io.kubernetes.pkg.util.node/-/GetNodeHostIP/golang-getnodehostip-function-examples.html
+https://golang.hotexamples.com/zh/examples/k8s.io.kubernetes.pkg.kubelet.util.format/-/Pod/golang-pod-function-examples.html
+```
+// getHostIPAnyway attempts to return the host IP from kubelet's nodeInfo, or the initialNodeStatus
+func (kl *Kubelet) getHostIPAnyWay() (net.IP, error) {
+	node, err := kl.getNodeAnyWay()
+	if err != nil {
+		return nil, err
+	}
+	return nodeutil.GetNodeHostIP(node)
+}
+
+// Returns host IP or nil in case of error.
+func (kl *Kubelet) GetHostIP() (net.IP, error) {
+	node, err := kl.GetNode()
+	if err != nil {
+		return nil, fmt.Errorf("cannot get node: %v", err)
+	}
+	return nodeutil.GetNodeHostIP(node)
+}
+```
+
+挂载宿主机目录，获取目录里面的环境变量ip地址？ => 这个最简单。
+可能是需要修改kubelet的ip地址配置咯?
+=> 有风险把，apiserver和etcd的证书会不会随之改变不可用?
+```
+/etc/systemd/system/kubelet.service.d/20-nodenet.conf
+```
+
+https://github.com/labulakalia/ibm_bak/blob/main/ibm_articles/OpenShift%E4%B8%AD%E7%9A%84%E5%AE%B9%E5%99%A8%E5%A4%9A%E7%BD%91%E7%BB%9C%E5%B9%B3%E9%9D%A2%E9%80%89%E5%9E%8B.md
+OpenShift 中的容器多网络平面选型
+
+干货巨献：Openshift3.9的网络管理大全.加长篇---Openshift3.9学习系列第二篇
+https://www.365seal.com/y/dRvz35bgVO.html
+八、生产环境中的网络规划
+
+
 https://zhuanlan.zhihu.com/p/466681599
 [K8s] 关于Node的ExternalIP那点事儿
 
@@ -7,7 +72,7 @@ https://zhuanlan.zhihu.com/p/466681599
 * 安装后修改dns指向? 以方便隔离管理网和sdn? => todo
 * 看cni的日志，是怎么连接vxlan的?
 * bond口, 没隔离那就加大带宽
-* 《openshift-sdn配置》 openshift-sdn物理网卡配置? 
+* 《openshift-sdn配置》 openshift-sdn物理网卡配置?  => 没
 * 看manifest, openshift-install生成的cvo配置!
 
 [(好)详解openshift-sdn](https://segmentfault.com/a/1190000039689620)
@@ -70,6 +135,7 @@ ovs-networkpolicy：介于ovs-subnet 和 ovs-multitenant 之间的一种实现�
 http://ksoong.org/docs/content/openshift/advanced-deployment.html
 => 是否默认就是ovs-subnet?
 oc describe network.config/cluster
+https://access.redhat.com/documentation/zh-cn/openshift_container_platform/4.9/html-single/networking/index#cluster-network-operator
 
 节点角色类型：
 
@@ -94,3 +160,7 @@ https://blog.csdn.net/qq_21127151/article/details/124662331
 
 2. 静态指定
 修改网络ClusterOperator，增加附加网络的定义。配置附加网络名称（macvlan-network），配置静态IP（192.168.91.250），配置网关（192.168.91.1），配置物理网卡名称（ens3），将网络定义赋予tomcat项目中 。
+
+## 参考资料
+
+* [灵魂拷问x10：OpenShift 4层Ingress实现方式大全 原创](https://blog.51cto.com/u_15127570/2711055)

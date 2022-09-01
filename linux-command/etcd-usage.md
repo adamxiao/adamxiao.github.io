@@ -151,6 +151,67 @@ etcd显示太慢，切主: leader 63b75c3d731594fc at term 154
 
 https://juejin.cn/post/7035179267918938119
 
+## FAQ
+
+#### failed to publish local member to cluster through raft
+
+error: etcdserver: request timed out
+
+最后发现是100M交换机，查看netstat -antp发现send-Q,recv-Q有问题
+
+#### etcd坏了一个
+
+```
+oc[core@master1 ~]$ oc -n openshift-etcd get pods
+NAME                                    READY   STATUS             RESTARTS          AGE
+etcd-master1.kcp2-arm.iefcu.cn          4/4     Running            112 (3d20h ago)   72d
+etcd-master2.kcp2-arm.iefcu.cn          4/4     Running            53 (3d20h ago)    72d
+etcd-master3.kcp2-arm.iefcu.cn          3/4     CrashLoopBackOff   1787 (51s ago)    25s
+```
+
+```
+{"level":"info","ts":"2022-08-30T03:04:44.183Z","caller":"embed/etcd.go:598","msg":"pprof is enabled","path":"/debug/pprof"}
+{"level":"info","ts":"2022-08-30T03:04:44.184Z","caller":"embed/etcd.go:307","msg":"starting an etcd server","etcd-version":"3.5.0","git-sha":"GitNotFound","go-version":"go1.16.6","go-os":"linux","go-arch":"arm64","max-cpu-set":16,"max-cpu-available":16,"member-initialized":true,"name":"master3.kcp2-arm.iefcu.cn","data-dir":"/var/lib/etcd","wal-dir":"","wal-dir-dedicated":"","member-dir":"/var/lib/etcd/member","force-new-cluster":false,"heartbeat-interval":"100ms","election-timeout":"1s","initial-election-tick-advance":true,"snapshot-count":100000,"snapshot-catchup-entries":5000,"initial-advertise-peer-urls":["https://192.168.100.33:2380"],"listen-peer-urls":["https://0.0.0.0:2380"],"advertise-client-urls":["https://192.168.100.33:2379"],"listen-client-urls":["https://0.0.0.0:2379","unixs://192.168.100.33:0"],"listen-metrics-urls":["https://0.0.0.0:9978"],"cors":["*"],"host-whitelist":["*"],"initial-cluster":"","initial-cluster-state":"existing","initial-cluster-token":"","quota-size-bytes":8589934592,"pre-vote":true,"initial-corrupt-check":false,"corrupt-check-time-interval":"0s","auto-compaction-mode":"periodic","auto-compaction-retention":"0s","auto-compaction-interval":"0s","discovery-url":"","discovery-proxy":"","downgrade-check-interval":"5s"}
+{"level":"warn","ts":1661828684.1843698,"caller":"fileutil/fileutil.go:57","msg":"check file permission","error":"directory \"/var/lib/etcd\" exist, but the permission is \"drwxr-xr-x\". The recommended permission is \"-rwx------\" to prevent possible unprivileged access to the data"}
+panic: freepages: failed to get all reachable pages (page 4517: multiple references)
+
+goroutine 78 [running]:
+go.etcd.io/bbolt.(*DB).freepages.func2(0x400004e5a0)
+        /remote-source/cachito-gomod-with-deps/deps/gomod/pkg/mod/go.etcd.io/bbolt@v1.3.6/db.go:1056 +0xc4
+created by go.etcd.io/bbolt.(*DB).freepages
+        /remote-source/cachito-gomod-with-deps/deps/gomod/pkg/mod/go.etcd.io/bbolt@v1.3.6/db.go:1054 +0x134
+```
+
+搜索发现还是移除不健康的节点，然后再回复把!
+[Replacing an unhealthy etcd member](https://docs.openshift.com/container-platform/4.9/backup_and_restore/control_plane_backup_and_restore/replacing-unhealthy-etcd-member.html)
+
+首先备份etcd数据库, 然后检查unhealthy节点
+```
+[core@master1 ~]$ oc get etcd -o=jsonpath='{range .items[0].status.conditions[?(@.type=="EtcdMembersAvailable")]}{.message}{"\n"}'
+2 of 3 members are available, master3.kcp2-arm.iefcu.cn is unhealthy
+```
+
+目前发现etcd运行crash, 所以用如下方法修复
+* 停止crash etcd pod
+```
+mkdir /var/lib/etcd-backup
+mv /etc/kubernetes/manifests/etcd-pod.yaml /var/lib/etcd-backup/
+# 移动数据到临时目录(最终要删除掉的)
+mv /var/lib/etcd/ /tmp
+```
+* 移除非健康的etcd pod
+```
+oc -n openshift-etcd rsh etcd-master1.kcp2-arm.iefcu.cn
+etcdctl member list -w table
+etcdctl member remove 62bcf33650a7170a
+# 移除相关secret
+oc get secrets -n openshift-etcd | grep master3.kcp2-arm.iefcu.cn
+```
+* 强制etcd重新部署
+```
+oc patch etcd cluster -p='{"spec": {"forceRedeploymentReason": "single-master-recovery-'"$( date --rfc-3339=ns )"'"}}' --type=merge 
+```
+
 ## 参考资料
 
 * https://www.kubernetes.org.cn/7569.html
