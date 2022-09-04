@@ -69,6 +69,8 @@ oc patch configs.imageregistry.operator.openshift.io/cluster --patch '{"spec":{"
 获取证书
 ```bash
 oc get secret -n openshift-ingress  router-certs-default -o go-template='{{index .data "tls.crt"}}' | base64 -d | sudo tee /etc/pki/ca-trust/source/anchors/${HOST}.crt  > /dev/null
+# 更新证书信任
+sudo update-ca-trust enable
 ```
 
 ```
