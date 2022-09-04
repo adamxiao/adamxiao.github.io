@@ -9,7 +9,7 @@
 
 目前用户名和密码是固定写死的
 ```bash
-htpasswd -c -B -b users.htpasswd kylin-monitor jit@2021
+htpasswd -c -B -b users.htpasswd kylin-monitor password
 # 获取到如下信息
 kylin-monitor:$2y$05$IzGbG9RbAEX577z7RKeVEOl3V0AgfeIoCNq8yDiO9GZ8rnYly5Tlu
 ```

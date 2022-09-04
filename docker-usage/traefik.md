@@ -12,7 +12,7 @@
 cat > image-sync.json << EOF
 {
     "hub.iefcu.cn": {
-        "username": "xiaoyun",
+        "username": "username",
         "password": "TODO:passwd"
     }
 }

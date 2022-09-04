@@ -29,7 +29,7 @@ oc -n kube-system delete secrets kubeadmin
 
 新增kylin-monitor用户
 ```bash
-htpasswd -c -B -b users.htpasswd kylin-monitor jit@2021
+htpasswd -c -B -b users.htpasswd kylin-monitor password
 kylin-monitor:$2y$05$IzGbG9RbAEX577z7RKeVEOl3V0AgfeIoCNq8yDiO9GZ8rnYly5Tlu
 
 oc adm policy add-cluster-role-to-user cluster-monitoring-view kylin-monitor

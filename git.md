@@ -43,11 +43,11 @@ Remote repository->Local repository: git pull
 代理地址，推送远端仓库规则等
 ```ini
 [https]
-    proxy = http://dev-proxy.oa.com:8080
-	;proxy = sock5h://dev-proxy.oa.com:8080
+    proxy = http://proxy.iefcu.cn:20172
+	;proxy = sock5h://proxy.iefcu.cn:20172
 [http]
-    proxy = http://dev-proxy.oa.com:8080
-	;proxy = sock5h://dev-proxy.oa.com:8080
+    proxy = http://proxy.iefcu.cn:20172
+	;proxy = sock5h://proxy.iefcu.cn:20172
 [push]
     default = simple
 ```

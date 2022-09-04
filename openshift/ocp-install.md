@@ -81,7 +81,7 @@ etcd1.ocp4.iefcu.cn
 ### 1. 初始化配置bastion堡垒机
 
 x86机器，可以是虚拟机。
-安装系统，例如unikylin3.3-6A，最小安装即可，创建管理员adam/ksvd2020，配置网络
+安装系统，例如unikylin3.3-6A，最小安装即可，创建管理员，配置网络
 安装docker，docker-compose，然后把我准备好的软件放上去，然后处理，有如下文件:
 * quay.tgz => 私有镜像仓库
 * docker-images.tar => 基础服务docker镜像
@@ -588,7 +588,7 @@ TODO:
 #### 新增htpasswd用户认证
 
 ```bash
-htpasswd -c -B -b users.htpasswd admin ksvd2020
+htpasswd -c -B -b users.htpasswd admin password
 # 输入内容如下:
 admin:$2y$05$oANlQ7bXuJQqbytIFkA7OO5Mf5pROsxoIgVU1UYdQrMTkrl2CNVi6
 ```
@@ -605,7 +605,7 @@ oc -n kube-system delete secrets kubeadmin
 
 新增kylin-monitor用户
 ```bash
-htpasswd -c -B -b users.htpasswd kylin-monitor jit@2021
+htpasswd -c -B -b users.htpasswd kylin-monitor password
 kylin-monitor:$2y$05$IzGbG9RbAEX577z7RKeVEOl3V0AgfeIoCNq8yDiO9GZ8rnYly5Tlu
 
 oc adm policy add-cluster-role-to-user cluster-monitoring-view kylin-monitor

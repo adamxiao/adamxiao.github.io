@@ -39,7 +39,6 @@ ENTRYPOINT ["unzip"]
 docker buildx build \
     --build-arg http_proxy=http://proxy.iefcu.cn:20172 \
     --build-arg https_proxy=http://proxy.iefcu.cn:20172 \
-    --build-arg no_proxy=yumrepo.unikylin.com.cn,192.0.0.0/8 \
     --platform=linux/arm64,linux/amd64,linux/arm/v6 \
     -t hub.iefcu.cn/xiaoyun/unzip . --push
 
@@ -47,7 +46,6 @@ docker buildx build \
 docker build \
     --build-arg http_proxy=http://proxy.iefcu.cn:20172 \
     --build-arg https_proxy=http://proxy.iefcu.cn:20172 \
-    --build-arg no_proxy=yumrepo.unikylin.com.cn,192.0.0.0/8 \
     -t hub.iefcu.cn/xiaoyun/unzip .
 ```
 

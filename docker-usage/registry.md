@@ -168,7 +168,7 @@ curl http://127.0.0.1:5000/v2/_catalog
 
 * 查询镜像标签列表
 
-curl http://10.20.1.99:5000/v2/kcp/kylin-operator-index/tags/list
+curl http://127.0.0.1:5000/v2/kcp/kylin-operator-index/tags/list
 
 #### 删除镜像
 

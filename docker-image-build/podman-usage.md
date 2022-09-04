@@ -4,8 +4,6 @@ https://docs.qq.com/doc/DZmRid1Jsdk9MeXFB
 
 ## 概述
 
-kylin源没有podman
-
 底层都是使用runc容器运行时(貌似cri-o不一样)
 
 podman的镜像存储,跟docker不一样的,但是crictl images看到的是一样的
@@ -40,7 +38,7 @@ insecure = false
 mirror-by-digest-only = true
 
 [[registry.mirror]]
-location = "registry.openshift4.kylin.com/ocp4/openshift4"
+location = "registry.openshift4.iefcu.cn/ocp4/openshift4"
 insecure = false
 
 
@@ -50,7 +48,7 @@ insecure = false
 mirror-by-digest-only = true
 
 [[registry.mirror]]
-location = "registry.openshift4.kylin.com/ocp4/openshift4"
+location = "registry.openshift4.iefcu.cn/ocp4/openshift4"
 insecure = false
 
 
@@ -60,6 +58,6 @@ insecure = false
 #mirror-by-digest-only = true
 
 [[registry.mirror]]
-location = "registry.openshift4.kylin.com/redhat/community-operator-index"
+location = "registry.openshift4.iefcu.cn/redhat/community-operator-index"
 insecure = false
 ```

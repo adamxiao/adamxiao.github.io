@@ -9,7 +9,7 @@ docker run -itd --name minio \
   -p 9000:9000 \
   -p 9001:9001 \
   -e "MINIO_ROOT_USER=adam" \
-  -e "MINIO_ROOT_PASSWORD=ksvd2020@0516" \
+  -e "MINIO_ROOT_PASSWORD=password" \
   -v /data/minio/data:/data \
   -v /data/minio/config:/root/.minio \
   minio/minio server /data --console-address ":9001"
@@ -21,7 +21,7 @@ docker run -itd -p 9000:9000 \
   -v /data/minio/data:/data \
   -v /data/minio/config:/root/.minio \
   -e "MINIO_ACCESS_KEY=adam" \
-  -e "MINIO_SECRET_KEY=ksvd2020@0516" \
+  -e "MINIO_SECRET_KEY=password" \
   minio/minio server /data
 ```
 
