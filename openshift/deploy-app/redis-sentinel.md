@@ -1,5 +1,18 @@
 # redis哨兵模式分析调研
 
+https://www.cnblogs.com/ericnie/p/10717787.html
+通过固定第一个master的方法，构建redis和哨兵集群
+```
+oc create -f openshift/redis-master-dc.yaml
+oc create -f openshift/redis-master-service.yaml
+
+oc create -f openshift/redis-sentinel-dc.yaml
+oc create -f openshift/redis-sentinel-services.yaml
+
+oc create -f openshift/redis.yaml
+```
+=> 还有，就是单机k8s环境，干脆就搞单redis哨兵节点集群
+
 ## 问题
 
 sentinel集群怎么配置的?
