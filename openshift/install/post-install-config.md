@@ -26,6 +26,32 @@ oc set data secret/pull-secret -n openshift-config --from-file=.dockerconfigjson
 ```
 这个操作需要一点时间, 会改动到所有的节点配置
 
+#### 修正Insights Operator降级问题
+
+参考《Restoring a degraded Insights Operator》
+https://docs.openshift.com/container-platform/4.9/post_installation_configuration/connected-to-disconnected.html#connected-to-disconnected-restore-insights_connected-to-disconnected
+=> 就是修改pull-secret， 去除掉 cloud.openshift.com 配置
+
+导出pull-secret
+```
+oc extract secret/pull-secret -n openshift-config --confirm --to=.
+# 导出的文件为 .dockerconfigjson
+```
+
+修改pull-secret并更新
+```
+# 修改文件 .dockerconfigjson, 去除cloud.openshift.com的配置
+# 然后更新
+oc set data secret/pull-secret -n openshift-config --from-file=.dockerconfigjson=./.dockerconfigjson
+```
+
+最后检查insight operator状态
+```
+[core@master1 insight-operator]$ oc get co insights
+NAME       VERSION      AVAILABLE   PROGRESSING   DEGRADED   SINCE   MESSAGE
+insights   4.x.x        True        False         False      xxxd
+```
+
 ## 时间同步配置
 
 ## 配置数据存储

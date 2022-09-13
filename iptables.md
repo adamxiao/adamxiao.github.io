@@ -24,6 +24,16 @@ iptables -A FORWARD -i eth0 -s 192.168.1.3 -p tcp --sport 3306 -j ACCEPT
 sudo iptables -t nat -A OUTPUT -p tcp --dport 80 -j REDIRECT --to-ports 3128
 sudo iptables -t nat -A OUTPUT -p tcp --dport 80 -j DNAT --to 10.20.3.18:3128
 
+#### DNAT目的地址转换
+
+例如把访问ip1的tcp 80流量转到new_ip2上去, 如下:
+```
+# 转发dnat
+iptables -t nat -I PREROUTING -d ${ip1}/32 -p tcp -m tcp --dport 80 -j DNAT --to-destination ${new_ip2}:80
+# 本机dnat
+iptables -t nat -I OUTPUT -d ${ip1}/32 -p tcp -m tcp --dport 80 -j DNAT --to-destination ${new_ip2}:80
+```
+
 #### 简单nat转发
 
 ```bash
