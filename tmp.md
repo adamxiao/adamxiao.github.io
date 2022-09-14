@@ -1,5 +1,27 @@
 # 临时计划
 
+openshift-sdn日志
+```
+I0826 06:46:01.640187    2484 node.go:151] Initializing SDN node "worker1.kcp2-arm.iefcu.cn" (192.168.100.34) of type "redhat/openshift-ovs-networkpolicy"
+I0826 06:46:01.711950    2484 cmd.go:159] Starting node networking (4.9.0-202201101708.p0.gecd60f9.assembly.stream-ecd60f9)
+I0826 06:46:01.712282    2484 node.go:352] Starting openshift-sdn network plugin
+```
+
+启动参数待ip地址
+root        7827    7794  0 Aug26 ?        00:46:03 /usr/bin/openshift-sdn-node --node-name master1.kcp2-arm.iefcu.cn --node-ip 192.168.100.31 --proxy-config /config/kube-proxy-config.yaml --v 2
+
+            - name: K8S_NODE_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: spec.nodeName
+            - name: K8S_NODE_IP
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.hostIP
+
+
 [轻量级 Kubernetes 集群发行版 K3s 完全进阶指南](https://www.hi-linux.com/posts/907.html)
 默认使用sqlite3数据(同时支持etcd，mysql等)
 

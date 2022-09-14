@@ -68,7 +68,7 @@ sudo ip addr add 10.0.0.107/24 dev vxlan1
 * ZStack的VPC特性详解及实战_凌云时刻的博客-CSDN博客
 https://blog.csdn.net/bjchenxu/article/details/107036233
 
-* SANGFOR_aCloud_网络功能虚拟化之虚拟交换机 - 深信服社区
+* SANGFOR_aCloud_网络功能虚拟化之虚拟交换机
 https://bbs.sangfor.com.cn/plugin.php?id=sangfor_databases:index&mod=viewdatabase&tid=38982&highlight=
 
 * openstack-- neutron 二/三层网络实现探究 - Michael_Tong唐唐 - 博客园

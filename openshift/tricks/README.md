@@ -20,3 +20,16 @@ oc get secrets pull-secret -n openshift-config -o template='{{index .data ".dock
 # 最后更新pull-secret - 注意这个操作会导致节点依次都重启!!
 oc set data secret/pull-secret -n openshift-config --from-file=.dockerconfigjson=./pull-secret.json
 ```
+
+#### deployment更新
+
+https://github.com/kubernetes/kubernetes/issues/27081
+验证ok
+```
+oc -n nginx patch deployment nginx -p='{"spec":{"template":{"metadata":{"creationTimestamp":"'$( date --utc +%FT%TZ )'"}}}}'
+```
+
+https://www.kevinsimper.dk/posts/trigger-a-redeploy-in-kubernetes
+```
+kubectl patch deployment your_deployment -p "{\"spec\": {\"template\": {\"metadata\": { \"labels\": {  \"redeploy\": \"$(date +%s)\"}}}}}"
+```

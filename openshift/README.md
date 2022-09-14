@@ -78,6 +78,10 @@ mirror镜像: `hub.iefcu.cn/public/nginx:stable`
 oc create configmap nginx-conf --from-file=conf.d/
 oc -n nginx create secret tls hub-iefcu-tls --cert=./hub.iefcu.cn_bundle.crt --key=./hub.iefcu.cn.key
 oc -n nginx create secret tls iefcu-tls --cert=./fullchain.cer --key=./iefcu.cn.key
+# 更新tls证书
+oc -n nginx create secret tls iefcu-tls --cert=./fullchain.cer --key=./iefcu.cn.key -o yaml --dry-run=client | oc replace -f -
+# Force deployment rolling-update
+oc -n nginx patch deployment nginx -p='{"spec":{"template":{"metadata":{"creationTimestamp":"'$( date --utc +%FT%TZ )'"}}}}'
 ```
 
 更新configmap
