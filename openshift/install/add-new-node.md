@@ -54,6 +54,21 @@ oc extract -n openshift-machine-api secret/worker-user-data   --keys=userData --
 
 * 5.通过新节点的证书请求
 
+这个csr通过之后, 生成了kubelet-client-current.pem证书
+```
+[core@master1 ~]$ oc get csr
+NAME        AGE   SIGNERNAME                                    REQUESTOR                                                                   REQUESTEDDURATION   CONDITION
+csr-6zgx6   10m   kubernetes.io/kube-apiserver-client-kubelet   system:serviceaccount:openshift-machine-config-operator:node-bootstrapper   <none>              Pending
+```
+
+这个证书通过之后，生成了kubelet-server-current.pem证书
+```
+[core@master1 ~]$ oc get csr
+NAME        AGE   SIGNERNAME                                    REQUESTOR                                                                   REQUESTEDDURATION   CONDITION
+csr-cjvlw   45s   kubernetes.io/kubelet-serving                 system:node:worker1.kcp1-arm.iefcu.cn                                       <none>              Pending
+```
+
+通过所有证书
 ```bash
 oc get csr | grep pending -i | awk '{print $1}' | sed 's/^/kubectl certificate approve /' | bash
 
