@@ -52,7 +52,16 @@ ovn-sbctl set-connection ptcp:6642:192.168.100.121
 ```
 ovs-vsctl set open . external-ids:ovn-remote=tcp:192.168.100.121:6642
 ovs-vsctl set open . external-ids:ovn-encap-type=geneve
+#或者使用vxlan协议(未验证成功, 不支持vxlan) https://tonydeng.github.io/sdn-handbook/ovs/ovn-internal.html
+#ovs-vsctl set open . external-ids:ovn-encap-type=vxlan
 ovs-vsctl set open . external-ids:ovn-encap-ip=192.168.100.122
+
+# 查看配置结果
+ovs-vsctl get open . external-ids
+# 配置错误了应该可以清除配置，重新再配置
+#ovs-vsctl remove open . external-ids ovn-encap-type=geneve
+#ovs-vsctl remove open . external-ids ovn-encap-ip=192.168.100.121
+#ovs-vsctl clear open . external-ids
 ```
 
 上述命令会触发每个节点上的OVN chassis controller和ubuntu1中的OVN Central host进行连接。并且我们指定了，我们的overlay network使用geneve协议来加密数据平面流量。
@@ -101,6 +110,13 @@ ovn-nbctl lsp-set-addresses ls1-vm2 02:ac:10:ff:00:22
 ovn-nbctl lsp-set-port-security ls1-vm2 02:ac:10:ff:00:22
  
 ovn-nbctl show
+
+# create logical port
+ovn-nbctl lsp-add ls1 ls1-vm3
+ovn-nbctl lsp-set-addresses ls1-vm3 02:ac:10:ff:00:33
+ovn-nbctl lsp-set-port-security ls1-vm3 02:ac:10:ff:00:33
+ 
+ovn-nbctl show
 ```
 
 在每一个命令集中我们都创建了一个命名唯一的logical port。通常这些logical port都会以UUID进行命名，从而确保唯一性，但是我们使用了对人类更加友好的命名方式。同时我们还定义了和每个logical port相关联的mac地址，而且我们还更近一步，利用port security对logical port进行了锁定（从而从该logical port只能使用我们提供的mac地址）。
@@ -120,6 +136,79 @@ ovs-vsctl set Interface vm1 external_ids:iface-id=ls1-vm1
  
 ip netns exec vm1 ip addr show
 ```
+
+再在另外一台主机建立vm2
+```bash
+ip netns add vm2
+ovs-vsctl add-port br-int vm2 -- set interface vm2 type=internal
+ip link set vm2 netns vm2
+ip netns exec vm2 ip link set vm2 address 02:ac:10:ff:00:22
+ip netns exec vm2 ip addr add 172.16.255.22/24 dev vm2
+ip netns exec vm2 ip link set vm2 up
+ovs-vsctl set Interface vm2 external_ids:iface-id=ls1-vm2
+ 
+ip netns exec vm2 ip addr show
+```
+
+再在另外一台主机建立vm3
+```bash
+ip netns add vm3
+ovs-vsctl add-port br-int vm3 -- set interface vm3 type=internal
+ip link set vm3 netns vm3
+ip netns exec vm3 ip link set vm3 address 02:ac:10:ff:00:33
+ip netns exec vm3 ip addr add 172.16.255.33/24 dev vm3
+ip netns exec vm3 ip link set vm3 up
+ovs-vsctl set Interface vm3 external_ids:iface-id=ls1-vm3
+ 
+ip netns exec vm3 ip addr show
+```
+
+在ovn1上执行命令, 再建立一个ls2
+```
+# create the logical switch
+ovn-nbctl ls-add ls2
+ 
+# create logical port
+ovn-nbctl lsp-add ls2 ls2-vm3
+ovn-nbctl lsp-set-addresses ls2-vm3 02:ac:10:ff:00:33
+ovn-nbctl lsp-set-port-security ls2-vm3 02:ac:10:ff:00:33
+ 
+# create logical port
+ovn-nbctl lsp-add ls2 ls2-vm4
+ovn-nbctl lsp-set-addresses ls2-vm4 02:ac:10:ff:00:44
+ovn-nbctl lsp-set-port-security ls2-vm4 02:ac:10:ff:00:44
+ 
+ovn-nbctl show
+```
+
+ip netns exec vm1 ping 172.16.255.22
+
+在一个主机建立vm3
+```bash
+ip netns add vm3
+ovs-vsctl add-port br-int vm3 -- set interface vm3 type=internal
+ip link set vm3 netns vm3
+ip netns exec vm3 ip link set vm3 address 02:ac:10:ff:00:33
+ip netns exec vm3 ip addr add 172.16.255.33/24 dev vm3
+ip netns exec vm3 ip link set vm3 up
+ovs-vsctl set Interface vm3 external_ids:iface-id=ls2-vm3
+ 
+ip netns exec vm3 ip addr show
+```
+
+再在另外一台主机建立vm4
+```bash
+ip netns add vm4
+ovs-vsctl add-port br-int vm4 -- set interface vm4 type=internal
+ip link set vm4 netns vm4
+ip netns exec vm4 ip link set vm4 address 02:ac:10:ff:00:44
+ip netns exec vm4 ip addr add 172.16.255.44/24 dev vm4
+ip netns exec vm4 ip link set vm4 up
+ovs-vsctl set Interface vm4 external_ids:iface-id=ls2-vm4
+ 
+ip netns exec vm4 ip addr show
+```
+
 
 ## 其他资料
 
