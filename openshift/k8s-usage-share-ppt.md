@@ -137,12 +137,17 @@ RC 是 Kubernetes 集群中最早的保证 Pod 高可用的 API 对象。通过�
 这里有一个 .yaml 示例文件，展示了 Kubernetes Deployment 的必需字段和对象 spec：
 
 ```yaml
-apiVersion: apps/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: nginx-deployment
+  name: nginx-deploy
+  labels:
+    app: nginx
 spec:
-  replicas: 3
+  selector:
+     matchLabels:
+       app: nginx
+  replicas: 1
   template:
     metadata:
       labels:

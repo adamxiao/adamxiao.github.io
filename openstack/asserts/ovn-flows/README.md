@@ -257,6 +257,8 @@ table=22, n_packets=10, priority=0 actions=drop
 
 ## 更简化过的流表规则
 
+TODO: 单播报文也会发给多个虚拟机
+
 问题: 为什么不会循环发给自己? => TODO: 原来真的会循环发给自己...
 ```
 # 广播包, 准备发给所有port
@@ -304,7 +306,7 @@ table=8, priority=50,metadata=0x2 actions=resubmit(,32)
 table=32, priority=100,metadata=0x2 actions=load:0x2->NXM_NX_TUN_ID[0..23],output:2,resubmit(,33)
 table=32, priority=0 actions=resubmit(,33)
 #table=33, priority=100,metadata=0x2 actions=resubmit(,34)
-# 新增目的port存储
+# 新增目的port存储 TODO: 隧道发过来的包, 也会打上reg5=0x1 !!!
 table=33, priority=100,metadata=0x2 actions=load:0x1->NXM_NX_REG5[],resubmit(,34),load:0x0->NXM_NX_REG5[]
 # 新增drop流表
 table=34, priority=100,reg5=0x1,in_port=1,metadata=0x2 actions=drop

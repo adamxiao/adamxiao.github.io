@@ -442,6 +442,8 @@ table=26, priority=0,metadata=0x4 actions=resubmit(,27)
 
 #### table 27 controller
 
+根据目的mac地址决定这个包发往哪个端口(逻辑目的端口)!!!
+=> 即配置reg15的值
 ```
 # 相同二层虚拟机接口相关数据处理?
 table=27, priority=50,metadata=0x4,dl_dst=02:ac:10:ff:00:11 actions=load:0x1->NXM_NX_REG15[],resubmit(,32)
@@ -465,6 +467,8 @@ table=32, priority=0 actions=resubmit(,33)
 #### table 33
 
 广播包发到不同的端口上去
+本机逻辑目的端口, 转换为本机物理端口?(做连接跟踪使用)
+=> 最终发给哪个接口, 还是根据reg15逻辑目的端口值
 ```
 table=33, priority=100,reg15=0x2,metadata=0x4 actions=load:0x1->NXM_NX_REG13[],load:0x3->NXM_NX_REG11[],load:0x2->NXM_NX_REG12[],resubmit(,34)
 table=33, priority=100,reg15=0x8000,metadata=0x4 actions=load:0x1->NXM_NX_REG13[],load:0x2->NXM_NX_REG15[],resubmit(,34),load:0x8000->NXM_NX_REG15[]
