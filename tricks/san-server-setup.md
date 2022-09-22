@@ -89,3 +89,23 @@ cat /etc/iscsi/initiatorname.iscsi
 iscsiadm -m discovery -t st -p 10.90.3.28
 iscsiadm -m node -L all
 ```
+
+客户端需要重启iscsid, 让修改initiatorname.iscsi生效
+```
+systemctl restart iscsid.service
+```
+
+否则看server端日志, 会发现认证失败
+```
+[19505.799312] iSCSI Initiator Node: iqn.1994-05.com.redhat:4de8cdfb7866 is not authorized to access iSCSI target portal group: 1.
+[19505.802665] iSCSI Login negotiation failed.
+```
+
+san存储服务器添加ｓａｎ存储设备，客户端需要刷新, 然后才能看到更多设备
+```
+# 注销所有sanserver的登录
+iscsiadm -m node -U all
+
+# 然后再重新登录
+iscsiadm -m node -L all
+```
