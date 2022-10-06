@@ -74,3 +74,61 @@ ExitOnForwardFailure表示端口转发失败时退出ssh。因为有可能服务
 ```bash
 ssh -p 22345 -N -D 127.0.0.1:1080 adam@127.0.0.1
 ```
+
+## FAQ
+
+#### channel 1: open failed: administratively prohibited: open failed
+
+sshd对端日志
+refused streamlocal port forward: originator  port 0, target //var/run/ksvd//336b-clone.socket
+发现use_privsep=0, 所以无法转发unix套接字
+```
+static Channel *
+server_request_direct_streamlocal(void)
+{
+...
+        /* XXX fine grained permissions */
+        if ((options.allow_streamlocal_forwarding & FORWARD_LOCAL) != 0 &&
+            !no_port_forwarding_flag && !options.disable_forwarding &&
+            use_privsep) {
+                c = channel_connect_to_path(target,
+                    "direct-streamlocal@openssh.com", "direct-streamlocal");
+        } else {
+                logit("refused streamlocal port forward: "
+                    "originator %s port %d, target %s",
+                    originator, originator_port, target);
+        }
+```
+
+UsePrivilegeSeparation yes
+rooty用户useprivi=0代码中写死的,换个kylin普通用户即可?
+```
+static void
+privsep_postauth(Authctxt *authctxt)
+{
+#ifdef DISABLE_FD_PASSING
+    if (1) {
+#else
+    if (authctxt->pw->pw_uid == 0) {
+#endif
+        /* File descriptor passing is broken or root login */
+        use_privsep = 0;
+        goto skip;
+    }
+```
+
+AllowStreamLocalForwarding 配置为all，发现一直都是yes, 有问题
+但是改为local就可以？？？ => 没用, 其实all就是yes?
+
+https://www.nixcraft.com/t/channel-1-open-failed-administratively-prohibited-open-failed-with-ssh-tunneling/3773/2
+```
+2. How to find current settings
+Run the following command on your Linux or Unix SSHD server:
+
+sudo sshd -T | grep -Ei 'TCPKeepAlive|AllowTCPForwarding|PermitOpen'
+Correct values:
+
+tcpkeepalive yes
+allowtcpforwarding yes
+permitopen any
+```

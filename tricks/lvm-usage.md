@@ -141,3 +141,16 @@ pvcreate /dev/sda
   Cannot use /dev/sda: device is partitioned
 wipefs -a /dev/sda # 解决
 ```
+
+#### centos 7 qcow识别lvm卷
+
+安装lvm包
+```
+yum install -y lvm2
+```
+
+激活lvm卷
+```
+lvchange -ay vg_vrm/lv_root
+lvchange -ay vg_vrm # 激活全部vg
+```

@@ -43,6 +43,9 @@ https://10.20.2.219:8443/cas/html/help/plat/zh/default_auto.htm#Quick/ConfigVM.h
 配置内核参数添加了"console=ttyS0,115200n8", 才可以输出, 否则没有任何相应
 ```
 grubby --update-kernel=/boot/vmlinuz-4.19.90-2003.4.0.0036.ky3.kb29.x86_64 --args="console=ttyS0,115200n8"
+
+# 删除参数
+grubby --update-kernel=/boot/vmlinuz-4.19.90-2003.4.0.0036.ky3.kb29.x86_64 --remove-args="console"
 ```
 
 ## 其他资料
@@ -63,6 +66,49 @@ The character device is passed through to the underlying physical character devi
 ```
 
 [libvirt官方文档 - Host device proxy](https://libvirt.org/formatdomain.html#host-device-proxy)
+
+libvirt官方文档就说明串口设备, 可以为
+https://libvirt.org/formatdomain.html#serial-port
+* pty
+* unix socket
+* file
+* spice channel等设备
+
+#### pty串口
+
+```
+<serial type='pty'>
+  <target port='1'></target>
+</serial>
+```
+
+这个使用最简单
+```
+virsh console ${uuid}
+```
+
+#### unix socket串口
+
+```
+  <serial type="unix">
+    <source mode="bind" path="/tmp/336b.socket"/>
+    <target port="1"/>
+  </serial>
+```
+
+可以通过socat轻松连接使用这个串口
+```
+socat stdin,raw,echo=0,escape=0x11 "unix-connect:/tmp/336b.socket"
+
+localhost.localdomain
+UniKylin 3.3
+```
+
+https://forum.proxmox.com/threads/serial-port-between-two-vms.63833/
+connect the two serial ports on the host
+```
+socat UNIX-CLIENT:/tmp/336b.socket UNIX-CLIENT:/tmp/336b-clone.socket
+```
 
 ## 参考资料
 
