@@ -25,6 +25,7 @@ ls /dev/ | grep usb
 命令行启动minicom的参数
 ```
 minicom -D /dev/ttyS0 -b 115200 -8
+minicom -D /dev/ttyS0 -b 115200 -8 -w -c on -R utf8
 ```
 
 * -w: 启动minicom的时候，开启自动换行：

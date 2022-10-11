@@ -12,6 +12,13 @@ exec socat stdin,raw,echo=0,escape=0x11 "unix-connect:${SOCKET}"
 
 socat UNIX-CLIENT:/tmp/336b.socket UNIX-CLIENT:/tmp/336b-clone.socket
 
+#### 操作Unix套接字
+
+Unix 套接字是非常常见的本地通讯方式，但是能够操作这类套接字的工具命令不多， socat 是其中一个。 下面这个例子，通过 HAProxy 的 Unix 套接字，获取其运行信息，包含 PID 、启动时间等：
+```
+echo "show info" | socat unix-connect:/var/tmp/haproxy stdio
+```
+
 
 https://unix.stackexchange.com/questions/420543/building-a-unix-socket-bridge-via-tcp
 => 非常适合我的场景
@@ -25,6 +32,8 @@ netstat -ap --unix
 ## xx
 
 ## 参考文档
+
+[socat by example](https://www.bitkistl.com/2016/03/socat-by-example.html)
 
 https://www.361shipin.com/blog/1509326899963232256
 
@@ -59,7 +68,7 @@ nc110搞不定, netcat也搞不定
 
 socat unix-listen:/tmp/336b-clone.socket -
 
-ssh -o StreamLocalBindUnlink=yes -N -L /tmp/336b-clone-proxy.socket:/tmp/336b-clone.socket node7
+ssh -o StreamLocalBindUnlink=yes -N -L /tmp/336b-clone-proxy.socket:/tmp/336b-clone.socket kylin-ksvd@node6
 
 socat -d -d stdin,raw,echo=0,escape=0x11 "unix-connect:/tmp/336b-clone-proxy.socket"
 

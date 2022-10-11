@@ -1,10 +1,21 @@
-## arm uefi支持
+# libvirt arm uefi支持
 
 ## kylinsec 344 arm64使用virt-manager
 
 * 使用光盘源, 安装virt-manager
 * 安装edk2-aarch64
-* 重启
+* 重启libvirtd即可
+
+#### centos7 arm64支持虚拟化
+
+关键字`centos7 install efi aarch64`
+
+https://blog.csdn.net/c5113620/article/details/115434366
+
+```
+yum groupinstall "Virtualization Host" -y
+yum install qemu-kvm virt-manager libvirt
+```
 
 ## 旧的资料
 
@@ -46,4 +57,7 @@ https://blog.csdn.net/Y1309SIR/article/details/105385648
 
 这个是因为我们img文件里面是已经安装好系统了，系统安装的时候可能是使用的BIOS安装，然后你替换后是使用的UEFI安装，由于启动类型的不同，所以到时候开机后画面出错。（如下图所示，本来系统是在BIOS安装的，然后现在用的UEFI启动方式，开机后，画面就不能正常显示了）
 
+[install aarch64 on x86-centos](https://medium.com/%E9%AB%94%E9%A9%97%E4%BA%BA%E7%94%9F-touch-life/install-aarch64-on-x86-centos-c35919f798a9)
 
+
+## 参考资料

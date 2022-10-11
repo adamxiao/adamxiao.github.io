@@ -1,5 +1,39 @@
 # libvirt用法
 
+## 其他
+
+关键字`virsh web console`
+Managing KVM Virtual Machines with Cockpit Web Console in Linux
+https://www.tecmint.com/manage-kvm-virtual-machines-using-cockpit-web-console/
+
+## console安装虚拟机
+
+https://gist.github.com/srramasw/a44b71c1573071a2136a
+待验证
+
+```
+qemu-img create -f qcow2 /var/lib/libvirt/images/csr_3_13_03_disk.qcow2 8G
+virt-install               \
+      --connect=qemu:///system  \
+      --name=csr_3_13_03          \
+      --description "CSR 3.13 VM #3"   \
+      --os-type=linux           \
+      --os-variant=rhel4        \
+      --arch=x86_64             \
+      --cpu host                \
+      --vcpus=1,sockets=2,cores=1,threads=1   \
+      --hvm                     \
+      --ram=4096                \
+      --cdrom=/home/srramasw/csr_images/csr1000v-universalk9.03.13.00.S.154-3.S-ext.iso \
+      --disk path=/var/lib/libvirt/images/csr_03_13_03_disk.qcow2,bus=virtio,size=8,sparse=false,cache=none,format=qcow2   \
+      --console pty,target_type=virtio  \
+      --video=vga                       \
+      --graphics vnc            \
+      --serial tcp,host=:4577,mode=bind,protocol=telnet   \
+      --network bridge=virbr0,model=virtio                \
+      --noreboot
+```
+
 ## 在线添加网卡
 
 virsh attach-device  e973ac81-6199-3177-6a19-21dece2693e6 if.xml --live
@@ -123,6 +157,16 @@ virsh qemu-agent-command $domain '{"execute":"guest-exec-status","arguments":{"p
 # XXX: 禁用ipv6 <network-scripts disable ipv6>
 # https://www.looklinux.com/how-to-disable-ipv6-in-centos-and-redhat/
 # /etc/sysctl.conf
+```
+
+#### libvirt开启调试日志
+
+关键字《libvirt开启调试日志》
+
+/etc/libvirt/libvirtd.conf
+```
+log_level=1
+log_outputs="1:file:/var/log/libvirt/libvirtd.log"
 ```
 
 ## FAQ
