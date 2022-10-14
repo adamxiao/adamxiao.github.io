@@ -86,3 +86,23 @@ socat 功能跟 NetCat 一样，但更安全(支持 chroot )，兼容多种协�
 * Unix 套接字的 shell 操作接口；
 * IPv6 转接；
 * 安全测试和研究；
+
+## 对比nc
+
+#### nc监听tcp, udp测试
+
+参考vroute-vm.md
+
+测试:
+```bash
+# 服务端监听tcp 8080端口
+nc -n -l 8080 -v
+# 客户端连接服务端
+nc <服务器端 IP 地址> <端口号>
+```
+
+udp协议类似
+```
+nc -n -lu <端口号> -v
+nc -u <服务器端 IP 地址> <端口号>
+```

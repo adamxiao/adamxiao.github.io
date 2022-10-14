@@ -18,30 +18,42 @@ apt install nfs-kernel-server nfs-common
 
 #### KSVD部署文档中的资料
 
-```
-1.1 NFS服务器的配置方法说明：如果NFS服务器用户没有提供，也可以在kyin3.3-3B系统搭建。步骤如下：
-1. 创建共享目录
-     1）在nas服务器上 ：
-          mkdir  -p  /home/8.1.5data_center
-     2）创建uid和gid为2000的kylin-ksvd用户：
-          useradd kylin-ksvd -u 2000 
-     3）修改共享目录属主属组：
-           chown  -R 2000:2000  /home/8.1.5data_center
-2.  修改NFS配置文件
-      vim /etc/exports
-      添加如下行：
-      /home/8.1.5data_center  *(rw,no_root_squash,sync)   
-      注意：“*(”之间没有空格 ，如果有空格，mount可以挂载成功，但是会提示无法写入
-3. 启动nfs服务并关闭防火墙
-      systemctl restart nfs
-      systemctl enable nfs
+NFS服务器的配置方法说明:
 
-      systemctl stop firewalld
-      systemctl disable firewalld
-4. 确认配置是否生效
-  执行exportfs命令，出现/home/8.1.5data_center字样则说明配置成功。
+1.创建共享目录
+
+1）在nas服务器上 ：
+```
+mkdir  -p  /home/8.1.5data_center
 ```
 
+2）创建uid和gid为2000的kylin-ksvd用户：
+```
+useradd kylin-ksvd -u 2000 
+```
+
+3）修改共享目录属主属组：
+```
+chown  -R 2000:2000  /home/8.1.5data_center
+```
+
+2.修改NFS配置文件/etc/exports, 添加如下行：
+```
+# 注意：“*(”之间没有空格 ，如果有空格，mount可以挂载成功，但是会提示无法写入
+/home/8.1.5data_center *(rw,no_root_squash,sync)
+```
+
+3.启动nfs服务并关闭防火墙
+```
+systemctl restart nfs
+systemctl enable nfs
+
+systemctl stop firewalld
+systemctl disable firewalld
+```
+
+4.确认配置是否生效
+执行exportfs命令，出现/home/8.1.5data_center字样则说明配置成功。
 
 ## 配置方法
 
