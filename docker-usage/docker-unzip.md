@@ -55,6 +55,8 @@ https://www.cnblogs.com/ritte/p/11783020.html
 
 ```
 7z a name.7z filename -v10m
+# 加密
+7z a xxx.7z -p -v100m xxx
 
 7z e data.7z   #不保持目录结构
 7z x data2.7z  #保持目录结构
