@@ -23,6 +23,17 @@ journalctl  -b  0
 [root@centos7 ~]# journalctl -u httpd.service 
 ```
 
+## journal 日志清理
+
+可能改时间，导致时间错乱，journal日志查看也比较难
+
+https://www.cnblogs.com/jiuchongxiao/p/9222953.html
+
+如果要手工删除日志文件，则在删除前需要先轮转一次journal日志
+```
+systemctl kill --kill-who=main --signal=SIGUSR2 systemd-journald.service
+```
+
 ## 参考资料
 
 * [CentOS7的journalctl日志查看方法](https://www.cnblogs.com/ggzhangxiaochao/p/13953887.html)
