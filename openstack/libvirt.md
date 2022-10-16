@@ -67,7 +67,7 @@ virsh qemu-agent-command ${DOMAIN} '{"execute":"guest-ping"}'
 
 查询qemu-ga支持的命令
 ```bash
-virsh qemu-agent-command ${DOMAIN} '{"execute":"guest-info"}}'
+virsh qemu-agent-command ${DOMAIN} '{"execute":"guest-info"}'
 ```
 
 qemu-ga写文件

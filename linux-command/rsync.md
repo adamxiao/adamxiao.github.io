@@ -1,5 +1,18 @@
 # rsync使用
 
+## 使用rsync备份恢复数据
+
+备份数据目录
+```
+rsync -avh $HOME/data remote_host_or_ip:/data --delete
+# 结果会在同步到目的目录/data/data
+```
+
+恢复数据目录
+```
+rsync -avh remote_host_or_ip:/data/data ./ --delete
+```
+
 ## 使用Rsync在远程计算机之间同步数据
 
 当使用rsync进行远程传输时，必须将其安装在源计算机和目标计算机上。新版本的rsync被配置为使用SSH作为默认的远程shell。在以下示例中，我们将目录从本地计算机传输到远程计算机：

@@ -1,5 +1,21 @@
 # 临时计划
 
+#### metallb layer2和BGP的区别理解
+
+[三款开源 Kubernetes 负载均衡器大比拼 (MetalLB vs PureLB vs OpenELB)](https://www.51cto.com/article/707574.html)
+
+L2 Mode
+在 MetalLB 中，有两个关键组件共同作用，将地址添加到单个节点上。第一个是使用成员列表的节点选举。这是一个简单的选举方案，使用服务名称来确保每个节点选择相同的赢家，即一个分配的 ip 地址将被回答的单一节点。
+
+我使用了回答这个词，因为在 "L2 " 中，发言人进程实现了 ARP 和 ND。Kube-proxy 已经添加了必要的配置，将流量转发到目标 POD，ARP/ND 响应仍然是启动通信的必要条件。
+
+Metallb 不知道节点使用的地址范围，ARP/ND 过程会回答 ConfigMap 中配置的任何网络地址。这可能导致在 L2 模式下分配的地址无法到达。当节点网络跨越多个主机子网时，尤其需要注意，不能保证添加的地址会位于具有本地连接的节点上。
+
+
+BGP Mode
+MetalLB 也在 BGP 模式下运行。BGP 提供了一种机制，将前缀（addr/mask）公布给邻近的路由器。使用路由的机制是利用 Linux 的第三层转发与路由协议相结合来提供目的地信息。
+
+
 openshift-sdn日志
 ```
 I0826 06:46:01.640187    2484 node.go:151] Initializing SDN node "worker1.kcp2-arm.iefcu.cn" (192.168.100.34) of type "redhat/openshift-ovs-networkpolicy"
