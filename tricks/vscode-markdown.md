@@ -22,6 +22,12 @@
 ![](2022-03-30-14-35-44.png)
 ```
 
+配置图片保存到固定目录
+```
+# 配置Paste Image: Path
+${projectRoot}/imgs
+```
+
 ### 导出markdown文档为pdf
 
 #### 首先打开markdown预览页面

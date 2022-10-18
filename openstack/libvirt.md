@@ -34,19 +34,50 @@ virt-install               \
       --noreboot
 ```
 
+## 在线添加内存
+
+virsh attach-device ${DOMAIN} mem.xml --live
+```
+<memory model='dimm'>
+  <target>
+    <size unit='KiB'>1048576</size>
+    <node>0</node>
+  </target>
+  <alias name='dimm0'/>
+  <address type='dimm' slot='0' base='0x100000000'/>
+</memory>
+```
+
+原来不能乱指定地址, 去除即可
+```
+error: 内部错误：无法执行 QEMU 命令 'device_add'：can't add memory device [0x100000000:0x40000000], usable range for memory devices [0x240000000:0x80200000000]
+```
+
+## 在线添加磁盘
+
+virsh attach-device ${DOMAIN} disk.xml --live
+```
+<disk type='file' device='disk'>
+  <driver name='qemu' type='qcow2' cache='none'/>
+  <source file='/home/test.img'/>
+  <target dev='vdc' bus='virtio'/>
+  <address type='pci' bus='0x02' slot='0x02' function='0x0'/>
+</disk>
+```
+
 ## 在线添加网卡
 
 virsh attach-device  e973ac81-6199-3177-6a19-21dece2693e6 if.xml --live
 Device attached successfully
 
 ```xml
-    <interface type='bridge'>
-      <mac address='52:54:84:01:03:04'/>
-      <source bridge='mdvs2'/>
-      <virtualport type='openvswitch' />
-      <model type='virtio'/>
-      <driver name='vhost'/>
-    </interface>
+<interface type='bridge'>
+  <mac address='52:54:84:01:03:04'/>
+  <source bridge='mdvs2'/>
+  <virtualport type='openvswitch' />
+  <model type='virtio'/>
+  <driver name='vhost'/>
+</interface>
 ```
 
 配置ovs桥
@@ -159,6 +190,8 @@ virsh qemu-agent-command $domain '{"execute":"guest-exec-status","arguments":{"p
 # /etc/sysctl.conf
 ```
 
+## 其他
+
 #### libvirt开启调试日志
 
 关键字《libvirt开启调试日志》
@@ -167,6 +200,50 @@ virsh qemu-agent-command $domain '{"execute":"guest-exec-status","arguments":{"p
 ```
 log_level=1
 log_outputs="1:file:/var/log/libvirt/libvirtd.log"
+```
+
+#### arm64设备pci顺序固定
+
+arm64下需要占用pci插槽的设备列表
+
+* usb
+* sata controller
+* scsi controller
+* video
+* memballoon
+
+比较常见的列表类型设备
+* interface
+* disk
+* crdom
+
+示例
+```
+<video>
+  <model type='virtio' vram='16384' heads='1' primary='yes' />
+  <address type='pci' domain='0x0000' bus='0x00' slot='0x02' function='0x0'/>
+</video>
+
+<memballoon model='virtio'>
+  <stats period='10'/>
+  <address type='pci' domain='0x0000' bus='0x00' slot='0x0c' function='0x0'/>
+</memballoon>
+
+<controller type='usb' index='1' model='qemu-xhci' ports='15'>
+  <address type='pci' domain='0x0000' bus='0x00' slot='0x1c' function='0x0'/>
+</controller>
+
+<controller type='sata' index='0'>
+  <address type='pci' bus='0x00' slot='0x01' function='0x1'/>
+</controller>
+
+<controller type='scsi' index='0' model='virtio-scsi'>
+  <address type='pci' bus='0x00' slot='0x01' function='0x2'/>
+</controller>
+
+<controller type='virtio-serial' index='0'>
+  <address type='pci' domain='0x0000' bus='0x00' slot='0x07' function='0x0'/>
+</controller>
 ```
 
 ## FAQ
