@@ -65,6 +65,23 @@ virsh attach-device ${DOMAIN} disk.xml --live
 </disk>
 ```
 
+添加一个带wwn的scsci磁盘
+```
+<disk type='file' device='disk'>
+  <driver name='qemu' type='qcow2' cache='none'/>
+  <source file='/home/test.img'/>
+  <target dev='sda' bus='scsi'/>
+  <wwn>6001405127fe9894</wwn>
+</disk>
+```
+
+可能遇到的错误
+* error: XML 错误：磁盘经销商超过 8 个字符
+* error: 不支持的配置：只有 ide 和 scsi 磁盘支持 wwn
+* error: 内部错误：无法执行 QEMU 命令 '__com.redhat_drive_add'：Device 'drive-scsi0-0-0-1' could not be initialized
+  无法在线添加吧
+
+
 ## 在线添加网卡
 
 virsh attach-device  e973ac81-6199-3177-6a19-21dece2693e6 if.xml --live

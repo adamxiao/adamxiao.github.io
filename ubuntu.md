@@ -88,3 +88,18 @@ then
 fi
 ```
 
+#### 配置Desktop等目录位置
+
+https://blog.csdn.net/m0_49448331/article/details/113844705
+
+修改配置文件: ~/.config/user-dirs.dirs
+```
+XDG_DESKTOP_DIR="$HOME/Desktop"
+XDG_DOWNLOAD_DIR="$HOME/Downloads"
+XDG_TEMPLATES_DIR="$HOME/"
+XDG_PUBLICSHARE_DIR="$HOME/"
+XDG_DOCUMENTS_DIR="$HOME/Documents"
+XDG_MUSIC_DIR="$HOME/"
+XDG_PICTURES_DIR="$HOME/"
+XDG_VIDEOS_DIR="$HOME/"
+```
