@@ -109,3 +109,8 @@ iscsiadm -m node -U all
 # 然后再重新登录
 iscsiadm -m node -L all
 ```
+
+
+iscsiadm -m discovery -t st -p 10.90.3.183
+iscsiadm  -m node  -d  1 T iqn.1994-05.com.redhat:sanserver1 -p  10.90.3.183 -l
+

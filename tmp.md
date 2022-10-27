@@ -1,20 +1,97 @@
 # 临时计划
 
-#### metallb layer2和BGP的区别理解
+#### tcpdump使用
 
-[三款开源 Kubernetes 负载均衡器大比拼 (MetalLB vs PureLB vs OpenELB)](https://www.51cto.com/article/707574.html)
+https://www.cnblogs.com/ggjucheng/archive/2012/01/14/2322659.html
+tcpdump -r /tmp/adam.pcap -n arp net 10.90.3.67
 
-L2 Mode
-在 MetalLB 中，有两个关键组件共同作用，将地址添加到单个节点上。第一个是使用成员列表的节点选举。这是一个简单的选举方案，使用服务名称来确保每个节点选择相同的赢家，即一个分配的 ip 地址将被回答的单一节点。
+#### xfs相关
 
-我使用了回答这个词，因为在 "L2 " 中，发言人进程实现了 ARP 和 ND。Kube-proxy 已经添加了必要的配置，将流量转发到目标 POD，ARP/ND 响应仍然是启动通信的必要条件。
+https://github.com/ianka/xfs_undelete
+改造为xfs_erase_deleted
 
-Metallb 不知道节点使用的地址范围，ARP/ND 过程会回答 ConfigMap 中配置的任何网络地址。这可能导致在 L2 模式下分配的地址无法到达。当节点网络跨越多个主机子网时，尤其需要注意，不能保证添加的地址会位于具有本地连接的节点上。
+https://unix.stackexchange.com/questions/54973/what-filesystems-preferentially-reuse-blocks-from-deleted-files
+xfs is stable and well established and has the characteristics I'm looking for — it reuses the 'just freed' blocks very quickly:
 
+用zero填充少量空间，然后再使用qemu-img convert，确实可以所有磁盘空间
 
-BGP Mode
-MetalLB 也在 BGP 模式下运行。BGP 提供了一种机制，将前缀（addr/mask）公布给邻近的路由器。使用路由的机制是利用 Linux 的第三层转发与路由协议相结合来提供目的地信息。
+#### linux查看分区文件系统
 
+https://cloud.tencent.com/developer/article/1721881
+* df -T
+* parted -l
+* blkid
+* lsblk -f 
+
+#### 使用Next Terminal在浏览器中管理你的服务器
+
+使用Next Terminal在浏览器中管理你的服务器
+https://www.xiaoz.me/archives/15752
+
+服务器不允许上网并且需要跳板机才能访问？学会使用这个工具，轻松让服务器使用yum。
+https://typesafe.cn/posts/4dnat/
+
+普通用户还是使用了guacc, 连接不上ssh
+http://10.20.1.99:8088/#/access?assetId=325213cd-8e13-4435-9baf-9155fbc116da&assetName=arm-docker&protocol=ssh
+http://10.20.1.99:8088/#/term?assetId=325213cd-8e13-4435-9baf-9155fbc116da&assetName=arm-docker
+
+https://github.com/dushixiang/next-terminal
+
+配置nginx反向代理报错
+```
+$ docker logs -f next-terminal_next-terminal_1
+2022-10-23 16:37:14 ERROR [log.Errorf:114]升级为WebSocket协议失败：websocket: the client is not using the websocket protocol: 'upgrade' token not found in 'Connection' header
+echo: http: superfluous response.WriteHeader call from github.com/labstack/echo/v4.(*Response).WriteHeader (response.go:63)
+```
+
+按照官方文档配置nginx反向代理, 参考官方文档： https://next-terminal.typesafe.cn/install/reverse-proxy.html
+```
+location / {
+    proxy_pass http://127.0.0.1:8088/;
+    proxy_set_header Host      $host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection $http_connection;
+}
+```
+
+#### gitbook再优化
+
+其实我想要的就是自己维护的web系统, 可以分享给其他人
+
+[绝妙的个人生产力（Awesome Productivity 中文版）](https://github.com/eastlakeside/awesome-productivity-cn)
+
+[计划使用hexo建立个人博客](https://zhouyifan.net/2021/09/21/20210916-git-note/)
+
+[git教程](https://www.cnblogs.com/javahr/p/15488087.html)
+
+[使用Github+Markdown搭键自己的笔记本](https://blog.csdn.net/ZM_Yang/article/details/105617607)
+
+梳理出需求
+* 免费（哈哈）；
+* 能放到服务器：自己的电脑是靠不住的，只有本地有的孤本吃枣药丸；
+* 支持Markdown：Markdown是一个可以用普通文本写出结构化文档的标记语言，目前有多种支持Markdown的编辑器，这就使得笔记的显示效果跨平台、跨应用。同样一份文档，不管拿到那里都基本能得到统一的显示效果。永远也不会忘记当初写论文在自己电脑上排版特别精美，一去打印一团乱麻的噩梦，所以统一的显示效果特别重要。
+* 支持足够深的层级结构：方便归类，所有东西都放到一个文件夹里面的结果和什么都没有差不多；
+* 有网页版，不需要下载客户端：自己家里电脑装的Ubuntu，公司Windows+Ubuntu,目前很多桌面软件对Linux支持不好；
+* 支持笔记下载和上传：自己的笔记只能存在于某个平台上这是不能忍的；
+* 支持保存非markdown内容：平时可能偶尔在网上找到一些认为比较好的PDF之类的资料，直接当参考资料，当然自己备份，网上的东西谁知道下一秒它的服务器还在不在；
+* 支持批量上传下载（可选）：方便5、6点的批量操作，万一哪天哪个平台倒了，如果只能一个个操作不得累死。杞人忧天？也许吧；
+* 支持VIM（可选）：解放鼠标的利器啊。
+
+[使用 GitBook 在 Github 搭建个人网站](https://exp-blog.com/website/gitbook-da-jian-ge-ren-wang-zhan/)
+
+个人网站建站, 非常繁琐的搭建过程和日常维护，来看一下你需要做什么：
+* 申请域名、网站备案： 最快需要 1 个月
+* 租用云服务器： 低配怕访问慢、高配怕财务困难
+* 搭建 HTTP 服务： nginx、 apache
+* 搭建数据库： MySQL、 MariaDB
+* 搭建网站平台： wordpress、 Discuz!
+* 网站平台模板/插件不好用： css、 js 各种魔改
+* 安全加固： 后台被爆破、 前台被钓鱼
+* 服务容灾： 进程挂起、 定期备份
+* 访问加速： Redis缓存、 CDN
+* 搜索引擎不收录： SEO、 提交链接
 
 openshift-sdn日志
 ```
