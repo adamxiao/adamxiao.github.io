@@ -1,5 +1,17 @@
 # 临时计划
 
+#### lsof 使用
+
+https://blog.csdn.net/carefree2005/article/details/113450562
+https://www.cnblogs.com/my-show-time/p/15625662.html
+
+恢复删除的文件
+cat /proc/101595/fd/1 > /var/log/mysqld.log
+查看文件是由哪些进程打开
+
+深度好文｜TCP连接的状态详解以及故障排查 转载
+https://blog.51cto.com/mingongge/5182870
+
 #### tcpdump使用
 
 https://www.cnblogs.com/ggjucheng/archive/2012/01/14/2322659.html
