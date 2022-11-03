@@ -362,6 +362,44 @@ oc -n grzs-traefik get svc traefik-ingress
 113这个虚IP在每次重启metallb后mac地址就会变，随机的飘到集群中的某台机器上，终端却还在查找以前的mac地址，造成有的终端能访问，有的终端不能访问，我用arp -d命令清楚缓存后，又都能用了，这种情况不行，达不到负载均衡的目的
 => 问题就在于，为什么要频繁重启metallb呢?
 
+最终发现是终端收到了因为存储网卡的mac地址, 所以访问vip失败。
+禁止存储网卡回arp包, 或者存储网和管理业务网分离即可。
+
+- 192.168.5.113 (192.168.5.184)
+- b4:96:91:a9:10:b4
+- b4:96:91:a9:10:b5 => 导致不能访问
+- 终端是192.168.5.205
+```
+16:51:19.348017 ARP, Request who-has 192.168.5.113 (b4:96:91:a9:10:b5) tell 192.168.5.205, length 28
+16:51:19.349597 ARP, Reply 192.168.5.113 is-at b4:96:91:a9:10:b4, length 46
+16:51:19.349597 ARP, Reply 192.168.5.113 is-at b4:96:91:a9:10:b5, length 46
+```
+
+[MetalLB - ADVANCED L2 CONFIGURATION](https://metallb.universe.tf/configuration/_advanced_l2_configuration/)
+
+Specify network interfaces that LB IP can be announced from
+```
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: example
+  namespace: metallb-system
+spec:
+  ipAddressPools:
+  - third-pool
+  interfaces:
+  - eth0
+  - eth1
+```
+
+由于目前版本没有实现L2这个CR, 所以临时放同rp_filter，让流量走数据口也能正常使用
+```
+sysctl -w net.ipv4.conf.all.rp_filter=0
+```
+这个rp_filter默认值默认一般是1
+* 0：关闭反向路由校验
+* 1：开启严格的反向路由校验。对每个进来的数据包，校验其反向路由是否是最佳路由。如果反向路由不是最佳路由，则直接丢弃该数据包。
+
 解决思路:
 * 1.让旧的节点继续可以通过这个ｉｐ访问十几分钟，等缓存刷新 => 不行
 * 2.看keepalived也没有虚拟一个ｍａｃ地址出来，固定的方案不可行吧 => VMAC验证失败

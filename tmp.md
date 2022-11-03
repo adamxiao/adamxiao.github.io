@@ -1,5 +1,16 @@
 # 临时计划
 
+#### tipc
+
+https://blog.csdn.net/fzubbsc/article/details/46439997
+一个client和server的示例代码
+
+https://www.cnblogs.com/yipianchuyun/p/15772512.html
+这个文章讲的比较详细
+
+https://access.redhat.com/documentation/zh-cn/red_hat_enterprise_linux/8/html/configuring_and_managing_networking/getting-started-with-tipc_configuring-and-managing-networking
+redhat的tipc文档
+
 #### lsof 使用
 
 https://blog.csdn.net/carefree2005/article/details/113450562
@@ -69,6 +80,12 @@ location / {
 ```
 
 #### gitbook再优化
+
+https://blog.51cto.com/lovebetterworld/5050024
+整理全网文档管理系统，持续更新
+
+http://www.teemlink.com/solutions_kms/
+KM知识管理系统
 
 其实我想要的就是自己维护的web系统, 可以分享给其他人
 

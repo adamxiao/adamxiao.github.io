@@ -118,9 +118,8 @@ firewall-cmd --permanent --direct --passthrough ipv4 -A FORWARD -i br0 -j ACCEPT
 firewall-cmd --permanent --direct --passthrough ipv4 -A INPUT -i br0 -j ACCEPT
 firewall-cmd --permanent --direct --passthrough ipv4 -A FORWARD -i br0 -j ACCEPT
 
-============================================================================
-== refer:
-============================================================================
+## 参考资料
+
 https://segmentfault.com/a/1190000019978741
 
 https://akm111.wordpress.com/2017/04/30/linux-firewalld-port-forward-and-nat/
