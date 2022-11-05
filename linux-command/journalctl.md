@@ -199,3 +199,23 @@ Warning: Journal has been rotated since unit was started. Log output is incomple
 
 * [CentOS7的journalctl日志查看方法](https://www.cnblogs.com/ggzhangxiaochao/p/13953887.html)
 * [journalctl 清理journal日志](https://www.cnblogs.com/jiuchongxiao/p/9222953.html)
+
+10分钟教你如何划重点——Sys temd最全攻略
+https://developer.aliyun.com/article/810592
+
+systemd基本使用
+https://www.cnblogs.com/mikeguan/p/7503341.html
+
+配合 syslog 使用
+systemd 提供了 socket /run/systemd/journal/syslog，以兼容传统日志服务。所有系统信息都会被传入。要使传统日志服务工作，需要让服务链接该 socket，而非 /dev/log（官方说明）。Arch 软件仓库中的 syslog-ng 已经包含了需要的配置。
+
+https://documentation.suse.com/zh-tw/sles/12-SP5/html/SLES-all/cha-journalctl.html
+systemd 取代 SUSE Linux Enterprise 12 中的傳統 init 程序檔後 (請參閱第 13 章 「systemd 精靈」)，引入了自身的記錄系統日誌。由於所有系統事件都將寫入到日誌中，因此，使用者不再需要執行基於 syslog 的服務。
+
+https://www.jianshu.com/p/2b30bf6f9276
+Journal是systemd 为自己提供的日志系统。使用systemd日志，无须额外提供日志服务（syslog）。读取日志的命令：
+
+Journal log 兼容syslog, 即通过syslog(3) 打印的log 也会存储到 Journal log 中.
+systemd-journald 通过监听 socket /run/systemd/journal/dev-log 获取到 syslog(3). 因为通常在装有systemd的系统中 /dev/log 是 /run/systemd/journal/dev-log 的一个软连接，而syslog(3)会将log 发送到/dev/log
+
+systemd 提供了 socket /run/systemd/journal/syslog，以兼容传统日志服务。所有系统信息都会被传入。要使传统日志服务工作，需要让服务链接该 socket，而非 /dev/log（官方说明）。

@@ -80,6 +80,20 @@ firewall-cmd --zone=public --list-all
 # 查看可以添加的服务
 firewall-cmd --get-services
 
+关键字`firewall-cmd show service details`
+https://unix.stackexchange.com/questions/486111/how-do-i-get-a-list-of-the-ports-which-belong-to-preconfigured-firewall-cmd-serv
+
+查看服务内容
+```
+firewall-cmd --info-service ssh
+ssh
+  ports: 22/tcp
+  protocols: vrrp
+  source-ports:
+  modules:
+  destination:
+```
+
 # 设置指定域为默认域
 firewall-cmd --set-default-zone=public
 

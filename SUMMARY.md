@@ -7,6 +7,7 @@
    * [git使用](git.md)
    * [nmcli配置网络](linux-command/nmcli.md)
    * [vim使用](vim.md)
+   * [journalctl使用](linux-command/journalctl.md)
 * [高级技巧](vpn.md)
    * [使用gitbook编写文档](gitbook.md)
    * [ssh反向隧道](scripts/ssh_reverse_tunnel.md)
