@@ -1,5 +1,39 @@
 # 临时计划
 
+#### 日志组件
+
+ksvd-netd日志输出，没有截断功能...
+
+日志轮转, logrotate
+
+https://www.jianshu.com/p/cb21d35b686f
+```
+自定义日志轮转
+在 目录下编辑一个文件
+/var/log/shark1.log {
+        monthly              >== 每月一次轮转
+        size=10M             >== 文件大小大于 10M 时， 也开始轮转
+        rotate 2             >== 日志文件保留 2 个
+        compress             >== 对旧的日志文件进行压缩
+        sharedscripts        >== 轮转之前需要先被执行命令
+        prerotate
+                /usr/bin/chattr -a /var/log/shark1.log      >==去掉特殊属性
+        endscript
+        sharedscripts      >== 轮转之后需要被执行的命令
+        postrotate
+            /bin/kill -HUP `cat /var/run/syslogd.pid 2> /dev/null` 2> /dev/null || true
+            /usr/bin/chattr +a /var/log/shark1.log     >== 特殊属性，文件内容只能增加不能删除或者修改
+        endscript
+}
+```
+
+logrotate 负责对系统日志的轮转。
+
+通过定时任务每天都会执行一次。
+```
+cat /etc/cron.daily/logrotate
+```
+
 #### tipc
 
 https://blog.csdn.net/fzubbsc/article/details/46439997
