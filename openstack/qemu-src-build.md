@@ -41,6 +41,8 @@ make -j8 -Wno-error
 ```
 qemu-system-x86_64 -m 512 -smp 4 --enable-kvm –boot order=dc -hda /root/howl/vm1.qcow2 -cdrom /root/howl/SLES_SP1_x 86_64.iso
 
+/usr/libexec/qemu-kvm -vnc 0.0.0.0:11 -m 512 -cpu host -smp 4 --enable-kvm -hda /home/vm-images/centos-ksvd2020.qcow2
+
 ./qemu-system-x86_64 -m 1000 -smp 2,sockets=1,cores=2,threads=1 \
   -drive file=/home/xy/centos-ksvd2020.qcow2,if=none,id=drive-virtio0,cache=none -device virtio-blk-pci,drive=drive-virtio0,id=virtio0,bus=pci.0,addr=0xa,bootindex=100,serial=8023543499286-0
 gtk initialization failed
@@ -58,6 +60,49 @@ gtk initialization failed
 ```
 
 qemu-system-x86_64: failed to initialize KVM: Permission denied
+
+```
+[root@localhost x86_64-softmmu]# ./qemu-system-x86_64 -h | grep trace
+-trace [[enable=]<pattern>][,events=<file>][,file=<file>]
+```
+
+## qemu io写验证
+
+修改qemu代码，添加日志
+(qemu分支stable-4.1)
+```
+diff --git a/block/block-backend.c b/block/block-backend.c
+index 0056b52..3c5a744 100644
+--- a/block/block-backend.c
++++ b/block/block-backend.c
+@@ -1450,6 +1453,9 @@ BlockAIOCB *blk_aio_pwritev(BlockBackend *blk, int64_t offset,
+                             QEMUIOVector *qiov, BdrvRequestFlags flags,
+                             BlockCompletionFunc *cb, void *opaque)
+ {
++    fprintf(stderr, "blk_aio_pwritev name %s, refcnt %d, offset %ld, bytes %lu, iobuf %p!\n",
++            blk->name, blk->refcnt, offset, qiov->size, qiov);
++
+     return blk_aio_prwv(blk, offset, qiov->size, qiov,
+                         blk_aio_write_entry, flags, cb, opaque);
+ }
+```
+
+配置qemu, 进行编译
+```
+../configure --enable-kvm --target-list=x86_64-softmmu --enable-linux-aio \
+--enable-debug --enable-trace-backends=log
+```
+
+手动运行qemu测试
+```
+# strace -o ~/adam.strace.log -f -s 8000 -tt -T
+# -nographic
+# -vnc 0.0.0.0:1\
+./qemu-system-x86_64 -m 1000 -smp 2,sockets=1,cores=2,threads=1 \
+  -machine pc-i440fx-4.1,accel=kvm,usb=off,dump-guest-core=off \
+  -display vnc=0.0.0.0:1 \
+  -drive file=/home/xy/centos-ksvd2020.qcow2,if=none,id=drive-virtio0,cache=none -device virtio-blk-pci,drive=drive-virtio0,id=virtio0,bus=pci.0,addr=0xa,bootindex=100,serial=8023543499286-0
+```
 
 ## 参考资料
 
