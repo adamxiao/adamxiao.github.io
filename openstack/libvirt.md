@@ -1,5 +1,36 @@
 # libvirt用法
 
+## libvirt 定义一个虚拟机
+
+[15 使用 virsh 配置虚拟机](https://documentation.suse.com/zh-cn/sles/15-SP2/html/SLES-all/cha-libvirt-config-virsh.html)
+
+```
+<domain type='kvm'>
+  <name>centos7</name>
+  <uuid>ab953e2f-9d16-4955-bb43-1178230ee625</uuid>
+  <memory unit='KiB'>1048576</memory>
+  <currentMemory unit='KiB'>1048576</currentMemory>
+  <vcpu placement='static'>2</vcpu>
+  <os>
+    <type arch='x86_64' machine='pc'>hvm</type>
+  </os>
+  <cpu mode='custom'>
+    <model fallback='allow'/>
+  </cpu>
+  <on_poweroff>destroy</on_poweroff>
+  <on_reboot>restart</on_reboot>
+  <on_crash>destroy</on_crash>
+  <devices>
+    <emulator>/usr/libexec/qemu-kvm</emulator>
+    <disk type='file' device='disk'>
+      <driver name='qemu' type='qcow2' cache='none'/>
+      <source file='/home/vm-images/centos7.qcow2'/>
+      <target dev='vda' bus='virtio'/>
+    </disk>
+  </devices>
+</domain>
+```
+
 ## 其他
 
 关键字`virsh web console`
@@ -32,6 +63,46 @@ virt-install               \
       --serial tcp,host=:4577,mode=bind,protocol=telnet   \
       --network bridge=virbr0,model=virtio                \
       --noreboot
+```
+
+## 大页内存
+
+```
+  <memoryBacking>
+    <hugepages/>
+  </memoryBacking>
+```
+
+```
+libvirt: QEMU Driver error : 内部错误：process exited while connecting to monitor: 2022-11-24 21:41:17.731+0000: Domain id=23 is tainted: host-cpu
+2022-11-24T21:41:22.309038Z qemu-kvm: unable to map backing store for guest RAM: Cannot allocate memory
+Nov-25 05:41:22:5473 E ^[[37;41mcreate vm failed: code: hugepage enable 1, msg: 内部错误：process exited while connecting to monitor: 2022-11-24 21:41:17.731+0000: Domain id=23 is tainted: host-cpu^[[m
+```
+
+https://www.cnblogs.com/weiweifeng/p/8194356.html
+
+这个问题的原因可能是：
+
+- 1.host 没有设置足够多的 hugepage
+
+- 2.guest 设置的内存大小超出了 host 的 hugepage
+
+解决办法：
+
+- 1.检查 host hugepage 设置
+
+```
+cat /proc/meminfo |grep -i huge
+Hugepagesize * HugePages_Free 就是 guest 可以分配的内存。
+```
+
+## cpu直通
+
+```
+<cpu mode='host-passthrough'>
+ <model fallback='allow'/>
+ ...
+</cpu>
 ```
 
 ## 在线添加内存

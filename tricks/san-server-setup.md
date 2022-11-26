@@ -114,3 +114,23 @@ iscsiadm -m node -L all
 iscsiadm -m discovery -t st -p 10.90.3.183
 iscsiadm  -m node  -d  1 T iqn.1994-05.com.redhat:sanserver1 -p  10.90.3.183 -l
 
+lsscsi -sti
+iqn为ipsan
+fc为fcsan
+```
+[ssh_10.90.6.76] root@node1: ~$lsscsi -sti
+[3:0:0:0]    disk    sata:                           /dev/sda   -  2.00TB
+[5:0:0:0]    disk    sata:                           /dev/sdb   -  2.00TB
+[7:0:0:0]    cd/dvd  sata:                           /dev/sr0   -       -
+[8:0:0:0]    disk    fc:0x210000d02308d7c40x010b00   /dev/sdc   3600d02310008d7c43c8d1ef64f92ab08   322GB
+[8:0:0:6]    disk    fc:0x210000d02308d7c40x010b00   /dev/sdd   3600d02310008d7c477694b970bc32cd5   214GB
+[8:0:0:8]    disk    fc:0x210000d02308d7c40x010b00   /dev/sde   3600d02310008d7c477694b970bc32cd5   214GB
+[8:0:0:9]    enclosu fc:0x210000d02308d7c40x010b00   -          -       -
+[8:0:1:0]    disk    fc:0x210000d02318d7c40x010f00   /dev/sdf   3600d02310008d7c43c8d1ef64f92ab08   322GB
+[8:0:1:6]    disk    fc:0x210000d02318d7c40x010f00   /dev/sdg   3600d02310008d7c477694b970bc32cd5   214GB
+[8:0:1:8]    disk    fc:0x210000d02318d7c40x010f00   /dev/sdh   3600d02310008d7c477694b970bc32cd5   214GB
+[8:0:1:9]    enclosu fc:0x210000d02318d7c40x010f00   -          -       -
+[9:0:0:0]    disk    iqn.2002-10.com.infortrend:raid.uid579524.201,t,0x1  /dev/sdi   3600d02310008d7c462bd594015b44935   214GB
+[9:0:0:1]    disk    iqn.2002-10.com.infortrend:raid.uid579524.201,t,0x1  /dev/sdj   3600d02310008d7c45e58417a7554715c   214GB
+[9:0:0:7]    enclosu iqn.2002-10.com.infortrend:raid.uid579524.201,t,0x1  -          -       -
+```

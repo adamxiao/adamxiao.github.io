@@ -1,5 +1,9 @@
 # 临时计划
 
+#### pdf图片文字识别
+
+pandoc转换成word?
+
 #### 日志组件
 
 ksvd-netd日志输出，没有截断功能...
@@ -79,39 +83,6 @@ https://cloud.tencent.com/developer/article/1721881
 * parted -l
 * blkid
 * lsblk -f 
-
-#### 使用Next Terminal在浏览器中管理你的服务器
-
-使用Next Terminal在浏览器中管理你的服务器
-https://www.xiaoz.me/archives/15752
-
-服务器不允许上网并且需要跳板机才能访问？学会使用这个工具，轻松让服务器使用yum。
-https://typesafe.cn/posts/4dnat/
-
-普通用户还是使用了guacc, 连接不上ssh
-http://10.20.1.99:8088/#/access?assetId=325213cd-8e13-4435-9baf-9155fbc116da&assetName=arm-docker&protocol=ssh
-http://10.20.1.99:8088/#/term?assetId=325213cd-8e13-4435-9baf-9155fbc116da&assetName=arm-docker
-
-https://github.com/dushixiang/next-terminal
-
-配置nginx反向代理报错
-```
-$ docker logs -f next-terminal_next-terminal_1
-2022-10-23 16:37:14 ERROR [log.Errorf:114]升级为WebSocket协议失败：websocket: the client is not using the websocket protocol: 'upgrade' token not found in 'Connection' header
-echo: http: superfluous response.WriteHeader call from github.com/labstack/echo/v4.(*Response).WriteHeader (response.go:63)
-```
-
-按照官方文档配置nginx反向代理, 参考官方文档： https://next-terminal.typesafe.cn/install/reverse-proxy.html
-```
-location / {
-    proxy_pass http://127.0.0.1:8088/;
-    proxy_set_header Host      $host;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Real-IP $remote_addr;
-    proxy_set_header Upgrade $http_upgrade;
-    proxy_set_header Connection $http_connection;
-}
-```
 
 #### gitbook再优化
 

@@ -122,3 +122,10 @@ rpmrebuild -m /bin/bash -np rpm/xxx.rpm
 # 比如知道需要修改的文件名为aaa，可以这样操作： find / -name aaa 
 # 尽情发挥吧，完了退出 ctrl+D
 ```
+
+#### rpmbuild 用法
+
+只打上patch
+```
+rpmbuild -bp ~/rpmbuild/SPECS/*.spec --nodeps
+```
