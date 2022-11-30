@@ -30,6 +30,12 @@ qemu-nbd --disconnect /dev/nbd0
 rmmod nbd
 ```
 
+可能需要激活lvm卷, 挂载lvm卷分区
+```
+lvchange -ay vg_vrm # 激活全部vg
+mount /dev/mapper/vg_vrm-root /mnt/tmp
+# 最后就可以通过chroot /mnt/tmp, 然后passwd修改密码了
+```
 
 #### 使用guestfish修改
 

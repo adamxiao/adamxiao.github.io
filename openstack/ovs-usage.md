@@ -10,7 +10,7 @@ kni模块走协议栈
 ## 编译使用
 
 [使用 DPDK 优化 VirtIO 和 OVS 网络](https://my.oschina.net/LastRitter/blog/1807032)
-=> TODO: 可以验证一下, 版本环境旧了,用新版本dpdk和ovs
+=> 验证一下, 版本环境旧了,用下面新版本dpdk和ovs,否则有编译问题
 
 [centos 7.9 编译 ovs+ dpdk](https://zhuanlan.zhihu.com/p/455967651)
 
@@ -19,6 +19,11 @@ kni模块走协议栈
 安装开发依赖包
 ```
 yum install -y gcc numactl numactl-libs numactl-devel kernel kernel-debug kernel-debug-devel kernel-devel kernel-doc kernel-headers libpcap-devel
+```
+
+ksvd819
+```
+yum install -y numactl-devel libpcap-devel
 ```
 
 获取源码
@@ -56,6 +61,11 @@ make -j8 -C examples RTE_SDK=$DPDK_DIR RTE_TARGET=build O=$DPDK_INSTALL/examples
 安装开发依赖包
 ```
 yum -y install gcc autoconf automake libtool kernel kernel-devel
+```
+
+ksvd819适配编译
+```
+yum -y install gcc autoconf automake libtool
 ```
 
 获取源码
@@ -109,216 +119,6 @@ make: *** /lib/modules/3.10.0-1160.el7.x86_64/build: No such file or directory. 
 ```
 /opt/ovs/dpdk/build/build/lib/librte_eal/linuxapp/kni/kni_net.c:714:2: error: unknown field ‘ndo_change_mtu’ specified in initializer
   .ndo_change_mtu = kni_net_change_mtu,
-```
-
-#### 配置ovs服务(未验证)
-
-- openvswitch.service
-- ovsdb-server.service
-- ovs-vswitchd.service
-
-安装OVS的依赖和服务
-service文件在源码的rhel/systemd目录中，建议根据实际路径更改后再拿去用
-
-同时，要从这个目录中复制一个ovs-systemd-reload到ovs下的share/openvswitch/scripts目录中去，并且给a+x权限
-
-service太多了懒得改了，所以我直接创建符号链接好了，把/usr/local/ovs/share/openvswitch链接到/usr/share/openvswitch，其他有必要改的再改
-
-总共需要3个服务，第一个是主服务，剩余两个是静态服务（一个是ovsdb，一个是ovs daemon）并构成到主服务中去。只有主服务才可以被enable，静态服务要跟随主服务需要启动，不能被enable。目前所需要的最小构成就这三个，其他的暂且用不上
-
-openvswitch.service
-=> 居然没有找到 ovs-systemd-reload 这个脚本??? 文件名称不一样, 在rhel目录中
-```
-[Unit]
-Description=Open vSwitch
-Before=network.target network.service
-After=network-pre.target ovsdb-server.service ovs-vswitchd.service
-PartOf=network.target
-Requires=ovsdb-server.service
-Requires=ovs-vswitchd.service
-
-[Service]
-Type=oneshot
-ExecStart=/bin/true
-ExecReload=/usr/share/openvswitch/scripts/ovs-systemd-reload
-ExecStop=/bin/true
-RemainAfterExit=yes
-
-[Install]
-WantedBy=multi-user.target
-```
-
-
-ovsdb-server.service
-注意改PID文件的位置，否则可能会start后卡死（检测不到PID文件导致）
-
-```
-[Unit]
-Description=Open vSwitch Database Unit
-After=syslog.target network-pre.target
-Before=network.target network.service
-PartOf=openvswitch.service
-
-[Service]
-Type=forking
-PIDFile=/usr/local/ovs/var/run/openvswitch/ovsdb-server.pid
-Restart=on-failure
-ExecStart=/usr/share/openvswitch/scripts/ovs-ctl --no-ovs-vswitchd --no-monitor --system-id=random start
-ExecStop=/usr/share/openvswitch/scripts/ovs-ctl --no-ovs-vswitchd stop
-ExecReload=/usr/share/openvswitch/scripts/ovs-ctl --no-ovs-vswitchd --no-monitor restart
-```
-
-
-ovs-vswitchd.service
-同样要注意PID和套接字文件，不存在的依赖要删掉
-
-有编译DPDK的下边的DPDK预加载部分要留着，没有编译DPDK的可以删除
-
-```
-[Unit]
-Description=Open vSwitch Forwarding Unit
-After=ovsdb-server.service network-pre.target systemd-udev-settle.service
-Before=network.target network.service
-Requires=ovsdb-server.service
-ReloadPropagatedFrom=ovsdb-server.service
-AssertPathIsReadWrite=/usr/local/ovs/var/run/openvswitch/db.sock
-PartOf=openvswitch.service
-
-[Service]
-Type=forking
-PIDFile=/usr/local/ovs/var/run/openvswitch/ovs-vswitchd.pid
-Restart=on-failure
-LimitSTACK=2M
-#@begin_dpdk@
-ExecStartPre=-/bin/sh -c '/usr/bin/chown :$${OVS_USER_ID##*:} /dev/hugepages'
-ExecStartPre=-/usr/bin/chmod 0775 /dev/hugepages
-#@end_dpdk@
-ExecStart=/usr/share/openvswitch/scripts/ovs-ctl \
-          --no-ovsdb-server --no-monitor --system-id=random \
-          start
-ExecStop=/usr/share/openvswitch/scripts/ovs-ctl --no-ovsdb-server stop
-ExecReload=/usr/share/openvswitch/scripts/ovs-ctl --no-ovsdb-server \
-          --no-monitor --system-id=random \
-          restart
-TimeoutSec=300
-```
-
-```
-adam@adam-OptiPlex-3050:~$ systemctl status openvswitch-switch.service
-● openvswitch-switch.service - Open vSwitch
-     Loaded: loaded (/lib/systemd/system/openvswitch-switch.service; enabled; vendor preset: enabled)
-     Active: active (exited) since Tue 2022-11-22 08:58:04 CST; 1 day 7h ago
-   Main PID: 1181 (code=exited, status=0/SUCCESS)
-        CPU: 2ms
-
-Nov 22 08:58:04 adam-OptiPlex-3050 systemd[1]: Starting Open vSwitch...
-Nov 22 08:58:04 adam-OptiPlex-3050 systemd[1]: Finished Open vSwitch.
-
-openvswitch-switch.service                                                    enabled         enabled
-ovs-vswitchd.service                                                          static          -
-
-adam@adam-OptiPlex-3050:~$ ps -ef | grep openvs
-root         891       1  0 Nov22 ?        00:00:10 ovsdb-server /etc/openvswitch/conf.db -vconsole:emer -vsyslog:err -vfile:info --remote=punix:/var/run/openvswitch/db.sock --private-key=db:Open_vSwitch,SSL,private_key --certificate=db:Open_vSwitch,SSL,certificate --bootstrap-ca-cert=db:Open_vSwitch,SSL,ca_cert --no-chdir --log-file=/var/log/openvswitch/ovsdb-server.log --pidfile=/var/run/openvswitch/ovsdb-server.pid --detach
-root        1083       1  0 Nov22 ?        00:04:33 ovs-vswitchd unix:/var/run/openvswitch/db.sock -vconsole:emer -vsyslog:err -vfile:info --mlockall --no-chdir --log-file=/var/log/openvswitch/ovs-vswitchd.log --pidfile=/var/run/openvswitch/ovs-vswitchd.pid --detach
-```
-
-## ubuntu20.04编译使用
-
-#### 编译dpdk
-
-安装开发依赖包
-```
-# apt install -y gcc numactl numactl-libs numactl-dev kernel kernel-debug kernel-debug-devel kernel-devel kernel-doc kernel-headers libpcap-devel
-sudo apt install -y gcc numactl libnuma-dev libpcap-dev
-apt search linux-headers-$(uname -r)
-sudo apt install -y linux-headers-5.15.0-53-generic
-```
-
-编译有报错,看来有适配问题,最好选择合适的版本
-
-看有没有可以直接安装的版本?
-
-```
-sudo apt install -y openvswitch-switch-dpdk
-```
-
-关键字`ubuntu 22.04 install dpdk+ovs`
-
-[OpenVswitch-DPDK](https://ubuntu.com/server/docs/openvswitch-dpdk)
-```
-sudo apt-get install openvswitch-switch-dpdk
-sudo update-alternatives --set ovs-vswitchd /usr/lib/openvswitch-switch-dpdk/ovs-vswitchd-dpdk
-ovs-vsctl set Open_vSwitch . "other_config:dpdk-init=true"
-# Allocate 2G huge pages (not Numa node aware)
-ovs-vsctl set Open_vSwitch . "other_config:dpdk-alloc-mem=2048"
-# limit to one whitelisted device
-ovs-vsctl set Open_vSwitch . "other_config:dpdk-extra=--pci-whitelist=0000:01:00.1"
-sudo service openvswitch-switch restart
-```
-
-systemctl status openvswitch-switch.service
-
-```
-$ sudo ovs-vsctl clear Open_vSwitch . "other_config"
-$ sudo ovs-vsctl get Open_vSwitch . "other_config"
-{}
-```
-
-```
-Nov 24 17:28:57 adam-OptiPlex-3050 systemd[1]: Dependency failed for Open vSwitch.
-Nov 24 17:28:57 adam-OptiPlex-3050 systemd[1]: openvswitch-switch.service: Job openvswitch-switch.service/start failed with result 'dependency'.
-```
-
-```
-sudo update-alternatives --set ovs-vswitchd /usr/lib/openvswitch-switch/ovs-vswitchd
-```
-
-=> 未成功...
-
-#### ubuntu使用
-
-关键字`ubuntu openvswitch-switch-dpdk 使用方法`
-
-[OpenVswitch-DPDK](https://ubuntu.com/server/docs/openvswitch-dpdk)
-[Configure Open vSwitch with Data Plane Development Kit on Ubuntu Server 17.04](https://www.intel.cn/content/www/cn/zh/developer/articles/technical/set-up-open-vswitch-with-dpdk-on-ubuntu-server.html)
-
-
-配置内核参数, 开启iommu, hugepage?
-编辑文件 /etc/default/grub
-```
-GRUB_CMDLINE_LINUX_DEFAULT="default_hugepagesz=1G hugepagesz=1G hugepages=16 hugepagesz=2M hugepages=2048 iommu=pt intel_iommu=on isolcpus=1-21,23-43,45-65,67-87"
-```
-
-让grub的内核参数修改生效
-```
-sudo update-grub
-sudo reboot
-```
-
-创建桥, 添加物理网卡
-```
-sudo ovs-vsctl add-br ovsdpdkbr0 -- set bridge ovsdpdkbr0 datapath_type=netdev
-sudo ovs-vsctl add-port ovsdpdkbr0 dpdk0 -- set Interface dpdk0 type=dpdk  "options:dpdk-devargs=0000:01:00.1"      
-```
-
-```
-/usr/bin/dpdk-devbind.py
-$ dpdk-devbind.py  --status
-
-sudo modprobe vfio-pci
-sudo dpdk-devbind.py --bind=vfio-pci enp1s0f1
-# 绑定之后,就看不到旧网卡了
-# sudo dpdk-devbind.py --bind=igb_uio 01:00.1
-```
-
-结果添加dpdk物理网卡,还是报错
-```
-2022-11-25T01:10:52.810Z|00093|dpdk|ERR|EAL: 0000:01:00.1 VFIO group is not viable! Not all devices in IOMMU group bound to VFIO or unbound
-2022-11-25T01:10:52.810Z|00094|dpdk|ERR|EAL: Driver cannot attach the device (0000:01:00.1)
-2022-11-25T01:10:52.810Z|00095|dpdk|ERR|EAL: Failed to attach device on primary process
-2022-11-25T01:10:52.810Z|00096|netdev_dpdk|WARN|Error attaching device '0000:01:00.1' to DPDK
-2022-11-25T01:10:52.810Z|00097|netdev|WARN|dpdk0: could not set configuration (Invalid argument)
-2022-11-25T01:10:52.810Z|00098|dpdk|ERR|Invalid port_id=32
 ```
 
 ## 配置使用
@@ -518,27 +318,6 @@ ovs-vsctl show
 
 #### 使用 server 端口
 
-增加 dpdkvhostuser 端口：
-```
-ovs-vsctl add-port br-ovs vhost-user1 -- set Interface vhost-user1 type=dpdkvhostuser
-ovs-vsctl add-port br-ovs vhost-user2 -- set Interface vhost-user2 type=dpdkvhostuser
-=> 报错
-
-ovs-vsctl: Error detected while setting up 'vhost-user1': could not open network device vhost-user1 (Unknown error -1).  See ovs-vswitchd log for details.
-ovs-vsctl: The default log directory is "/opt/ovs/target-dpdk/var/log/openvswitch".
-```
-
-错误日志如下:
-```
-2022-11-24T19:21:24.351Z|00119|dpdk|INFO|VHOST_CONFIG: Linear buffers requested without external buffers, disabling host segmentation offloading support
-2022-11-24T19:21:24.376Z|00120|dpdk|INFO|VHOST_CONFIG: vhost-user server: socket created, fd: 570
-2022-11-24T19:21:24.378Z|00121|netdev_dpdk|INFO|Socket /opt/ovs/target-dpdk/var/run/openvswitch/vhost-user1 created for vhost-user port vhost-user1
-2022-11-24T19:21:24.379Z|00122|dpdk|ERR|VHOST_CONFIG: failed to create fdset handling thread
-2022-11-24T19:21:24.379Z|00123|netdev_dpdk|ERR|rte_vhost_driver_start failed for vhost user port: vhost-user1
-2022-11-24T19:21:24.379Z|00124|netdev_dpdk|WARN|dpdkvhostuser ports are considered deprecated;  please migrate to dpdkvhostuserclient ports.
-2022-11-24T19:21:24.381Z|00125|bridge|WARN|could not open network device vhost-user1 (Unknown error -1)
-```
-
 原因猜测:
 - iommu
 - hugepage
@@ -546,29 +325,10 @@ ovs-vsctl: The default log directory is "/opt/ovs/target-dpdk/var/log/openvswitc
 ```
 grubby --update-kernel=/boot/vmlinuz-3.10.0-1160.80.1.el7.x86_64 --args="intel_iommu=on iommu=pt iommu=pt"
 grubby --update-kernel=/boot/vmlinuz-3.10.0-1160.80.1.el7.x86_64 --args="hugepagesz=1G default_hugepagesz=1G"
+ksvd819适配
+grubby --update-kernel=/boot/vmlinuz-4.19.90-2003.4.0.0036.ky3.kb29.ksvd2.x86_64 --args="default_hugepagesz=1G hugepagesz=1G hugepages=4"
 ```
 
-加上了iommu内核参数,以及加载openvswitch驱动的时候,改了一点点, 居然又可以了!
-
-
-```
-$ ovs-vsctl show
-429a3e72-c5c5-4330-9670-09492255e7e9
-    Bridge br-ovs
-        Port "vhost-user2"
-            Interface "vhost-user2"
-                type: dpdkvhostuser
-        Port "dpdk0"
-            Interface "dpdk0"
-                type: dpdk
-                options: {dpdk-devargs="0000:1a:00.2"}
-        Port br-ovs
-            Interface br-ovs
-                type: internal
-        Port "vhost-user1"
-            Interface "vhost-user1"
-                type: dpdkvhostuser
-```
 启动测试虚拟机 1：
 ```
 $ /usr/libexec/qemu-kvm -smp 2 -m 2048 -serial stdio -cdrom $OVS_ROOT/images/centos7-init.iso -hda $OVS_ROOT/images/CentOS-7-x86_64_Snapshot1.qcow2 -net none -chardev socket,id=char1,path=$OVS_DIR/var/run/openvswitch/vhost-user1 -netdev type=vhost-user,id=mynet1,chardev=char1,vhostforce -device virtio-net-pci,mac=fa:16:3e:4d:58:6f,netdev=mynet1 -object memory-backend-file,id=mem,size=2048M,mem-path=/mnt/huge,share=on -numa node,memdev=mem -mem-prealloc
@@ -585,6 +345,9 @@ $ ip addr show eth0
 ```
 
 #### 使用client端口
+
+https://blog.csdn.net/sinat_20184565/article/details/93657065
+对于vhost-user端口，Open vSwitch作为服务端，QEMU为客户端。这意味着如果OVS进程挂掉，所有的虚拟机必须重新启动。反之，对于vhost-user-client端口，OVS作为客户端，QEMU为服务器。这意味着OVS可以挂掉，并在不引起问题的情况下重新启动，也可重新启动客户机自身。由此原因，vhost-user-client端口为在所有已知情况下的首选类型。唯一的限制时vhost-user-client类型端口需要QEMU版本2.7. 端口类型vhost-user目前不赞成使用，并且将在以后的版本中移除。
 
 ```
 ovs-vsctl add-port br-ovs vhost-user-client1 -- set Interface vhost-user-client1 type=dpdkvhostuserclient options:vhost-server-path=$OVS_DIR/var/run/openvswitch/vhost-user-client1
@@ -632,3 +395,35 @@ Network devices using DPDK-compatible driver
 0000:01:00.0 '82571EB/82571GB Gigabit Ethernet Controller D0/D1 (copper applications) 105e' drv=vfio-pci unused=e1000e
 0000:01:00.1 '82571EB/82571GB Gigabit Ethernet Controller D0/D1 (copper applications) 105e' drv=vfio-pci unused=e1000e
 ```
+
+
+ubuntu失败
+```
+2022-11-28T09:19:11.921Z|00125|netdev_dpdk|WARN|Failed to enable flow control on device 0
+2022-11-28T09:19:11.921Z|00126|bridge|INFO|ovs-vswitchd (Open vSwitch) 2.13.8
+2022-11-28T09:19:13.972Z|00001|netdev_offload_dpdk(dp_netdev_flow_5)|WARN|dpdk0: rte_flow creation failed: 1 (Function not implemented).
+2022-11-28T09:19:13.972Z|00002|netdev_offload_dpdk(dp_netdev_flow_5)|WARN|Failed flow:
+  Attributes: ingress=1, egress=0, prio=0, group=0, transfer=0
+rte flow eth pattern:
+  Spec: src=52:54:00:71:46:36, dst=ff:ff:ff:ff:ff:ff, type=0x0806
+  Mask: src=ff:ff:ff:ff:ff:ff, dst=ff:ff:ff:ff:ff:ff, type=0xffff
+rte flow mark action:
+  Mark: id=1
+rte flow RSS action:
+  RSS: queue_num=1
+2022-11-28T09:19:14.066Z|00003|netdev_offload_dpdk(dp_netdev_flow_5)|WARN|dpdk0: rte_flow creation failed: 1 (Function not implemented).
+2022-11-28T09:19:14.641Z|00004|netdev_offload_dpdk(dp_netdev_flow_5)|WARN|Dropped 13 log messages in last 0 seconds (most recently, 0 seconds ago) due to excessive rate
+2022-11-28T09:19:14.641Z|00005|netdev_offload_dpdk(dp_netdev_flow_5)|WARN|dpdk0: rte_flow creation failed: 1 (Function not implemented).
+2022-11-28T09:19:15.209Z|00006|netdev_offload_dpdk(dp_netdev_flow_5)|WARN|Dropped 27 log messages in last 1 seconds (most recently, 0 seconds ago) due to excessive rate
+```
+
+## 参考文档
+
+[ovs官方文档 - dpdk](https://docs.openvswitch.org/en/latest/topics/dpdk/phy/)
+
+https://metonymical.hatenablog.com/entry/2021/04/13/221445
+日文的dpdk,有好多图
+
+网络转发性能测试方法 ( l3fwd, ovs-dpdk )
+https://aijishu.com/a/1060000000212215
+https://blog.csdn.net/weixin_47569031/article/details/118086202

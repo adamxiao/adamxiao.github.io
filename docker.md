@@ -113,3 +113,17 @@ pip3 install nbsphinx
   可能是mac版本是samba共享文件夹导致的
 3. add docker group
 sudo usermod -aG docker
+
+#### Centos firewalld导致的docker容器内无法访问外网
+
+https://blog.csdn.net/m0_37732829/article/details/119909099
+```
+# 开启 NAT 转发
+firewall-cmd --permanent --zone=public --add-masquerade
+ 
+# 检查是否允许 NAT 转发
+firewall-cmd --query-masquerade
+ 
+# 禁止防火墙 NAT 转发
+firewall-cmd --remove-masquerad
+```

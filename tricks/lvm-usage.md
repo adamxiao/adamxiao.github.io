@@ -154,3 +154,6 @@ yum install -y lvm2
 lvchange -ay vg_vrm/lv_root
 lvchange -ay vg_vrm # 激活全部vg
 ```
+
+原因是qemu-nbd挂载/dev/nbd0, lvm分区识别手动识别一下
+最后就可以`mount /dev/mapper/vg_vrm-root /mnt/tmp`
