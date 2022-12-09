@@ -40,3 +40,9 @@ https://stackoverflow.com/questions/17846529/could-not-open-a-connection-to-your
 eval `ssh-agent -s`
 ssh-add
 ```
+
+## ssh无法使用秘钥登录
+
+可能有多种原因:
+- 服务器秘钥认证文件权限不对(也可能是相关目录权限不对)
+- 服务器秘钥认证文件不是.ssh/authorized_keys(服务端可以改变的...)

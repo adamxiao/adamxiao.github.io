@@ -37,7 +37,7 @@ enable-tftp
 tftp-root=/var/lib/tftp/
 ```
 
-配置dhcp白名单
+可以配置dhcp白名单, 只给指定机器使用dhcp pxe
 ```
 # dhcp白名单机制
 dhcp-ignore=tag:!known
@@ -50,7 +50,14 @@ dhcp-host=52:54:84:00:05:8a,192.168.88.101,bootstrap,set:known
 - 从 `shim` 包中提取 `shim.efi`
 - 从 `grub2-efi` 包中提取 `grubx64.efi`
 
+获取直接下载shim包来提取
+```
+yumdownloader shim-x64
+yumdownloader grub2-efi-x64
+```
+
 示例提取方法:
+(注意文件权限, 改成755, 不然可能没权限)
 ```
 # rpm2cpio shim-version-architecture.rpm | cpio -dimv
 # rpm2cpio grub2-efi-version-architecture.rpm | cpio -dimv
@@ -59,13 +66,30 @@ dhcp-host=52:54:84:00:05:8a,192.168.88.101,bootstrap,set:known
 # cp publicly_available_directory/boot/efi/EFI/redhat/grubx64.efi /var/lib/tftpboot/
 ```
 
+#### 准备legacy启动资料
+
+旧的启动支持, 后续基本都用efi了吧
+
+从syslinux包中提取pxelinux.0等文件
+```
+yumdownloader syslinux
+```
+
+示例提取方法
+```
+rpm2cpio syslinux-*.rpm | cpio -dimv
+mkdir -p /var/lib/tftpboot/pxelinux/
+cp ./usr/share/syslinux/pxelinux.0 /var/lib/tftpboot/pxelinux/
+# 后续配置/var/lib/tftpboot/pxelinux/pxelinux.cfg/{default,01-52-54-00-19-93-5b}
+```
+
 #### 配置centos系列grub启动项
 
 配置centos系列grub启动项
 ```
 set timeout=60
 menuentry 'CentOS' {
-  linuxefi images/CentOS-7/vmlinuz ip=dhcp inst.repo=http://10.32.5.1/mnt/archive/CentOS-7/7/Server/x86_64/os/
+  linuxefi images/CentOS-7/vmlinuz ip=dhcp inst.repo=http://1.1.1.1/mnt/archive/CentOS-7/7/Server/x86_64/os/
   initrdefi images/CentOS-7/initrd.img
 }
 ```
@@ -76,7 +100,40 @@ menuentry 'CentOS' {
 # cp /path-to-x86-64-images/pxeboot/{vmlinuz,initrd.img} /var/lib/tftpboot/images/CentOS-7/
 ```
 
-#### uefi启动模式
+#### efi示例配置文件
+
+ksvd-818-server安装
+```
+menuentry 'Install Ksvd-818-server arm latest (0311-0322)' {
+  linuxefi vmlinuz net.ifnames=0 biosdevname=0 ip=dhcp method=http://1.1.1.1/pxe/ksvd-818-server-0311-0319 ks=http://1.1.1.1/pxe/ksvd-818-server-0311-0319/kickstart/ks.cfg devfs=nomount
+  initrdefi initrd.img
+}
+```
+
+kylin341a安装
+```
+menuentry 'Install kylin341a' {
+  linuxefi image/ksvd/kylin341/vmlinuz net.ifnames=0 biosdevname=0 ip=dhcp method=http://1.1.1.1/pxe/ksvd/kylin341 devfs=nomount
+  initrdefi image/ksvd/kylin341/initrd.img
+}
+```
+
+#### legacy示例配置文件
+
+rhcos安装
+```
+LABEL rhcos-4.8.2-bootstrap
+    KERNEL http://1.1.1.1/pxe/rhcos/vmlinuz
+    APPEND initrd=http://1.1.1.1/pxe/rhcos/initrd.img ignition.platform.id=metal coreos.live.rootfs_url=http://1.1.1.1/pxe/rhcos/rootfs.img coreos.inst.install_dev=/dev/sda coreos.inst.insecure coreos.inst.ignition_url=http://1.1.1.1:9090/ignition/bootstrap.ign
+```
+
+ksvd安装
+```
+label -ksvd-818-latest
+  menu label ^Install KSVD-818-latest(0311) x64
+  kernel image/ksvd-818-0311/vmlinuz
+  append initrd=image/ksvd-818-0311/initrd.img net.ifnames=0 biosdevname=0 method=http://1.1.1.1/pxe/ksvd-818-0311 ks=http://1.1.1.1/pxe/ksvd-818-0311/kickstart/ks.cfg devfs=nomount
+```
 
 ## pxe安装ubuntu
 
@@ -108,11 +165,10 @@ label -Ubuntu-20.04
   append initrd=image/ubuntu-2004/initrd ip=dhcp boot=casper netboot=nfs nfsroot=192.168.88.10:/data/ubuntu-2004/ splash toram ---
 ```
 
-uefi启动项, grub.conf
+uefi启动项, grub.conf => 验证成功
 ```
 set timeout=60
 menuentry 'Install Ubuntu 20.04 Desktop' {
-  # 验证失败
   linuxefi image/ubuntu-2004/vmlinuz ip=dhcp boot=casper netboot=nfs nfsroot=192.168.88.10:/data/ubuntu-2004/ splash toram ---
   initrdefi image/ubuntu-2004/initrd
 }

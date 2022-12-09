@@ -1,7 +1,9 @@
 # 安装ubuntu需要做的事情
 
 ## 软件安装
+
 ### 1. 更新软件源，加快软件下载速度
+
 /etc/apt/source.list
 ```
 # deb cdrom:[Ubuntu 16.04.1 LTS _Xenial Xerus_ - Release amd64 (20160719)]/ xenial main restricted
@@ -39,12 +41,14 @@ deb http://security.ubuntu.com/ubuntu xenial-security multiverse
 ```
 
 ### 2. 系统重要编程软件安装
+
 ```bash
 sudo apt-get install vim exuberant-ctags openssh-server git subversion \
 	autoconf libtool valgrind unrar cmake
 ```
 
 ### 3. 其他软件安装
+
 - 安装chrome浏览器
 ```bash
 wget -q -O - https://raw.githubusercontent.com/longhr/ubuntu1604hub/master/linux_signing_key.pub | sudo apt-key add
@@ -59,13 +63,17 @@ http://www.cnblogs.com/jxldjsn/p/5686197.html
 http://blog.csdn.net/fuchaosz/article/details/51882935
 
 ## 数据配置恢复
+
 ### 1. vim配置恢复
+
 从github上仓库下载配置
 
 ### 2. wiki恢复
+
 从github上仓库下载配置
 
 ### 其他数据恢复
+
 - 下载firefox的xmarks插件，同步书签
 - firefox插件恢复
 - chrome插件恢复
