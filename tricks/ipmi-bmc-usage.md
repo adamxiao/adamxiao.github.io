@@ -108,3 +108,10 @@ Set User Password command successful (user 3)
 
 #ipmitool user enable 3
 ```
+
+## FAQ
+
+#### 旧版本iKVM使用
+
+旧版本需要java才能访问控制台
+安装一个Kylin-3.3-3B-x86_64.iso虚拟机就可以使用了。

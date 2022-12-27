@@ -35,13 +35,28 @@ CMD [ "/bin/bash" ]
 参考: https://m.linuxidc.com/Linux/2017-04/143251.htm
 
 1. 测试顺序读
-fio --filename=/tmp/tmpdir/test -iodepth=64 -ioengine=libaio --direct=1 --rw=read --bs=1m --size=2g --numjobs=4 --runtime=10 --group_reporting --name=test-read
+```
+fio --filename=adam.img -iodepth=64 -ioengine=libaio --direct=1 --rw=read \
+  --bs=1m --size=2g --numjobs=4 --runtime=10 --group_reporting --name=test-read
+```
+
 2. 测试顺序写
-fio --filename=/tmp/tmpdir/test -iodepth=64 -ioengine=libaio --direct=1 --rw=write --bs=1m --size=2g --numjobs=4 --runtime=20 --group_reporting --name=test-write
+```
+fio --filename=adam.img -iodepth=64 -ioengine=libaio --direct=1 --rw=write \
+  --bs=1m --size=2g --numjobs=4 --runtime=20 --group_reporting --name=test-write
+```
+
 3. 测试随机读
-fio --filename=/tmp/tmpdir/test -iodepth=64 -ioengine=libaio --direct=1 --rw=randread --bs=4k --size=2g --numjobs=64 --runtime=20 --group_reporting --name=test-rand-read
+```
+fio --filename=adam.img -iodepth=64 -ioengine=libaio --direct=1 --rw=randread \
+    --bs=4k --size=2g --numjobs=64 --runtime=20 --group_reporting --name=test-rand-read
+```
+
 4. 测试随机写
-fio --filename=/tmp/tmpdir/test -iodepth=64 -ioengine=libaio --direct=1 --rw=randwrite --bs=4k --size=2G --numjobs=64 --runtime=20 --group_reporting --name=test-rand-write
+```
+fio --filename=adam.img -iodepth=64 -ioengine=libaio --direct=1 --rw=randwrite \
+  --bs=4k --size=2G --numjobs=64 --runtime=20 --group_reporting --name=test-rand-write
+```
 
 
 fio测试磁盘性能
