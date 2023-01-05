@@ -1,5 +1,80 @@
 # 临时计划
 
+#### NFS挂载卡住df问题
+
+关键字《nfs 挂载卡住》
+
+总结:
+- 解决方法要么是恢复nfs服务器
+- 要么是umount
+
+https://blog.csdn.net/BrotherDong90/article/details/51735632
+hard-mount: 当客户端加载NFS不成功时,一直重试，直到NFS服务器有响应。hard-mount 是系统的缺省值。在选定hard-mount 时，最好同时选 intr , 允许中断系统的调用请求，避免引起系统的挂起。
+=> 确实dmesg看到nfs挂载timed out
+
+http://smilejay.cn/2020/07/mount-nfs-hang/
+umount -f -l /mnt/test 进行lazy umount，这个一般都可以了。
+
+https://cloud.tencent.com/developer/article/1993384
+fuser -ck /nfsdir => 杀死相关进程?
+
+[NFS问题诊断](https://blog.51cto.com/u_15704227/5436439)
+检查nfs服务是否可用
+
+https://codeantenna.com/a/WaU8ou1ezn
+df 命令卡死，使用 strace 追踪命令跑到哪一步
+使用强制卸载： umount -l   /mnt/secondary
+
+https://codeantenna.com/a/T7WslSLx8j
+df -h 卡死，ctrl+C都没用。
+原因一：如果有网络盘挂载，如nfs、samba这类挂载，很有可能对端服务失效，目录卡死的原因，
+原因二：本地目录卡死的功能。
+
+acloud的nfs挂载
+```
+Sangfor:aSV/host-525484000bb2 /sf # mount | grep nfs
+rpc_pipefs on /var/lib/nfs/rpc_pipefs type rpc_pipefs (rw,relatime)
+nfsd on /proc/fs/nfsd type nfsd (rw,relatime)
+192.168.83.102:/ on /sf/share/nfs_cluster_data type nfs4 (rw,relatime,sync,dirsync,vers=4.0,rsize=1048576,wsize=1048576,namlen=255,acregmin=0,acregmax=0,acdirmin=0,acdirmax=0,soft,noac,proto=tcp,port=5049,timeo=10,retrans=3,sec=sys,clientaddr=192.168.83.100,local_lock=none,addr=192.168.83.102)
+127.0.0.1:/3c471bd1_vs_vol_rep3 on /sf/data/3c471bd1_vs_vol_rep3 type nfs (rw,relatime,vers=3,rsize=1048576,wsize=1048576,namlen=255,acregmin=1,acregmax=1,acdirmin=0,acdirmax=0,hard,nolock,noresvport,proto=tcp,timeo=600,retrans=2,sec=sys,mountaddr=127.0.0.1,mountvers=3,mountport=38465,mountproto=tcp,lookupcache=none,local_lock=all,addr=127.0.0.1)
+127.0.0.1:/3c471bd1_vs_vol_rep3 on /sf/data/vs/gfs/3c471bd1_vs_vol_rep3 type nfs (rw,relatime,vers=3,rsize=1048576,wsize=1048576,namlen=255,acregmin=1,acregmax=1,acdirmin=0,acdirmax=0,hard,nolock,noresvport,proto=tcp,timeo=600,retrans=2,sec=sys,mountaddr=127.0.0.1,mountvers=3,mountport=38465,mountproto=tcp,lookupcache=none,local_lock=all,addr=127.0.0.1)
+```
+
+KSVD的nfs挂载
+```
+[ssh_10.60.5.113] root@node7: bin$mount | grep nfs
+sunrpc on /var/lib/nfs/rpc_pipefs type rpc_pipefs (rw,relatime)
+10.90.4.70:/home/nfs on /mnt type nfs4 (rw,relatime,vers=4.1,rsize=1048576,wsize=1048576,namlen=255,hard,proto=tcp,timeo=600,retrans=2,sec=sys,clientaddr=10.60.5.113,local_lock=none,addr=10.90.4.70)
+192.168.99.112:/home/nfs_dir/data on /home/ksvd_backups/192.168.99.112:homenfs_dirdata type nfs4 (rw,relatime,vers=4.1,rsize=524288,wsize=524288,namlen=255,soft,proto=tcp,timeo=30,retrans=2,sec=sys,clientaddr=192.168.99.113,local_lock=none,addr=192.168.99.112)
+```
+
+#### ES学习应用
+
+如何入手ES?
+
+ES的应用?
+
+
+#### 如何写好一篇技术简历?
+
+https://www.xiaoz.me/archives/14072
+
+#### 程序员画图工具
+
+https://zhuanlan.zhihu.com/p/353333743
+推荐这个软件draw.io
+
+https://www.51cto.com/article/721130.html
+有不少软件推荐
+
+https://codeantenna.com/a/GBE0ahio6i
+plantuml, graphviz等特殊工具推荐
+
+https://www.sohu.com/a/452197561_100093134
+不止VS Code：程序员高效工作的画图工具一览 
+
+https://github.com/phodal/articles/issues/18
+
 #### pdf图片文字识别
 
 pandoc转换成word?

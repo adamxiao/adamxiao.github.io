@@ -135,6 +135,46 @@ label -ksvd-818-latest
   append initrd=image/ksvd-818-0311/initrd.img net.ifnames=0 biosdevname=0 method=http://1.1.1.1/pxe/ksvd-818-0311 ks=http://1.1.1.1/pxe/ksvd-818-0311/kickstart/ks.cfg devfs=nomount
 ```
 
+## pxe安装KSVD-819
+
+类似centos
+
+#### 构建repo配置
+
+提取iso中的所有文件到目录: ./ksvd-819-x86
+```
+sudo rsync -avh /mnt/ksvd819-x86 ./
+```
+
+(可选) 然后可以更新rpm包, 重新创建repo
+```
+# 参考 https://blog.csdn.net/evglow/article/details/104040243
+yum install -y createrepo
+# 删除Package中的KSVD几个rpm，替换为818-server的几个KSVD rpm包
+# 然后重新生成软件源仓库
+createrepo -d -g repodata/*.comps.xml .
+```
+
+#### 构建ks配置
+
+提取iso中的配置: ./kickstart/ks.cfg
+
+#### 提取vmlinux等
+
+- ./images/pxeboot/vmlinuz
+- ./images/pxeboot/initrd.img
+
+#### 最后配置uefi安装项
+
+参考KSVD iso的相关参数: ./EFI/BOOT/grub.cfg
+=> 发现818行, 819不行了, 待研究。。。
+```
+menuentry 'Install Ksvd-818 x86 (0408)' {
+  linuxefi /images/ksvd818/vmlinuz net.ifnames=0 biosdevname=0 ip=dhcp method=http://1.1.1.1/ksvd818 ks=http://1.1.1.1/ksvd818/kickstart/ks.cfg devfs=nomount
+  initrdefi /images/ksvd818/initrd.img
+}
+```
+
 ## pxe安装ubuntu
 
 关键字《centos pxe install ubuntu》

@@ -109,6 +109,17 @@ Set User Password command successful (user 3)
 #ipmitool user enable 3
 ```
 
+## ipmi修改bmc ip
+
+参考: https://blog.csdn.net/Connor_xie/article/details/119614987
+```
+ipmitool lan print 1
+ipmitool lan set 1 ipsrc static  # 设置 id 1 为静态IP地址。
+ipmitool lan set 1 ipaddr 10.42.223.71  # 设置 IPMI 地址。
+ipmitool lan set 1 netmask 255.255.255.0 # 设置 IPMI 子网掩码。
+ipmitool lan set 1 defgw ipaddr 10.42.223.254 # 设置 IPMI 网关。
+```
+
 ## FAQ
 
 #### 旧版本iKVM使用
