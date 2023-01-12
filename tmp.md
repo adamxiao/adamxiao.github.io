@@ -1,5 +1,20 @@
 # 临时计划
 
+#### shell 并行运行工具
+
+关键字《shell 并行运行工具》
+
+[如何在 shell 中实现并行执行](https://youwu.today/blog/parallel-in-shell/)
+
+方案4-使用 xargs 命令的控制参数
+```
+> seq 20 | xargs -I % -P4 sh -c 'echo %; sleep 1s'
+```
+方案5-使用 parallel 命令行工具
+```
+> seq 20 | parallel -j 4 "echo {}; sleep 1"
+```
+
 #### NFS挂载卡住df问题
 
 关键字《nfs 挂载卡住》

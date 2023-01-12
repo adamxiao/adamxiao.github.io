@@ -88,6 +88,9 @@ sudo systemctl enable x11vnc.service
 - 解决方案1：自启另一个 x11vnc 服务
 - 解决方案2：使用 vino 作为另一个 vnc 服务
 
+关键字《ubuntu 启动vnc服务》
+https://www.yisu.com/zixun/7577.html
+
 #### 参考文档
 
 - [ubuntu 18.04配置x11vnc systemctl 服务](https://blupa.info/books/short-linux-guides/page/x11vnc-systemd-service-xubuntu-1804-%28lightdm%29)

@@ -110,7 +110,32 @@ rpmbuild --define '_topdir %{getenv:PWD}' -ba SPECS/trafficserver.spec
 ```
 
 
-修改RPM包
+#### 修改RPM包
+
+[rpm重新打包](https://blog.csdn.net/itas109/article/details/104226935) => 验证ok
+```
+yum install -y epel-release
+yum install rpm-build rpmrebuild
+```
+
+解压rpm包, 重新构建rpm包(中间可以修改spec文件, 和rpm包里面的文件内容)
+```
+cp /data/KSVD-core-8.1.9-1.server.2.alpha.48894.x86_64.rpm .
+# 创建打包目录
+rpmrebuild -p ~/KSVD-core-8.1.9-1.server.2.alpha.48894.x86_64.rpm
+cd rpmbuild/
+# 提取spec文件
+rpmrebuild -s ./SPECS/KSVD-core.spec -p ~/KSVD-core-8.1.9-1.server.2.alpha.48894.x86_64.rpm
+# 目录名称规则为: Name-Version-Release.BuildArch
+mkdir BUILDROOT/KSVD-core-8.1.9-1.server.2.alpha.48894.x86_64
+cd BUILDROOT/KSVD-core-8.1.9-1.server.2.alpha.48894.x86_64/
+# 提取rpm文件
+rpm2cpio ~/KSVD-core-8.1.9-1.server.2.alpha.48894.x86_64.rpm | cpio -div
+cd ~/rpmbuild/
+# 同时编译二进制和源码rpm包
+rpmbuild -ba SPECS/KSVD-core.spec
+```
+
 https://itxx00.github.io/blog/2020/04/07/change-rpm-file-using-rpmrebuild/
 使用rpmrebuild修改rpm包内容
 
