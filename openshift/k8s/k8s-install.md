@@ -12,6 +12,57 @@
 - kubeadm-1.22.0-0.x86_64.rpm
 - kubectl-1.22.0-0.x86_64.rpm
 
+## 安装k8s
+
+install.sh
+```
+# 需要自己先配置软件源;
+# eg. baseurl=http://192.168.120.89/repos/KY3.3-6/aarch64/base/latest/
+# 以及静态ip;
+# 主机名;
+# eg. sudo hostnamectl set-hostname master-node
+# 控制节点和计算节点分别要做的事
+
+
+# 1. 安装docker
+# 2. 安装kubelet等
+sudo yum install -y *.rpm || true
+
+# 默认启动docker
+sudo systemctl enable --now docker
+# docker cgroup配置
+cat << EOF | sudo tee /etc/docker/daemon.json
+{"exec-opts": ["native.cgroupdriver=systemd"]}
+EOF
+sudo systemctl restart docker
+
+# 3. 导入docker镜像
+ls *.image | sed 's/^/sudo docker image load -i /' | bash
+
+# 4. 其他准备 =======================================================
+# 4.1 防火墙
+sudo systemctl disable --now firewalld
+# 4.2 selinux
+sudo setenforce 0
+sudo sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
+# 4.3 swap
+sudo swapoff -a
+sudo sed -i 's/^[^#].* swap /#&/' /etc/fstab
+
+# 5. 初始化集群(master节点处理)
+# sudo kubeadm init --v=5 --pod-network-cidr=10.244.0.0/16 --kubernetes-version=v1.22.0
+# 5.1 安装flannel组件 FIXME: 注意kubectl配置
+# kubectl apply -f kube-flannel.yml
+# 5.2 修正kubelet port配置
+# sudo sed -i 's/^[^#].*--port=0/#&/' /etc/kubernetes/manifests/kube-scheduler.yaml
+# sudo sed -i 's/^[^#].*--port=0/#&/' /etc/kubernetes/manifests/kube-controller-manager.yaml
+# sudo systemctl restart kubelet.service
+# 5.3 (可选)让master节点也可以运行pod
+# kubectl taint nodes --all node-role.kubernetes.io/master-
+
+echo "install finished, please continue!"
+```
+
 ## 参考资料
 
 - [简单了解一下K8S，并搭建自己的集群](https://zhuanlan.zhihu.com/p/97605697)

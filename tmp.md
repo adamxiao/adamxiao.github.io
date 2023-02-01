@@ -1,5 +1,19 @@
 # 临时计划
 
+#### find使用
+
+find 30天内修改的文件
+https://www.cnblogs.com/klb561/p/10924399.html
+
+```
+#查找 30天内修改的文件
+find -mtime -30 -name "*.md"
+#查找 30天前修改的文件
+find -mtime +30 -name "*.md"
+#查找 30~60天内修改的文件
+find -mtime +30 -mtime -60 -name "*.md"
+```
+
 #### shell 并行运行工具
 
 关键字《shell 并行运行工具》

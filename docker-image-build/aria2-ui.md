@@ -71,5 +71,6 @@ podman run -d --name aria2-ui2 \
   -p 80:80 \
   --env ENABLE_RCLONE=false \
   -v /data/aria2-data/:/data \
-  localhost/aria2-ui
+  wahyd4/aria2-ui
+# hub.iefcu.cn/public/aria2-ui
 ```
