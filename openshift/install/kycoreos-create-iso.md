@@ -23,8 +23,12 @@ docker run --dns 223.5.5.5 --rm -ti --security-opt label=disable \
 - 3.准备工作
 
 ```
-(cd srv/src/config/ && git init && git add .) # 需要git init
-git commit -m "init"
+# 需要git init, 并git commit -m init
+(cd src/config/ \
+  && git init && git add . \
+  && git config --global user.email "adam@example.com" \
+  && git config --global user.name "adam" \
+  && git commit -m init) 
 cosa fetch # 拉取相关资源
 ```
 
