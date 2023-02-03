@@ -35,13 +35,17 @@ dhcp-boot=tag:bios,pxelinux/pxelinux.0,,
 # cat /etc/dnsmasq.d/tftp.conf
 enable-tftp
 tftp-root=/var/lib/tftp/
+
+# disable dns server
+port=0
 ```
 
 可以配置dhcp白名单, 只给指定机器使用dhcp pxe
 ```
-# dhcp白名单机制
+# dhcp白名单机制, 可选指定ip
 dhcp-ignore=tag:!known
-dhcp-host=52:54:84:00:05:8a,192.168.88.101,bootstrap,set:known
+#dhcp-host=ff:ff:ff:ff:ff:fa,192.168.88.101,bootstrap,set:known
+#dhcp-host=ff:ff:ff:ff:ff:fa,set:known
 ```
 
 #### 准备efi等资料
@@ -227,6 +231,15 @@ rsync -avh /mnt/ $remote_server:/data/ubuntu-2004
 - [Ubuntu 20.04 – Deploy Ubuntu 20.04 Desktop through PXE (BIOS & UEFI)](https://c-nergy.be/blog/?p=16353)
 
 - [Set up PXE Server on Ubuntu20.04 and Window 10](https://medium.com/jacklee26/set-up-pxe-server-on-ubuntu20-04-and-window-10-e69733c1de87)
+
+## ubuntu部署pxe服务环境
+
+```
+# 安装dnsmasq和http服务
+sudo apt install -y dnsmasq apache2
+# pxe安装ubuntu 20.04, 需要nfs服务
+sudo apt install -y nfs-kernel-server nfs-common
+```
 
 ## FAQ
 
