@@ -84,6 +84,58 @@ export CYPRESS_INSTALL_BINARY=0
 export NPM_CONFIG_TARBALL=/opt/app-root/src/node-v14.18.0-headers.tar.gz
 ```
 
+## console编译调试
+
+单号: 49462
+
+4. 安装依赖
+
+4.1 安装docker, git
+
+    运行 dnf install docker git jq
+
+4.2 安装golang包
+
+    golang.tar ，资源在 ftp://10.0.0.5》02-研发二部》01-仅部门可见》chenzheng
+
+4.3 更换yarn 源
+
+    yarn config set registry https://registry.npm.taobao.org/
+
+4.4 上传console源码到云服务器上
+
+    资源传在 ftp://10.0.0.5》02-研发二部》01-仅部门可见》chenzheng
+    或者 git clone https://github.com/PJYang/console.git -b release-4.9
+
+4.5 上传kube config文件到云服务器
+
+    上传config.tar ，资源附在此单下
+    解压并重命名为~/.kube/config
+
+5. 初始化容器云，/root/console 目录下运行
+
+docker run -it --name node -v $PWD:/opt/app-root/src -w /opt/app-root/src hub.iefcu.cn/public/node:14 bash
+
+编译前端：./build-frontend.sh
+
+编译后端：此时需要退出容器, 再运行：
+
+    exit
+    ./build-backend.sh
+
+6. 启动，/root/console 目录下运行 
+
+    oc process -f examples/console-oauth-client.yaml | oc apply -f -
+    oc get oauthclient console-oauth-client -o jsonpath='{.secret}' > examples/console-client-secret
+    oc get secrets -n default --field-selector type=kubernetes.io/service-account-token -o json | \
+        jq '.items[0].data."ca.crt"' -r | python -m base64 -d > examples/ca.crt
+    ./examples/run-bridge.sh
+
+7. 查看效果
+
+    进入vnc，打开浏览器输入 127.0.0.1:9000 (admin/ksvd2020)
+
+
 
 ## 其他资料
 
