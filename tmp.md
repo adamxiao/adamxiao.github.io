@@ -1,5 +1,20 @@
 # 临时计划
 
+#### chatgpt使用
+
+https://juejin.cn/post/7198097078005841980
+
+需要使用国外手机号注册使用，中国区不可用
+使用[接码平台](sms-activate.org/)
+
+OpenAI's services are not available in your country.
+
+https://www.51cto.com/article/745970.html
+在淘宝上买一个现成的账号就行，共享的 3 块一个，独享的 7 块一个。我觉得买一个现成的比较快捷，自己注册需要准备邮箱和接受国外验证码的手机号，比较麻烦。
+
+https://www.xnbeast.com/create-openai-chatgpt-account/
+TODO: 尝试注册账号
+
 #### find使用
 
 find 30天内修改的文件
