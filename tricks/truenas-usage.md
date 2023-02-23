@@ -40,6 +40,39 @@ ipsan iscsi相关概念:
 - samba默认不开启v1认证支持,windows10不能挂载
 - ftp需要用户有主目录?
 
+- 修改iscsi chap密码，居然不是实时生效?
+  重启生效, 看有什么方法不重启生效?
+
+## 其他
+
+https://best.pconline.com.cn/yuanchuang/10367901.html
+「NAS」小白必读，从入门到上手，保姆级干货分享。 
+
+个人家庭需要nas做什么:
+- 家庭影音数据中心
+  视频，照片
+- 文件备份同步共享
+- 资源下载
+- 其他高阶应用
+  内建数据库，Web服务，搭建个人网站服务器，代码仓库管理，OA/CRM/多人协同办公等等，这些更适合于企业使用，对于大多数普通人来用不到
+
+关键字《pc作为nas》
+
+https://www.v2ex.com/t/860922
+- 1. 能耗
+- 2. 体积
+- 3. 噪音（风扇导致的，硬盘不计）
+
+https://zhuanlan.zhihu.com/p/138153055
+购买nas硬件, 搭建windows简单nas
+
+https://www.zhihu.com/question/499638319
+近期，看到关于【NAS】的描述，觉得很适合，但仔细看了一下，又很茫然。
+- 1.有现成的【NAS】出售
+- 2.有购买配件组装【NAS】
+- 3.个人电脑配件改造【NAS】
+- 4.个人电脑直接换个系统=【NAS】
+
 ## 参考资料
 
 https://blog.51cto.com/riverxyz/4572290
