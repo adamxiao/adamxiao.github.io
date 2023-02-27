@@ -33,6 +33,46 @@ ipsan iscsi相关概念:
 - init
 - lun
 
+[4创建iSCSI共享存储](https://juejin.cn/post/7136917385142861854)
+
+- Portals
+  TrueNAS对外提供服务时，监听的IP地址
+- Initiators Groups
+  配置允许发现和挂载TrueNAS的客户端
+- Targets
+  组合Portals、Initiators Groups的配置
+- Extents
+  Zvol和extends绑定，才能被服务器或其它设备识别，挂载成硬盘
+- Assciated Targets
+  将target和extends关联，这是最终被用来发现的共享存储
+
+Portals --- (Targets) --- Initiators Groups
+=> 最终客户端就会发现这些targets...
+Targets --- (Assciated Targets) --- Extents
+=> 最终决定target上有几块硬盘可以用
+Portals --- Authorized Access
+=> 可以配置CHAP认证接入
+
+[网络存储（四）之ISCSI的进阶](https://www.cnblogs.com/liaojiafa/p/6047550.html)
+
+任何知道target name的客户端都可以随意连接ISCSI服务器, 需要授权区分
+例如: 只允许客户端主机A连接target共享出来的磁盘分区1，而客户端主机b只运行连接target分享的磁盘分区2，在这种情况下，就需要在ISCSI target主机上进行授权设定了。
+
+- 通过ip来限定客户端连接不同的磁盘或者分区
+- 通过用户名密码连接不同的磁盘或分区
+
+#### iscsi不同客户端发现不同的target
+
+只有配置Initiators Groups才行
+
+## 系统配置备份
+
+https://zhuanlan.zhihu.com/p/481986009
+
+参考官方功能文档： System Config Backups | (truenas.com)
+支持手动和自动两种方式：
+手动备份在 System > General 菜单点击SAVECONFIG
+
 ## FAQ
 
 - 虚拟机使用磁盘创建pool, 需要uuid
@@ -73,6 +113,16 @@ https://www.zhihu.com/question/499638319
 - 3.个人电脑配件改造【NAS】
 - 4.个人电脑直接换个系统=【NAS】
 
+快照使用(samba挂载网络文件)
+管理快照任务
+- 每小时快照: 保留一周
+- 每周周日快照: 保留一月
+- 每1月1日快照: 保留一年
+
+配置rsync服务, 定时拉取待备份的数据!
+
 ## 参考资料
 
 https://blog.51cto.com/riverxyz/4572290
+
+- [youtube视频 - 好消息：文件全删！坏消息：还能找回来～](https://www.youtube.com/watch?v=_b83F55c_Yc)

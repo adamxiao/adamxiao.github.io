@@ -1,5 +1,30 @@
 # 临时计划
 
+#### 同步手机照片
+
+[(二十三)小众但好用: Syncthing 把手机变成同步网盘](https://zhuanlan.zhihu.com/p/121544814)
+
+[Syncthing 文件同步工具部署和 iOS 替代方案](https://wasteland.touko.moe/blog/2020/03/syncthing-all-platform/)
+=> ubuntu 下使用apt安装syncthing
+
+[Syncthing vs Resilio Sync vs Nextcloud 文件同步服务对比](https://www.ucloud.cn/yun/63568.html)
+
+https://www.appinn.com/les-pas-for-nextcloud/
+
+Les Pas 是一款开源的专门针对 Nextcloud 私有云的第三方相册应用，可以用来在 Android 设备与 Nextcloud 之间双向同步照片，还能整合 Snapseed 软件联动修图。@Appinn
+
+【村雨组NAS】Nextcloud私有云盘 使用教程
+https://www.bilibili.com/read/cv9722094
+
+我的IPhone照片备份方案
+https://post.smzdm.com/p/a6lxpoln/
+
+https://zhuanlan.zhihu.com/p/461563481
+私家NAS自动备份手机照片文件
+
+两年前我把服务器从A某云搬到了家里，并搭建了NAS服务，用来存储存档型的资料文档。NAS服务千千万，看了眼seafile、nextcloud、ownCloud的界面、对比简介，然后选了Nextcloud。
+
+
 #### chatgpt使用
 
 https://juejin.cn/post/7198097078005841980

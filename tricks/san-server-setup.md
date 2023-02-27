@@ -114,6 +114,10 @@ iscsiadm -m node -L all
 iscsiadm -m discovery -t st -p 10.90.3.183
 iscsiadm  -m node  -d  1 T iqn.1994-05.com.redhat:sanserver1 -p  10.90.3.183 -l
 
+```
+tgtadm -L iscsi -o show -m target # 查看 target 创建的信息
+```
+
 lsscsi -sti
 iqn为ipsan
 fc为fcsan
@@ -133,4 +137,97 @@ fc为fcsan
 [9:0:0:0]    disk    iqn.2002-10.com.infortrend:raid.uid579524.201,t,0x1  /dev/sdi   3600d02310008d7c462bd594015b44935   214GB
 [9:0:0:1]    disk    iqn.2002-10.com.infortrend:raid.uid579524.201,t,0x1  /dev/sdj   3600d02310008d7c45e58417a7554715c   214GB
 [9:0:0:7]    enclosu iqn.2002-10.com.infortrend:raid.uid579524.201,t,0x1  -          -       -
+```
+
+## 相关资料
+
+https://blog.51cto.com/wgmml/1597982
+
+iSCSI术语
+
+- IQN（iSCSI Qualified Name）用来识别iSCSI通信的服务端和客户端，格式是
+  iqn.yyyy-mm.com.reverse.domain:optional-extra-name
+  如主机名为instructor.example.com。第一个分享的LV空间可以是iqn.2013-10.com.example.instructor:lv1-my-first-lv
+  可选部分（含前面的冒号）加上可以用于区分多个分享的设备，如有多个lv要分享的时候
+
+- target :iSCSI服务端叫target,target 分享LUN，logical unit ,一台服务器可以分享一个或者多个LUN 
+
+- initiator:iSCSI客户端叫initiator,可以由软硬件实现，通常软件实现的较多（省钱）
+
+- node: iSCSI服务端,iSCSI客户端都叫node
+
+- Portal :在iSCSI中,Portal是一个target或者initiator的IP，用于建立连接
+
+- iSNS:  internet storage name service ,一个命名服务，用来让initiator发现target，较少使用
+
+
+#### iscsiadm使用
+
+常用模式：discovery|node|session|iface
+
+- discovery：发现某服务器是否有target输入，以及输出哪些target；
+- node：管理跟某target的关联关系，建立关联、断开关联。。。
+- session：会话管理
+- iface：端口管理
+
+```
+iscsiadm -m session # 获取连接会话
+tcp: [1] 192.168.99.112:3260,1 iqn.1994-05.com.redhat:sanserver2 (non-flash)
+tcp: [2] 10.60.5.112:3260,1 iqn.1994-05.com.redhat:sanserver1 (non-flash)
+tcp: [3] 10.90.3.118:3260,1 iqn.2005-10.org.freenas.ctl:iscsi (non-flash)
+```
+
+```
+iscsiadm -m discovery -t st -p 10.90.3.21 # 发现target?
+# 查看10.90.3.21主机共享的target及端口，发现完后会在/var/lib/iscsi/send_targets/下显示记录，不想使用是需要删除。
+
+iscsiadm -m discovery -t st -p 10.90.3.21 -o delete # 删除target
+
+iscsiadm -m discovery -t st -p 10.90.3.21 # 设置了密码也能发现?
+10.90.3.21:3260,1 iqn.2005-10.org.freenas.ctl:adam1
+10.90.3.21:3260,1 iqn.2005-10.org.freenas.ctl:adam80
+
+iscsiadm -m discovery -t st -p 10.90.3.25
+10.90.3.25:3260,1 iqn.2005-10.org.freenas.ctl:adam-ipsan0214
+10.90.3.25:3260,1 iqn.2005-10.org.freenas.ctl:adam-iscsi1
+```
+
+```
+iscsiadm -m discovery # 列举发现列表?
+10.90.3.21:3260 via sendtargets
+10.90.3.25:3260 via sendtargets
+```
+
+挂载登录
+```
+iscsiadm -m node -T iqn.2005-10.org.freenas.ctl:adam1 -p 10.90.3.21 -l
+挂载登录 10.90.3.21, target服务器 iqn.2005-10.org.freenas.ctl:adam1 磁盘
+
+CHAP认证，登录失败
+
+Logging in to [iface: default, target: iqn.2005-10.org.freenas.ctl:adam1, portal: 10.90.3.21,3260] (multiple)
+iscsiadm: Could not login to [iface: default, target: iqn.2005-10.org.freenas.ctl:adam1, portal: 10.90.3.21,3260].
+iscsiadm: initiator reported error (24 - iSCSI login failed due to authorization failure)
+iscsiadm: Could not log into all portals
+```
+
+配置chap认证登录
+```
+iscsiadm -m node -p 10.90.3.21:3260 -o update --name node.session.auth.authmethod --value CHAP
+iscsiadm -m node -p 10.90.3.21:3260 -o update --name node.session.auth.username --value adam
+iscsiadm -m node -p 10.90.3.21:3260 -o update --name node.session.auth.password --value xxx
+
+iscsiadm -m node -p 10.90.3.21:3260 --login # 会尝试登录发现的所有target, 如果某些target的chap认证信息不对, 则登录失败
+# 在fusion compute表现会关联主机失败
+```
+
+两个target配置的chap用户名密码不一样，则登录一个成功, 一个失败
+```
+[ssh_192.168.99.31] root@node1: ~$iscsiadm -m node -p 10.90.3.21:3260 --login
+Logging in to [iface: default, target: iqn.2005-10.org.freenas.ctl:adam1, portal: 10.90.3.21,3260] (multiple)
+Logging in to [iface: default, target: iqn.2005-10.org.freenas.ctl:adam80, portal: 10.90.3.21,3260] (multiple)
+iscsiadm: Could not login to [iface: default, target: iqn.2005-10.org.freenas.ctl:adam1, portal: 10.90.3.21,3260].
+iscsiadm: initiator reported error (24 - iSCSI login failed due to authorization failure)
+Login to [iface: default, target: iqn.2005-10.org.freenas.ctl:adam80, portal: 10.90.3.21,3260] successful.
+iscsiadm: Could not log into all portals
 ```

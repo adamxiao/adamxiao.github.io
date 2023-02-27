@@ -53,6 +53,8 @@ Linux 中美妙的事情之一就是在系统正在运行的情况下可以进�
 
 [Ubuntu全盘备份与恢复，亲自总结，实测可靠](https://blog.csdn.net/sinat_27554409/article/details/78227496)
 
+[Ubuntu系统备份](https://zhuanlan.zhihu.com/p/51827233)
+
 ```
 mount 10.90.3.25:/mnt/pool1/nfs /mnt
 tar cvpzf /mnt/backup.tgz \
