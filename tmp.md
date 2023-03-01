@@ -1,5 +1,55 @@
 # 临时计划
 
+#### 创建libvirtd容器，里面运行libvirtd
+
+```
+FROM ubuntu:20.04
+
+MAINTAINER  Adam Xiao "iefcuxy@gmail.com"
+
+ENV DEBIAN_FRONTEND noninteractive
+
+# 安装libvirtd和其他必要的软件包
+RUN apt-get update && apt-get install -y \
+        libvirt-clients \
+        libvirt-daemon-system \
+        openvswitch-switch \
+        qemu-block-extra \
+        qemu-system \
+        qemu-utils
+
+# 将libvirt配置文件复制到容器中
+#COPY libvirtd.conf /etc/libvirt/libvirtd.conf
+
+RUN sed -i -e 's/^#listen_tls.*/listen_tls = 0/' /etc/libvirt/libvirtd.conf
+
+# 暴露libvirt服务端口
+EXPOSE 16509
+
+# 启动libvirtd守护进程
+#CMD ["/usr/sbin/libvirtd", "-d", "-l"]
+CMD ["/usr/sbin/libvirtd", "-l"]
+```
+
+在上面的Dockerfile中，我们使用最新版本的Ubuntu作为基础镜像，然后安装了libvirt-daemon-system和libvirt-clients软件包。我们还将libvirtd.conf文件复制到容器中，并通过EXPOSE指令暴露了libvirt服务端口。最后，我们使用CMD指令启动了libvirtd守护进程。
+
+```
+docker build -t libvirtd-container .
+docker run -d --privileged -v /sys/fs/cgroup:/sys/fs/cgroup:ro -p 16509:16509 libvirtd-container
+--device /dev/kvm
+```
+在上面的docker run命令中，我们使用--privileged选项允许容器访问主机系统的所有设备，这是必要的，因为libvirtd需要访问主机系统的/dev和/sys目录。我们还将/sys/fs/cgroup目录挂载到容器中，以便容器可以使用cgroup来管理资源。最后，我们使用-p选项将容器内的16509端口映射到主机系统的16509端口上，这样就可以通过主机系统上的libvirt客户端访问容器中的libvirtd守护进程。
+
+现在，您已经成功地创建了一个libvirtd容器，并在其中运行了libvirtd守护进程。您可以使用主机系统上的libvirt客户端连接到容器中的libvirtd守护进程，并管理虚拟化资源。如果您需要在容器中运行其他虚拟机，您可以使用主机系统上的libvirt客户端来创建和管理它们，就像在普通的物理主机上一样。
+
+FAQ
+- Cannot read CA certificate '/etc/pki/CA/cacert.pem': No such file or directory
+  监听tcp端口，要么需要证书，要么取消tls认证
+
+#### terminal Gogh 配色
+
+gnome terminal 的配置方案, 类似desert
+
 #### 同步手机照片
 
 [(二十三)小众但好用: Syncthing 把手机变成同步网盘](https://zhuanlan.zhihu.com/p/121544814)

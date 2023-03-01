@@ -73,6 +73,11 @@ https://zhuanlan.zhihu.com/p/481986009
 支持手动和自动两种方式：
 手动备份在 System > General 菜单点击SAVECONFIG
 
+#### 使用rsync给服务器备份文件
+
+参考: https://www.utopiafar.com/2022/02/22/backup_remote_files_with_truenas/
+创建一个rsync任务, 使用密钥, pull服务器的目录
+
 ## FAQ
 
 - 虚拟机使用磁盘创建pool, 需要uuid

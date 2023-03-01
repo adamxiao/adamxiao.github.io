@@ -90,3 +90,25 @@ no_root_squash——root用户具有对根目录的完全管理访问权限
 no_subtree_check——不检查父目录的权限
 ```
 
+## linux开机自动挂载
+
+关键字《linux 开机自动挂载nfs》
+参考: https://blog.csdn.net/zhongbeida_xue/article/details/81112529
+
+修改/etc/fstab文件, 添加内容如下:
+```
+<nfs_server_IP>:/<remote_directory> /mnt/nfs_share nfs defaults,_rnetdev 0 0
+```
+
+其中，<nfs_server_IP> 是 NFS 服务器的 IP 地址，<remote_directory> 是远程共享目录的路径。请根据实际情况修改这两个参数。
+- `_rnetdev`表示主机无法挂载直接跳过，避免无法挂载主机无法启动
+
+可以使用如下命令立即挂载
+```
+sudo mount -a
+```
+
+确认挂载是否成功：
+```
+df -h
+```
