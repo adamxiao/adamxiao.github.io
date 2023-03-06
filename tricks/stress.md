@@ -14,6 +14,13 @@ make
 make install
 ```
 
+## 磁盘IO测试
+
+开启2个磁盘IO进程，每次写10GB数据到磁盘
+```
+stress --hdd 2 --hdd-bytes 100MB --backoff 2000000
+```
+
 ## 内存测试
 
 http://blog.lujun9972.win/blog/2018/05/06/%E4%BD%BF%E7%94%A8stress%E8%BF%9B%E8%A1%8C%E5%8E%8B%E5%8A%9B%E6%B5%8B%E8%AF%95/
