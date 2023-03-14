@@ -126,12 +126,12 @@ IMAGE_URLS="http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-disk.img"
 # use TryStack git mirror
 #GIT_BASE=http://git.trystack.cn
 #NOVNC_REPO=http://git.trystack.cn/kanaka/noVNC.git
-#SPICE_REPO=http://git.trystack.cn/git/spice/sice-html5.git
+#SPICE_REPO=http://git.trystack.cn/git/spice/spice-html5.git
 
 # use adam git mirror
 GIT_BASE=http://gitlab.iefcu.cn
 NOVNC_REPO=http://gitlab.iefcu.cn/openstack/noVNC.git
-SPICE_REPO=http://gitlab.iefcu.cn/openstack/sice-html5.git
+SPICE_REPO=http://gitlab.iefcu.cn/openstack/spice-html5.git
 
 
 # Credentials
@@ -143,6 +143,12 @@ RABBIT_PASSWORD=admin
 #FLAT_INTERFACE=enp0s3
 
 HOST_IP="your vm ip"
+```
+
+尝试: 由于devstack无法在localrc中配置项目名, 所有手动修改一下
+```
+#CINDER_REPO=${CINDER_REPO:-${GIT_BASE}/openstack/cinder.git}
+sed -i -e 's#:-${GIT_BASE}/openstack/#:-http://gitlab.iefcu.cn/adam/#' stackrc
 ```
 
 切换到files目录下，执行如下命令
@@ -338,6 +344,52 @@ VNCSERVER_PROXYCLIENT_ADDRESS=$VNCSERVER_LISTEN
 
 ## 更多资料
 
+#### openstack git镜像仓库
+
+根据devstack里面的stackrc配置，可以看到官方git仓库是opendev.org
+```
+GIT_BASE=${GIT_BASE:-https://opendev.org}
+NOVNC_REPO=${NOVNC_REPO:-https://github.com/novnc/novnc.git}
+SPICE_REPO=${SPICE_REPO:-http://anongit.freedesktop.org/git/spice/spice-html5.git}
+```
+
+有如下一些git镜像仓库, 拉取速度更快一些:
+(当然，在本地搭建git镜像仓库，速度最快)
+- git.trystack.cn
+```
+# http://git.trystack.cn/cgit/openstack/cinder/
+GIT_BASE=http://git.trystack.cn
+NOVNC_REPO=http://git.trystack.cn/kanaka/noVNC.git
+SPICE_REPO=http://git.trystack.cn/git/spice/spice-html5.git
+```
+
+- gitclone.com
+```
+GIT_BASE=https://gitclone.com/github.com
+NOVNC_REPO=https://gitclone.com/github.com/kanaka/noVNC.git
+SPICE_REPO=https://gitclone.com/github.com/git/spice/spice-html5.git
+```
+
+- gitlab.iefcu.cn
+```
+GIT_BASE=http://gitlab.iefcu.cn
+NOVNC_REPO=http://gitlab.iefcu.cn/openstack/noVNC.git
+SPICE_REPO=http://gitlab.iefcu.cn/openstack/spice-html5.git
+```
+  自己搭建的本地私有git镜像仓库(注意必须在组织openstack下)
+  FIXME: 怎么快捷的导入所有的git仓库?
+  手动导入如下git仓库, 安装一个all-in-one就行
+  - cinder.git
+  - glance.git
+  - horizon.git
+  - keystone.git
+  - neutron.git
+  - nova.git
+  - placement.git
+  - requirements.git
+  - tempest.git
+  - **noVNC.git**
+
 #### local.conf配置详解
 
 [Devstack配置文件local.conf参数说明](http://www.chenshake.com/local-conf-devstack-profile-parameter-description/)
@@ -463,29 +515,65 @@ devstack@q-svc.service
 
 https://www.daimajiaoliu.com/daima/4ed5946659003e8
 
-#### 导入openstack git仓库
-
-分析devstack的stackrc配置脚本(根据关键字《GIT_BASE》)
-* http://gitlab.iefcu.cn/adam/cinder.git
-* http://gitlab.iefcu.cn/adam/glance.git
-* http://gitlab.iefcu.cn/adam/horizon.git
-* http://gitlab.iefcu.cn/adam/keystone.git
-* http://gitlab.iefcu.cn/adam/neutron.git
-* http://gitlab.iefcu.cn/adam/nova.git
-* http://gitlab.iefcu.cn/adam/swift.git
-* http://gitlab.iefcu.cn/adam/placement.git
-* http://gitlab.iefcu.cn/adam/requirements.git
-* http://gitlab.iefcu.cn/adam/tempest.git
-
 #### 配置git镜像
 
 ```
 GIT_BASE=http://gitlab.iefcu.cn
 NOVNC_REPO=http://gitlab.iefcu.cn/openstack/noVNC.git
-SPICE_REPO=http://gitlab.iefcu.cn/openstack/sice-html5.git
+SPICE_REPO=http://gitlab.iefcu.cn/openstack/spice-html5.git
 ```
 
 ## FAQ
+
+#### pass_env values cannot contain whitespace
+
+=> tox4的支持性问题， 估计我当时使用pip安装的不是tox4吧
+=> 更新tempest源码, 使用最新版本: https://opendev.org/openstack/tempest.git
+
+https://github.com/python/mypy/issues/14522
+tox4 does not support pass_env values with whitespace in tox.ini.
+
+https://github.com/napari/cookiecutter-napari-plugin/issues/146
+Since tox 4 its no longer accepts two variables in one line. 
+
+https://github.com/python/mypy/pull/14578/files
+把变量换行
+```
+-passenv = PYTEST_XDIST_WORKER_COUNT PROGRAMDATA PROGRAMFILES(X86) PYTEST_ADDOPTS
++passenv =
++    PYTEST_XDIST_WORKER_COUNT
++    PROGRAMDATA
++    PROGRAMFILES(X86)
++    PYTEST_ADDOPTS
+```
+
+```
+++lib/tempest:configure_tempest:633         tox -revenv-tempest --notest
+venv-tempest: remove tox env folder .tox/tempest
+venv-tempest: failed with pass_env values cannot contain whitespace, use comma to have multiple values in a single line, invalid values found 'OS_STDOUT_CAPTURE OS_STDERR_CAPTURE OS_TEST_TIMEOUT OS_TEST_LOCK_PATH TEMPEST_CONFIG TEMPEST_CONFIG_DIR http_proxy HTTP_PROXY https_proxy HTTPS_PROXY no_proxy NO_PROXY ZUUL_CACHE_DIR REQUIREMENTS_PIP_LOCATION GENERATE_TEMPEST_PLUGIN_LIST'
+  venv-tempest: FAIL code 1 (0.00 seconds)
+  evaluation failed :( (0.50 seconds)
+```
+
+#### openstack上传大镜像一直卡在已排队问题
+
+关键字《openstack创建镜像 已排队》
+
+https://blog.csdn.net/u014299266/article/details/124193211
+
+需要我们需要去调大image_size_total 这个参数
+官方文档: https://docs.openstack.org/glance/latest/admin/quotas.html
+
+然后我是直接去数据库修改配置
+tips：数据库密码是安装openstack设置的统一密码
+keystone数据库下的registered_limit表
+image_size_total
+
+[(好)不要尝试在家里部署 OpenStack](https://juejin.cn/post/7036722660885151751)
+修改 /etc/glance/glance-api.conf, 效果立竿见影
+```
+use_keystone_limits = False
+```
 
 #### devstack最新版不支持ubuntu 18.04 server来安装了
 

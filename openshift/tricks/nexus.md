@@ -116,6 +116,7 @@ You can get the <repository URL> from the table in Browsing Repositories and Rep
 ## 作为pip软件源镜像仓库
 
 nexus3创建PyPI代理仓库, 最少要配置如下字段:
+* 类型: pypi(proxy)
 * Define Name - e.g. pypi-proxy
 * Define URL for Remote storage. The official Python Package Index Remote Storage URL value to enter is https://pypi.org/.  Using https://pypi.python.org/ should also work as long as redirects are maintained.
   还有其他的一些pypi镜像源:
@@ -197,6 +198,11 @@ docker run --rm -it \
 
 管理界面
 http://docker.iefcu.cn:5565 (映射端口8081)
+
+旧版本nexus
+```
+docker run -d --restart=always -p 8081:8081 --name nexus -v $PWD/data:/sonatype-work hub.iefcu.cn/public/nexus
+```
 
 ## 参考资料
 

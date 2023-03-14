@@ -47,6 +47,7 @@ services:
 * mysql密码修改
 
 起来之后登录http://IP, 然后进行你gogs初始化的设置
+(也可以直接配置 data/gogs/gogs/conf/app.ini)
 * 数据库的地址设置为mysql:3306
 * mysql账号密码xxx
 * hostname等...

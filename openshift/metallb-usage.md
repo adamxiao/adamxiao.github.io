@@ -9,6 +9,20 @@ oc image extract --confirm \
 
 根据里面的dockerfile, 创建新的镜像, 注意修改支持arm64即可
 hub.iefcu.cn/kcp/metallb-operator-bundle:v4.9
+```
+diff --git a/manifests/metallb-operator.v4.9.0.clusterserviceversion.yaml b/manifests/metallb-operator.v4.9.0.clusterserviceversion.yaml
+index 68f0ad3..779d903 100644
+--- a/manifests/metallb-operator.v4.9.0.clusterserviceversion.yaml
++++ b/manifests/metallb-operator.v4.9.0.clusterserviceversion.yaml
+@@ -69,6 +69,7 @@ metadata:
+     support: Red Hat
+   labels:
+     operatorframework.io/arch.amd64: supported
++    operatorframework.io/arch.arm64: supported
+   name: metallb-operator.4.9.0-202201261125
+   namespace: placeholder
+ spec:
+```
 
 然后再做一个新的operator index镜像
 

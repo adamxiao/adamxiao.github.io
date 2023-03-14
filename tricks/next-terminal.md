@@ -39,14 +39,16 @@ location / {
 version: '3.3'
 services:
   guacd:
-    image: dushixiang/guacd:latest
+    #image: dushixiang/guacd:latest
+    image: hub.iefcu.cn/public/guacd:latest
     volumes:
       - ./data:/usr/local/next-terminal/data
     restart:
           always
   next-terminal:
     #image: dushixiang/next-terminal:latest
-    image: hub.iefcu.cn/xiaoyun/next-terminal:latest
+    #image: hub.iefcu.cn/xiaoyun/next-terminal:latest
+    image: hub.iefcu.cn/public/next-terminal:latest
     environment:
       DB: sqlite
       GUACD_HOSTNAME: guacd

@@ -102,6 +102,7 @@ no_subtree_check——不检查父目录的权限
 
 其中，<nfs_server_IP> 是 NFS 服务器的 IP 地址，<remote_directory> 是远程共享目录的路径。请根据实际情况修改这两个参数。
 - `_rnetdev`表示主机无法挂载直接跳过，避免无法挂载主机无法启动
+  => 验证失败, 会挂载失败
 
 可以使用如下命令立即挂载
 ```
@@ -112,6 +113,15 @@ sudo mount -a
 ```
 df -h
 ```
+
+## FAQ
+
+#### Permission denied
+
+https://www.truenas.com/community/threads/nfs-share-problem.93617/
+
+配置Maproot User为root, Maproot Group 为root
+这样root就有权限写文件了
 
 #### NFS挂载卡住df问题
 

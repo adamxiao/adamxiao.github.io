@@ -19,3 +19,11 @@ CHANGED: partition=2 start=33556480 old: size=50329600 end=83886080 new: size=13
 ```
 qemu-img resize centos7.img +10G
 ```
+
+## ubuntu 20.04 server扩容分区
+
+```
+pvresize /dev/vda3
+lvextend -L +100G /dev/mapper/ubuntu--vg-ubuntu--lv
+resize2fs /dev/mapper/ubuntu--vg-ubuntu--lv
+```

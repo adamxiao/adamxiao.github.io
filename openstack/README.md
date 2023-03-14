@@ -6,6 +6,30 @@
 疑问:
 * 1.在多节点配置时，一般保留私有地址的前十个, 什么意思?
 
+https://docs.openstack.org/image-guide/obtain-images.html
+获取系统云镜像
+
+openstack 配置密码
+
+https://stackoverflow.com/questions/16768272/openstack-change-admin-password-for-the-dashboard
+keystone user-password-update --pass <password> <user id>
+
+[openstack设置实例的帐号密码](https://blog.csdn.net/Man_In_The_Night/article/details/111915141)
+“项目”–“实例”–“创建实例”–“配置”–“选择文件”
+```
+#!/bin/bash
+#change password
+passwd root<<EOF
+hao@123
+hao@123
+EOF
+#allow ssh password login and no use dns
+sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config
+sed -i 's/#PermitRootLogin yes/PermitRootLogin yes/g' /etc/ssh/sshd_config
+sed -i 's/#UseDNS yes/UseDNS no/g' /etc/ssh/sshd_config
+systemctl restart sshd
+```
+
 
 ## devstack安装openstack集群
 
