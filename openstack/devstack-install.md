@@ -7,7 +7,7 @@ https://github.com/etcd-io/etcd/releases/download/v3.3.12/etcd-v3.3.12-linux-amd
 
 ## 单节点allinone安装
 
-最新版devstack支持ubuntu 20.04, 旧版本ubuntu未适配了
+最新版devstack(yoga)支持ubuntu 20.04, 旧版本ubuntu未适配了
 
 ### 安装基础系统ubuntu 20.04 server
 
@@ -47,7 +47,7 @@ network:
         - 192.168.121.199/24
       gateway4: 192.168.121.1
       nameservers:
-          addresses: [8.8.8.8, 1.1.1.1]
+          addresses: [8.8.8.8, 8.8.4.4]
 ```
 
 ip修改配置生效
@@ -71,6 +71,20 @@ deb http://docker.iefcu.cn:5565/repository/ubuntu-cn-proxy focal-backports main 
 deb http://docker.iefcu.cn:5565/repository/ubuntu-cn-proxy focal-security main restricted
 deb http://docker.iefcu.cn:5565/repository/ubuntu-cn-proxy focal-security universe
 deb http://docker.iefcu.cn:5565/repository/ubuntu-cn-proxy focal-security multiverse
+```
+
+#### 修改pip仓库源
+
+自己搭建的私有nexus源, 缓存之后速度非常快
+
+```
+#mkdir -p $HOME/.pip
+#$HOME/.pip/pip.conf
+cat > /etc/pip.conf << EOF
+[global]
+index-url = http://docker.iefcu.cn:5565/repository/aliyun-pypi/simple
+trusted-host = docker.iefcu.cn
+EOF
 ```
 
 ### 安装准备工作
@@ -102,14 +116,9 @@ echo "stack ALL=(ALL) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/stack
 切到stack用户, 下载DevStack
 ```bash
 sudo su - stack
-git clone https://github.com/openstack-dev/devstack
-# 可选, 切到指定分支, 安装指定版本
-# git checkout stable/yoga
-```
-
-使用私有git代码
-```bash
-git clone http://gitlab.iefcu.cn/adam/devstack
+#git clone https://github.com/openstack-dev/devstack -b stable/yoga
+# 使用私有git代码
+git clone https://gitlab.iefcu.cn/xiaoyun/devstack.git -b stable/yoga
 ```
 
 #### 配置local.conf进行安装
@@ -123,16 +132,10 @@ git clone http://gitlab.iefcu.cn/adam/devstack
 DOWNLOAD_DEFAULT_IMAGES=False
 IMAGE_URLS="http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-disk.img"
 
-# use TryStack git mirror
-#GIT_BASE=http://git.trystack.cn
-#NOVNC_REPO=http://git.trystack.cn/kanaka/noVNC.git
-#SPICE_REPO=http://git.trystack.cn/git/spice/spice-html5.git
-
 # use adam git mirror
-GIT_BASE=http://gitlab.iefcu.cn
-NOVNC_REPO=http://gitlab.iefcu.cn/openstack/noVNC.git
-SPICE_REPO=http://gitlab.iefcu.cn/openstack/spice-html5.git
-
+GIT_BASE=https://gitlab.iefcu.cn
+NOVNC_REPO=https://gitlab.iefcu.cn/xiaoyun/noVNC.git
+SPICE_REPO=https://gitlab.iefcu.cn/xiaoyun/spice-html5.git
 
 # Credentials
 DATABASE_PASSWORD=admin
@@ -148,7 +151,7 @@ HOST_IP="your vm ip"
 尝试: 由于devstack无法在localrc中配置项目名, 所有手动修改一下
 ```
 #CINDER_REPO=${CINDER_REPO:-${GIT_BASE}/openstack/cinder.git}
-sed -i -e 's#:-${GIT_BASE}/openstack/#:-http://gitlab.iefcu.cn/adam/#' stackrc
+sed -i -e 's#:-${GIT_BASE}/openstack/#:-${GIT_BASE}/xiaoyun/#' stackrc
 ```
 
 切换到files目录下，执行如下命令
@@ -372,9 +375,9 @@ SPICE_REPO=https://gitclone.com/github.com/git/spice/spice-html5.git
 
 - gitlab.iefcu.cn
 ```
-GIT_BASE=http://gitlab.iefcu.cn
-NOVNC_REPO=http://gitlab.iefcu.cn/openstack/noVNC.git
-SPICE_REPO=http://gitlab.iefcu.cn/openstack/spice-html5.git
+GIT_BASE=https://gitlab.iefcu.cn
+NOVNC_REPO=https://gitlab.iefcu.cn/xiaoyun/noVNC.git
+SPICE_REPO=https://gitlab.iefcu.cn/xiaoyun/spice-html5.git
 ```
   自己搭建的本地私有git镜像仓库(注意必须在组织openstack下)
   FIXME: 怎么快捷的导入所有的git仓库?
@@ -514,14 +517,6 @@ devstack@q-svc.service
 收集一点别人遇到的坑
 
 https://www.daimajiaoliu.com/daima/4ed5946659003e8
-
-#### 配置git镜像
-
-```
-GIT_BASE=http://gitlab.iefcu.cn
-NOVNC_REPO=http://gitlab.iefcu.cn/openstack/noVNC.git
-SPICE_REPO=http://gitlab.iefcu.cn/openstack/spice-html5.git
-```
 
 ## FAQ
 

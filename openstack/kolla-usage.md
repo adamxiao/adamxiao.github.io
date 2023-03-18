@@ -1,5 +1,10 @@
 # kolla部署openstack
 
+openstack service list
+=> 默认没有启用cinder
+
+cinder_target_helper
+
 ## Kolla 概述
 
 Kolla是OpenStack下用于自动化部署的一个项目，它基于docker和ansible来实现，其中docker主要负责镜像制作和容器管理，ansible主要负责环境的部署和管理。Kolla实际上分为两部分：Kolla部分提供了生产环境级别的镜像，涵盖了OpenStack用到的各个服务；Kolla-ansible部分提供了自动化的部署。最开始这两部分是在一个项目中的（即Kolla），OpenStack从O开头的版本开始被独立开来，这才有了用于构建所有服务镜像的Kolla项目，以及用于执行自动化部署的Kolla-ansible。
@@ -306,7 +311,63 @@ kolla-ansible deploy -i /home/all-in-one -vvvv
 [使用kolla快速部署openstack all-in-one环境](https://cloud.tencent.com/developer/article/1158764)
 kolla-build
 
+#### 善后工作
+
+https://www.golinuxcloud.com/deploy-openstack-using-kolla-ansible/
+
+安装openstack客户端
+```
+pip install python-openstackclient
+```
+
+获取openrc配置
+```
+kolla-ansible post-deploy  /etc/kolla/admin-openrc.sh
+source /etc/kolla/admin-openrc.sh
+```
+
+初始化cirros镜像,网络,子网,路由,安装组等配置
+```
+./init-runonce
+```
+
+## kolla启用cinder
+
+禁用宿主机上的iscsi相关服务
+```
+systemctl stop iscsid.socket iscsid.service tgt.service
+systemctl disable iscsid.socket iscsid.service tgt.service
+```
+
+=> 有问题，无法验证成功
+镜像问题centos-source-tgtd not found
+=> 使用了binary镜像替换就行了...
+
+https://docs.openstack.org/kolla-ansible/yoga/reference/storage/cinder-guide.html
+
+配置globals.yml
+```
+enable_cinder: "yes"
+enable_cinder_backend_lvm: "yes"
+#cinder_volume_group: "cinder-volumes"
+```
+
+准备卷工作
+```
+pvcreate /dev/vdb
+vgcreate cinder-volumes /dev/vdb
+
+# 或者开发阶段，使用loop文件弄
+free_device=$(losetup -f)
+fallocate -l 20G /var/lib/cinder_data.img
+losetup $free_device /var/lib/cinder_data.img
+pvcreate $free_device
+vgcreate cinder-volumes $free_device
+```
+
 ## 其他资料
+
+[kolla-ansible部署openstack yoga版本](https://blog.csdn.net/qq_43626147/article/details/124971363)
 
 [Kolla 让 OpenStack 部署更贴心](https://blog.51cto.com/u_15301988/3085246)
 

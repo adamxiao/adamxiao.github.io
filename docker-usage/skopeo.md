@@ -52,6 +52,40 @@ TODO: 能不能节省同步镜像到本地目录blob的空间？
 skopeo copy --insecure-policy --src-tls-verify=false --dest-tls-verify=false --dest-authfile /root/.docker/config.json docker://docker.io/busybox:latest docker://harbor.weiyigeek.top/devops/busybox:latest
 ```
 
+首先生成auth认证配置文件
+```
+skopeo login hub.iefcu.cn
+# 或者生成auth文件到指定路径
+skopeo login --authfile auth.json hub.iefcu.cn
+```
+
+批量同步镜像
+```
+cat <<'EOF' > skopeo-sync.yml
+registry.example.com:
+  images:
+    busybox: []
+    redis:
+      - "1.0"
+      - "2.0"
+      - "sha256:111111"
+  images-by-tag-regex:
+      nginx: ^1\.13\.[12]-alpine-perl$
+  credentials:
+      username: john
+      password: this is a secret
+  tls-verify: true
+  cert-dir: /home/john/certs
+quay.io:
+  tls-verify: false
+  images:
+    coreos/etcd:
+      - latest
+EOF
+
+skopeo sync --src yaml --dest docker skopeo-sync.yml my-registry.local.lan/repo/
+```
+
 #### 查看镜像Digest值
 
 关键字《docker command to get image digest》

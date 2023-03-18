@@ -65,6 +65,8 @@ Portals --- Authorized Access
 
 只有配置Initiators Groups才行
 
+然后不同的target配置不同的CHAP认证模式
+
 ## 系统配置备份
 
 https://zhuanlan.zhihu.com/p/481986009

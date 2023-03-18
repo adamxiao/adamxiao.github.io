@@ -165,6 +165,8 @@ git checkout -
 git checkout @{-1}
 ```
 
+* git push origin tag_name
+
 #### git project migrate
 
 关键字`git project offline migrate`

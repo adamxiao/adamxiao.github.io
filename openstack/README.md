@@ -1,5 +1,23 @@
 # openstack安装部署使用
 
+查看服务列表
+```
+openstack service list
++----------------------------------+-------------+----------------+
+| ID                               | Name        | Type           |
++----------------------------------+-------------+----------------+
+| 06864fe8aae14ca9ad3a021af20b6159 | nova_legacy | compute_legacy |
+| 3f3b8fdfc1b04d789cbafc820ba6971d | cinderv3    | volumev3       |
+| 5cb91155a74d4fe0bed0081f60376b0f | heat        | orchestration  |
+| 789c635f1dc947018aaa962537547985 | glance      | image          |
+| abe33e17f53d4656b71251cbf57cf24c | nova        | compute        |
+| df623a12fe25412b9bd29483560eb4e5 | neutron     | network        |
+| e2318f5d7a424dac9416910e6b1094f6 | placement   | placement      |
+| e6c08f0c6a84421e85c8bff4c73a1b83 | heat-cfn    | cloudformation |
+| ec383b1d33aa4d64ab55829a44b3c687 | keystone    | identity       |
++----------------------------------+-------------+----------------+
+```
+
 思路:
 * 1.devstack安装部署
 

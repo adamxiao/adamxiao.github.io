@@ -11,6 +11,20 @@ docker run -d \
     --name v2raya \
     -v /etc/v2raya:/etc/v2raya \
     hub.iefcu.cn/public/v2raya
+
+# 原始镜像为 docker.io/mzz2017/v2raya
+```
+
+不用宿主机网络
+```
+docker run -d \
+    --restart=always \
+    --name v2raya \
+    -p 2017:2017 \
+    -p 20170-20172:20170-20172 \
+    -v /etc/v2raya:/etc/v2raya \
+    hub.iefcu.cn/public/v2raya
+# 原始镜像为 docker.io/mzz2017/v2raya
 ```
 
 #### 构建镜像
