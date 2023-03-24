@@ -1,5 +1,18 @@
 # openstack安装部署使用
 
+错误：实例热迁移到主机"AUTO_SCHEDULE"失败 Details
+kolla-compute1 is not on shared storage: Shared storage live-migration requires either shared storage or boot-from-volume with no local disks. (HTTP 400) (Request-ID: req-4fbffb74-492e-485d-9f96-7fe93fd7f981) 
+=> 原来使用的是本地磁盘...
+
+```
+openstack server create \
+    --image centos7 \
+    --flavor m1.small \
+    --key-name mykey \
+    --network demo-net \
+    demo1
+```
+
 查看服务列表
 ```
 openstack service list

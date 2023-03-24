@@ -1,19 +1,251 @@
 # kolla部署openstack
 
-openstack service list
-=> 默认没有启用cinder
-
-cinder_target_helper
-
 ## Kolla 概述
 
 Kolla是OpenStack下用于自动化部署的一个项目，它基于docker和ansible来实现，其中docker主要负责镜像制作和容器管理，ansible主要负责环境的部署和管理。Kolla实际上分为两部分：Kolla部分提供了生产环境级别的镜像，涵盖了OpenStack用到的各个服务；Kolla-ansible部分提供了自动化的部署。最开始这两部分是在一个项目中的（即Kolla），OpenStack从O开头的版本开始被独立开来，这才有了用于构建所有服务镜像的Kolla项目，以及用于执行自动化部署的Kolla-ansible。
 
 原文链接：https://blog.csdn.net/Skywin88/article/details/123124499
 
+## ubuntu 20.04 server安装
+
+参考官方文档: https://docs.openstack.org/project-deploy-guide/kolla-ansible/latest/quickstart.html
+安装yoga版本, 参考: https://docs.openstack.org/project-deploy-guide/kolla-ansible/yoga/quickstart.html
+
+参考: [kolla-ansible部署openstack yoga版本](https://blog.csdn.net/qq_43626147/article/details/124971363)
+
+虚拟机安装: 双网卡, 8u16G, cpu直通
+最低配置如下:
+- 2 个网络接口（或者单个网络接口配置子接口）
+- 8GB 主内存
+- 40GB 磁盘空间
+
+#### 安装配置ubuntu系统
+
+* 下载ubuntu-20.04.4-live-server-amd64.iso
+* 选择语言English
+* 配置网卡静态ip地址
+* 选择安装磁盘sda
+* 配置主机名等
+* 配置用户名密码xxx
+* 选择安装openssh-server
+* 最后开始安装, 安装完成后重启
+
+可选优化:
+* 时区配置, 时间同步配置
+* 修改apt源为国内阿里源
+* 修改pip源为国内豆瓣源
+
+#### (可选)配置本地apt,pip等镜像仓库
+
+可选, 加速相关软件包的安装
+
+例如，配置本地nexus3搭建的镜像仓库
+
+pip镜像仓库
+```
+cat > /etc/pip.conf << EOF
+[global]
+index-url = http://docker.iefcu.cn:5565/repository/aliyun-pypi/simple
+trusted-host = docker.iefcu.cn
+EOF
+```
+
+apt镜像仓库(配置完成后需要生效apt update)
+```
+cat > /etc/apt/sources.list << EOF
+deb http://docker.iefcu.cn:5565/repository/ubuntu-cn-proxy focal main restricted
+deb http://docker.iefcu.cn:5565/repository/ubuntu-cn-proxy focal-updates main restricted
+deb http://docker.iefcu.cn:5565/repository/ubuntu-cn-proxy focal universe
+deb http://docker.iefcu.cn:5565/repository/ubuntu-cn-proxy focal-updates universe
+deb http://docker.iefcu.cn:5565/repository/ubuntu-cn-proxy focal multiverse
+deb http://docker.iefcu.cn:5565/repository/ubuntu-cn-proxy focal-updates multiverse
+deb http://docker.iefcu.cn:5565/repository/ubuntu-cn-proxy focal-backports main restricted universe multiverse
+deb http://docker.iefcu.cn:5565/repository/ubuntu-cn-proxy focal-security main restricted
+deb http://docker.iefcu.cn:5565/repository/ubuntu-cn-proxy focal-security universe
+deb http://docker.iefcu.cn:5565/repository/ubuntu-cn-proxy focal-security multiverse
+EOF
+```
+
+#### 安装docker
+
+(kolla-ansible也可以自动帮我们安装全套的运行环境，包括docker)
+
+参考官方文档安装: https://docs.docker.com/engine/install/ubuntu/
+
+#### 安装python3等依赖
+
+安装python3等依赖(参考官方文档)
+```
+apt install -y git python3-dev libffi-dev gcc libssl-dev \
+  python3-docker python3-pip
+```
+
+安装pip，安装ansible等依赖
+```
+#pip install -U pip # 可选吧, 已经使用apt安装了略低版本的pip, 可以用
+pip install 'ansible>=4,<6' # yoga版本
+```
+
+#### 安装Kolla-ansible
+
+使用pip仓库安装yoga版本
+```
+# 供github上下载kolla-ansible，yoga分支
+pip install kolla-ansible==14.0.0
+```
+
+也可以使用源码安装
+```
+git clone https://github.com/openstack/kolla-ansible -b stable/yoga
+pip install ./kolla-ansible
+```
+
+#### 配置kolla-ansible
+
+配置kolla-ansible, 就是globals.yml, passwords.yml
+```
+# 复制相关文件
+mkdir -p /etc/kolla/
+cd /usr/local/share/kolla-ansible/
+cp -r ./etc_examples/kolla/* /etc/kolla/
+cp ./ansible/inventory/* /root/
+cp ./init-runonce /root
+```
+
+修改密码, 生成密码文件
+```
+# (可选)自定义web登录密码
+sed -i -e 's/^keystone_admin_password:.*/keystone_admin_password: adamxiao/' /etc/kolla/passwords.yml
+kolla-genpwd # 随机生成其他密码配置
+```
+
+配置 /etc/kolla/globals.yml
+```
+cat > /etc/kolla/globals.yml << EOF
+---
+kolla_base_distro: "ubuntu"
+kolla_internal_vip_address: "x.x.x.x" # 浮动vip
+#docker_registry: "hub.iefcu.cn" # 可选配置使用私有docker镜像仓库
+#docker_namespace: "public"
+network_interface: "enp4s1" # 内部openstack管理网段
+neutron_external_interface: "enp4s2"
+#enable_cinder: "yes" # 启用cinder服务
+#enable_cinder_backend_lvm: "yes"
+#nova_compute_virt_type: "qemu" #使⽤虚拟机部署时，可以不开启嵌套虚拟化, 默认值为kvm  
+EOF
+```
+
+修改hosts配置, 不然后续rabbitmq连接失败, FIXME: 找一下原因
+=> 原来是kolla-ansible bootstrap-servers 会处理这个配置
+```
+# cat /etc/hosts
+# BEGIN ANSIBLE GENERATED HOSTS
+10.90.4.100 ubuntu
+# END ANSIBLE GENERATED HOSTS
+```
+
+#### 开始安装openstack
+
+```
+kolla-ansible -i /root/all-in-one bootstrap-servers # 环境安装，这一步会自动安装docker, 配置hosts
+# 前提, 需要安装依赖: kolla-ansible install-deps, 但是依赖网络，可能比较慢, 以及失败?
+
+kolla-ansible -i /root/all-in-one prechecks # 在执行部署命令之前，先检查环境是否正确
+
+kolla-ansible -i /root/all-in-one pull # 拉取所有的容器镜像
+
+kolla-ansible -i /root/all-in-one deploy # 安装部署openstack
+kolla-ansible -i /root/all-in-one deploy -vvv # -vvv参数可以查看部署命令详情
+
+kolla-ansible -i /root/all-in-one destroy --yes-i-really-really-mean-it # 遇到报错，销毁已安装的环境
+```
+
+#### (可选)后续工作
+
+https://www.golinuxcloud.com/deploy-openstack-using-kolla-ansible/
+
+安装openstack客户端
+```
+pip install python-openstackclient
+```
+
+获取openrc配置
+```
+kolla-ansible post-deploy  /etc/kolla/admin-openrc.sh
+source /etc/kolla/admin-openrc.sh
+```
+
+初始化cirros镜像,网络,子网,路由,安装组等配置
+```
+cd /usr/local/share/kolla-ansible/
+./init-runonce
+```
+
+## 多节点部署
+
+#### 节点规划
+
+计划用的是KVM创建了3台虚拟机。
+
+- 一台作为openstack的manager管理节点，上面跑了openstack的keystone身份认证和RabbitMQ、etcd等基础组件，是openstack的命根子。往后的集群扩容都要连接manager的。CPU核心要足够用，内存要足，网速还要好。存储要求不高，只要一个系统盘，100GB也就够了。
+- 一台作为计算节点，是专门运行云服务器的。计算节点的特点是cpu核心和内存要大。存储几乎没要求，云服务器的系统盘和块存储、对象存储、镜像快照存储都由另一台节点提供。
+- 一台作为存储节点，上面运行cinder、glance、swift等openstack存储组件。所以这类存储节点的特点就是磁盘大，网络快（不然虚拟机访问他的系统盘岂不是特别卡？）。
+
+硬件规划
+
+- 主机名：kolla-manager。算力：4核8GB。硬盘：200GB系统盘。网络：两个网卡都使用。IP分别是10.0.0.201和192.168.100.201
+- 主机名：kolla-compute1。算力：6核16GB。硬盘：200GB系统盘。网络：两张网卡都使用。IP分别是10.0.0.202和192.168.100.202
+- 主机名：kolla-storage。算力：2核4GB，硬盘200GB系统盘，另外添加两个250GB的额外硬盘，后面会把这两块盘合并成一个500GB的VG。网络：两张网卡都使用。（其实只用那个叫openstack的网卡就够了，再加一个不吃亏）IP分别是10.0.0.203和192.168.100.203
+
+#### 配置multinode
+
+```
+vim ~/multinode
+----------------------------------------
+# 文件开头新增这3行，自行修改密码
+manager ansible_host=10.0.0.201 ansible_user=root ansible_password=123456 ansible_python_interpreter=/usr/bin/python3
+compute1 ansible_host=10.0.0.202 ansible_user=root ansible_password=123456 ansible_python_interpreter=/usr/bin/python3
+storage1 ansible_host=10.0.0.203 ansible_user=root ansible_password=123456 ansible_python_interpreter=/usr/bin/python3
+
+# 修改这几个组，其他的保留不变
+[control] 
+manager
+
+[network]
+control
+compute1
+storage1
+
+[compute] 
+compute1
+
+[monitoring]
+manager
+
+[storage]
+storage1
+
+[deployment]
+localhost ansible_connection=local become=true
+```
+
+其实通过查看原始的multinode文件，你可以发现，kolla将你所有的节点划分成了5种类型，即control类节点、network类节点、compute类、monitoring类节点、storage类节点。
+这5个节点组是其他组的子组。
+
+比方说文件下方有很多组件，比如loadbalance、trove等，都是[xxx:children]的形式，这个意思就是自由的组合这5个组。
+加入我是生产环境的负责人，我手上有100台服务器，那么我会先计划将这100台机器分成5个类型。然后考虑openstack中哪些组件部署在哪种类型的节点上。
+
+如nova是openstack的计算组件，我想把它安装在control和compute类型的机器上，我就会写
+```
+[nova:children]
+control
+compute
+```
+
 ## 基于centos7云镜像, 安装docker，部署openstack
 
 参考: [kolla单节点部署openstack](https://www.cnblogs.com/navysummer/p/14278131.html)
+目前kolla-ansible不支持centos7,这个安装完成运行还不知道会有什么异常问题，安装是成功的
 
 hostnamectl set-hostname kolla
 
@@ -96,141 +328,42 @@ kolla-ansible deploy -i /root/all-in-one
 kolla-ansible虚拟机单节点部署OpenStack
 https://blog.csdn.net/qq_16942727/article/details/121081515
 
-## ubuntu 20.04 server安装
+## 其他资料
 
-参考官方文档: https://docs.openstack.org/project-deploy-guide/kolla-ansible/latest/quickstart.html
-安装yoga版本, 参考: https://docs.openstack.org/project-deploy-guide/kolla-ansible/yoga/quickstart.html
+#### kolla启用cinder
 
-虚拟机安装: 双网卡, 8u16G, cpu直通
-最低配置如下:
-- 2 个网络接口（或者单个网络接口配置子接口）
-- 8GB 主内存
-- 40GB 磁盘空间
-
-#### 安装docker
-
-参考官方文档安装
-装好之后做成一个模板
-
-#### 安装python3
-
-安装python3等依赖
+禁用宿主机上的iscsi相关服务
 ```
-apt install -y git python3-dev libffi-dev gcc libssl-dev \
-  python3-docker python3-pip
+systemctl stop iscsid.socket iscsid.service tgt.service
+systemctl disable iscsid.socket iscsid.service tgt.service
 ```
 
-安装pip，安装ansible
-```
-#pip install -U pip # 可选吧, 已经使用apt安装了略低版本的pip, 可以用
-pip install 'ansible>=4,<6' # yoga版本
-#pip install 'ansible<5.0' # xena版本
-```
+=> 有问题，无法验证成功
+镜像问题centos-source-tgtd not found
+=> 使用了binary镜像替换就行了...
 
-#### 安装Kolla-ansible
+https://docs.openstack.org/kolla-ansible/yoga/reference/storage/cinder-guide.html
 
+配置globals.yml
 ```
-git clone https://github.com/openstack/kolla-ansible -b stable/yoga
-# commit: 8e9ed1b47cb936525836560254c76d8284df7517 (2023-03-04)
-# 源码安装kolla-ansible
-cd kolla-ansible
-pip install .
-# 复制相关文件
-mkdir -p /etc/kolla/
-cp -r etc/kolla/* /etc/kolla/
-cp ansible/inventory/* /root/
+enable_cinder: "yes"
+enable_cinder_backend_lvm: "yes"
+#cinder_volume_group: "cinder-volumes"
 ```
 
-修改密码
+准备卷工作
 ```
-# 编辑 /etc/kolla/password
-keystone_admin_password: adamxiao
-# 生成密码
-kolla-genpwd
-```
+pvcreate /dev/vdb
+vgcreate cinder-volumes /dev/vdb
 
-#### 配置kolla
-
-配置 /etc/kolla/globals.yml
-grep  -v  '^$'  /etc/kolla/globals.yml |grep -v '^#'
-```
-kolla_base_distro: "ubuntu"
-#kolla_install_type: "source"
-kolla_internal_vip_address: "10.0.0.250"
-#openstack_release: "yoga"
-docker_registry: "hub.iefcu.cn"
-docker_namespace: "public"
-network_interface: "enp4s2" # 浮动ip?
-neutron_external_interface: "enp4s3" # 额外网络平面配置
+# 或者开发阶段，使用loop文件弄
+free_device=$(losetup -f)
+fallocate -l 20G /var/lib/cinder_data.img
+losetup $free_device /var/lib/cinder_data.img
+pvcreate $free_device
+vgcreate cinder-volumes $free_device
 ```
 
-修改hosts配置, 不然后续rabbitmq连接失败, FIXME: 找一下原因
-```
-# cat /etc/hosts
-127.0.0.1 localhost
-192.168.99.100 localhost
-192.168.99.100 kolla2
-```
-
-安装openstack
-```
-kolla-ansible deploy -i /root/all-in-one -vvv
-```
-
-zed => 卡在mariadb
-yoga => 卡在rabbitmq => 比zed多一些镜像
-xena => 卡在rabbitmq => 比zed多一些镜像
-
-#### 构建kolla容器镜像
-
-https://docs.openstack.org/kolla/latest/admin/image-building.html
-官方构建方法
-
-```
-apt install -y python3-pip
-pip install kolla
-kolla-build # 默认参数，构建所有镜像
-kolla-build nova-libvirt # 单独编译libvirt
-kolla-build -b ubuntu nova-libvirt # 单独编译libvirt, 基于ubuntu
-```
-
-其他参数
-- --template-only
-  仅仅生成Dockerfile
-
-关键字《kolla镜像本地缓存》
-
-https://www.sdnlab.com/17273.html
-
-```
-git clone https://github.com/openstack/kolla.git
-cd kolla
-# yum install python-devel # centos系列处理
-sudo apt install python3-pip
-pip install -r requirements.txt -r test-requirements.txt tox
-```
-
-以下如果没有特别说明，所有的操作都是在 Kolla 项目的目录里进行
-首先要先生成并修改配置文件
-```
-tox -e genconfig
-cp -rv etc/kolla /etc/
-```
-
-[使用 Kolla 构建 Pike 版本 OpenStack Docker 镜像](https://my.oschina.net/LastRitter/blog/1788277)
-
-生成 Dockerfile
-使用 Pike 版本的默认配置生成 source 类型的 Dockerfile：
-```
-python tools/build.py -t source --template-only --work-dir=..
-```
-
-https://www.cnblogs.com/potato-chip/p/10100667.html
-kolla-build镜像时，问题汇总
-
-[管理2000+Docker镜像，Kolla是如何做到的](https://blog.51cto.com/u_9443135/3720391)
-
-[OpenStack Kolla源码分析–Ansible ](https://blog.51cto.com/u_15127593/2749775)
 
 #### 同步kolla docker镜像
 
@@ -295,9 +428,6 @@ ubuntu-source-openvswitch-db-server:yoga
 ubuntu-source-openvswitch-vswitchd:yoga
 ```
 
-如果部署的是单节点，需要编辑/usr/share/kolla-ansible/ansible/group_vars/all.yml文件，设置enable_haproxy为no。
-enable_haproxy: "no"
-
 执行安装OpenStack的命令
 kolla-ansible deploy -i /home/all-in-one -vvvv
 => 约花费30min
@@ -311,63 +441,70 @@ kolla-ansible deploy -i /home/all-in-one -vvvv
 [使用kolla快速部署openstack all-in-one环境](https://cloud.tencent.com/developer/article/1158764)
 kolla-build
 
-#### 善后工作
 
-https://www.golinuxcloud.com/deploy-openstack-using-kolla-ansible/
+#### 构建kolla容器镜像
 
-安装openstack客户端
-```
-pip install python-openstackclient
-```
+https://docs.openstack.org/kolla/latest/admin/image-building.html
+官方构建方法
 
-获取openrc配置
 ```
-kolla-ansible post-deploy  /etc/kolla/admin-openrc.sh
-source /etc/kolla/admin-openrc.sh
-```
-
-初始化cirros镜像,网络,子网,路由,安装组等配置
-```
-./init-runonce
+apt install -y python3-pip
+pip install kolla
+kolla-build # 默认参数，构建所有镜像
+kolla-build nova-libvirt # 单独编译libvirt
+kolla-build -b ubuntu nova-libvirt # 单独编译libvirt, 基于ubuntu
 ```
 
-## kolla启用cinder
+其他参数
+- --template-only
+  仅仅生成Dockerfile
 
-禁用宿主机上的iscsi相关服务
+关键字《kolla镜像本地缓存》
+
+https://www.sdnlab.com/17273.html
+
 ```
-systemctl stop iscsid.socket iscsid.service tgt.service
-systemctl disable iscsid.socket iscsid.service tgt.service
-```
-
-=> 有问题，无法验证成功
-镜像问题centos-source-tgtd not found
-=> 使用了binary镜像替换就行了...
-
-https://docs.openstack.org/kolla-ansible/yoga/reference/storage/cinder-guide.html
-
-配置globals.yml
-```
-enable_cinder: "yes"
-enable_cinder_backend_lvm: "yes"
-#cinder_volume_group: "cinder-volumes"
+git clone https://github.com/openstack/kolla.git
+cd kolla
+# yum install python-devel # centos系列处理
+sudo apt install python3-pip
+pip install -r requirements.txt -r test-requirements.txt tox
 ```
 
-准备卷工作
+以下如果没有特别说明，所有的操作都是在 Kolla 项目的目录里进行
+首先要先生成并修改配置文件
 ```
-pvcreate /dev/vdb
-vgcreate cinder-volumes /dev/vdb
-
-# 或者开发阶段，使用loop文件弄
-free_device=$(losetup -f)
-fallocate -l 20G /var/lib/cinder_data.img
-losetup $free_device /var/lib/cinder_data.img
-pvcreate $free_device
-vgcreate cinder-volumes $free_device
+tox -e genconfig
+cp -rv etc/kolla /etc/
 ```
 
-## 其他资料
+[使用 Kolla 构建 Pike 版本 OpenStack Docker 镜像](https://my.oschina.net/LastRitter/blog/1788277)
 
-[kolla-ansible部署openstack yoga版本](https://blog.csdn.net/qq_43626147/article/details/124971363)
+生成 Dockerfile
+使用 Pike 版本的默认配置生成 source 类型的 Dockerfile：
+```
+python tools/build.py -t source --template-only --work-dir=..
+```
+
+https://www.cnblogs.com/potato-chip/p/10100667.html
+kolla-build镜像时，问题汇总
+
+[管理2000+Docker镜像，Kolla是如何做到的](https://blog.51cto.com/u_9443135/3720391)
+
+[OpenStack Kolla源码分析–Ansible ](https://blog.51cto.com/u_15127593/2749775)
+
+#### cinder配置
+
+openstack service list
+=> 默认没有启用cinder
+
+cinder_target_helper(kolla-ansible源码中定义)
+提供iscsi服务的程序，redhat是lioadm, 其他是tgtadm
+
+#### 其他
+
+[(好)kolla-ansible部署openstack yoga版本](https://blog.csdn.net/qq_43626147/article/details/124971363)
+=> 多节点部署
 
 [Kolla 让 OpenStack 部署更贴心](https://blog.51cto.com/u_15301988/3085246)
 
@@ -394,6 +531,14 @@ kolla-ansible post-deploy
 kolla-ansible deploy-containers
 
 ## FAQ
+
+#### the role 'openstack.kolla.baremetal' was not found
+
+执行bootstrap-server失败
+
+https://bugs.launchpad.net/kolla-ansible/+bug/1975734
+=> 原来是需要安装依赖 Install Ansible Galaxy requirements
+=> 执行了一个命令解决`kolla-ansible install-deps`
 
 #### ERROR: kolla_ansible has to be available in the Ansible PYTHONPATH.
 
@@ -447,9 +592,10 @@ https://bugs.launchpad.net/kolla-ansible/+bug/1855935
 ```
 root@kolla2:/home/adam# cat /etc/hosts
 127.0.0.1 localhost
-10.90.3.22 localhost
 10.90.3.22 kolla2
 ```
+
+=> kolla-ansible bootstrap-servers也会自动处理
 
 #### TASK [service-rabbitmq : nova | Ensure RabbitMQ users exist]
 
@@ -508,3 +654,29 @@ fatal: [localhost]: FAILED! => {
 #### ImportError: No module named docker
 
 没有docker模块, 安装一下
+
+#### rabbitmq : Check if all rabbit hostnames are resolvable
+
+修改/etc/hosts，配置域名解析问题
+把所有控制节点域名ip配置能通, 例如在所有控制节点，配置如下:
+```
+192.168.99.11 kolla-manager
+192.168.99.12 kolla-compute1
+192.168.99.13 kolla-storage
+```
+
+getent ahostsv4 kolla-manager
+=> 获取域名的ipv4地址?
+
+```
+TASK [rabbitmq : Check if all rabbit hostnames are resolvable] ********************************************************************************************************************************************
+ok: [manager] => (item=manager)
+failed: [compute1] (item=manager) => {"ansible_loop_var": "item", "changed": false, "cmd": ["getent", "ahostsv4", "kolla-manager"], "delta": "0:00:00.004259", "end": "2023-03-19 09:22:17.341381", "item": "manager", "msg": "non-zero return code", "rc": 2, "start": "2023-03-19 09:22:17.337122", "stderr": "", "stderr_lines": [], "stdout": "", "stdout_lines": []}
+failed: [storage1] (item=manager) => {"ansible_loop_var": "item", "changed": false, "cmd": ["getent", "ahostsv4", "kolla-manager"], "delta": "0:00:00.004073", "end": "2023-03-19 09:22:17.330757", "item": "manager", "msg": "non-zero return code", "rc": 2, "start": "2023-03-19 09:22:17.326684", "stderr": "", "stderr_lines": [], "stdout": "", "stdout_lines": []}
+failed: [manager] (item=compute1) => {"ansible_loop_var": "item", "changed": false, "cmd": ["getent", "ahostsv4", "kolla-compute1"], "delta": "0:00:00.003860", "end": "2023-03-19 09:22:17.556769", "item": "compute1", "msg": "non-zero return code", "rc": 2, "start": "2023-03-19 09:22:17.552909", "stderr": "", "stderr_lines": [], "stdout": "", "stdout_lines": []}
+failed: [storage1] (item=compute1) => {"ansible_loop_var": "item", "changed": false, "cmd": ["getent", "ahostsv4", "kolla-compute1"], "delta": "0:00:00.003279", "end": "2023-03-19 09:22:17.637459", "item": "compute1", "msg": "non-zero return code", "rc": 2, "start": "2023-03-19 09:22:17.634180", "stderr": "", "stderr_lines": [], "stdout": "", "stdout_lines": []}
+ok: [compute1] => (item=compute1)
+failed: [manager] (item=storage1) => {"ansible_loop_var": "item", "changed": false, "cmd": ["getent", "ahostsv4", "kolla-storage"], "delta": "0:00:00.003402", "end": "2023-03-19 09:22:17.911023", "item": "storage1", "msg": "non-zero return code", "rc": 2, "start": "2023-03-19 09:22:17.907621", "stderr": "", "stderr_lines": [], "stdout": "", "stdout_lines": []}
+ok: [storage1] => (item=storage1)
+failed: [compute1] (item=storage1) => {"ansible_loop_var": "item", "changed": false, "cmd": ["getent", "ahostsv4", "kolla-storage"], "delta": "0:00:00.003808", "end": "2023-03-19 09:22:17.971527", "item": "storage1", "msg": "non-zero return code", "rc": 2, "start": "2023-03-19 09:22:17.967719", "stderr": "", "stderr_lines": [], "stdout": "", "stdout_lines": []}
+```
