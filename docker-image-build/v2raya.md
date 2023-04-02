@@ -15,6 +15,29 @@ docker run -d \
 # 原始镜像为 docker.io/mzz2017/v2raya
 ```
 
+docker-compose启动
+```
+version: '3.2'
+services:
+  v2raya:
+    image: mzz2017/v2raya
+    container_name: v2raya
+    restart: always
+    user: root
+    network_mode: host
+    volumes:
+      - ./conf:/etc/v2raya
+      - /etc/localtime:/etc/localtime:ro
+    cap_add:
+      - ALL
+    privileged: true
+    logging:
+      driver: json-file
+      options:
+        max-file: '3'
+        max-size: 10m
+```
+
 不用宿主机网络
 ```
 docker run -d \
@@ -26,6 +49,17 @@ docker run -d \
     hub.iefcu.cn/public/v2raya
 # 原始镜像为 docker.io/mzz2017/v2raya
 ```
+
+#### 客户端
+
+https://xmuli.tech/posts/3feb52da/
+
+一直有使用 Mac 、 Linux、 win10 这三个系统，外加一个 ios 设备。对于 V2ray 客户端，分别选用为：
+
+- Mac： V2RayU
+- Linux： Qv2ray + v2ray-core + 浏览器插件 SwitchyOmega
+- Windows: V2RayN
+- ios: Shadowrocket 、 Kitsunebi （美区下载）
 
 #### 构建镜像
 

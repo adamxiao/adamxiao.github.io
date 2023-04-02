@@ -146,6 +146,15 @@ virsh attach-device ${DOMAIN} disk.xml --live
 </disk>
 ```
 
+添加裸设备磁盘
+```
+<disk type='block' device='disk'>
+  <driver name='qemu' type='raw' cache='none'/>
+  <source dev='/dev/nvme0n1'/>
+  <target dev='sda' bus='scsi'/>
+</disk>
+```
+
 可能遇到的错误
 * error: XML 错误：磁盘经销商超过 8 个字符
 * error: 不支持的配置：只有 ide 和 scsi 磁盘支持 wwn

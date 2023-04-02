@@ -84,6 +84,8 @@ quay.io:
 EOF
 
 skopeo sync --src yaml --dest docker skopeo-sync.yml my-registry.local.lan/repo/
+# 同步到本地http镜像仓库
+skopeo sync --src yaml --dest docker skopeo-sync.yml --dest-tls-verify=false 127.0.0.1:5000/repo/
 ```
 
 #### 查看镜像Digest值
