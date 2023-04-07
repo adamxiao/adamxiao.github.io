@@ -91,7 +91,8 @@ pip install 'ansible>=4,<6' # yoga版本
 使用pip仓库安装yoga版本
 ```
 # 供github上下载kolla-ansible，yoga分支
-pip install kolla-ansible==14.0.0
+#pip install kolla-ansible==14.0.0
+pip install 'kolla-ansible>=14,<15' # yoga版本
 ```
 
 也可以使用源码安装
@@ -329,6 +330,73 @@ kolla-ansible虚拟机单节点部署OpenStack
 https://blog.csdn.net/qq_16942727/article/details/121081515
 
 ## 其他资料
+
+#### 启用cinder-backup
+
+参考配置, 可以使用nfs, swift, ceph等作为后端存储
+```
+# Valid options are [ nfs, swift, ceph ]
+#cinder_backup_driver: "ceph"
+#cinder_backup_share: ""
+#cinder_backup_mount_options_nfs: ""
+```
+
+使用nfs作为后端存储配置示例:
+```
+cinder_backup_driver: "nfs"
+cinder_backup_share: "10.90.3.25:/mnt/pool1/openstack-backup/10.90.4.113"
+#cinder_backup_mount_options_nfs: "" # 暂不配置
+```
+
+#### kolla启用swift
+
+关键字《kolla-ansible启用 swift》
+
+[openstack对接swift对象存储](https://blog.csdn.net/networken/article/details/107405215)
+
+- 准备磁盘
+  sda为系统盘，由于启用了cinder，sdb作为cinder卷，因此额外准备3块磁盘sdc sdd sde用于swift对象存储。如果磁盘资源不足也可以使用一块盘创建3个分区。
+  3块磁盘分区格式化，并打上KOLLA_SWIFT_DATA标签，
+```
+index=0
+for d in vdc vdd vde; do
+    parted /dev/${d} -s -- mklabel gpt mkpart KOLLA_SWIFT_DATA 1 -1
+    sudo mkfs.xfs -f -L d${index} /dev/${d}1
+    (( index++ ))
+done
+```
+- 生成rings
+- 生成Object Ring
+- 生成Account Ring
+- 生成Container Ring
+- 再平衡
+
+
+[Configure Swift on OpenStack Ocata standalone with Kolla](https://blog.inkubate.io/configure-swift-on-openstack-ocata-standalone-with-kolla/)
+=> 关键是准备工作!
+
+其他swift资料?
+关键字《openstack swift部署》
+[Openstack Swift 安装部署总结](https://blog.csdn.net/ch648966459/article/details/79315643)
+https://blog.fatedier.com/2016/05/25/deploy-openstack-swift/
+
+#### kolla启用freezer
+
+配置globals.yml
+```
+enable_freezer: "yes"
+```
+
+后来发现报错`'dict object' has no attribute 'domain_name'`
+使用github的yoga版本kolla-ansible即可? => 确实是的, 估计安装pip官方高版本kolla-ansible也行
+```
+pip install 'kolla-ansible>=14,<15' # yoga版本
+```
+
+安装freezer客户端
+```
+apt install python3-freezerclient
+```
 
 #### kolla启用cinder
 

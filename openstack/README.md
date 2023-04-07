@@ -1,5 +1,11 @@
 # openstack安装部署使用
 
+## openstack架构
+
+http://www.chrisjing.com/015-OpenStack%E4%BA%91%E8%AE%A1%E7%AE%97/%E5%9F%BA%E7%A1%80-O%E7%89%88-00-%E9%83%A8%E7%BD%B2%E6%89%8B%E5%86%8C/
+
+![](../imgs/openstack-service.png)
+
 错误：实例热迁移到主机"AUTO_SCHEDULE"失败 Details
 kolla-compute1 is not on shared storage: Shared storage live-migration requires either shared storage or boot-from-volume with no local disks. (HTTP 400) (Request-ID: req-4fbffb74-492e-485d-9f96-7fe93fd7f981) 
 => 原来使用的是本地磁盘...

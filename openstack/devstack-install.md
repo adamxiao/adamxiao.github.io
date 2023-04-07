@@ -118,7 +118,7 @@ echo "stack ALL=(ALL) NOPASSWD: ALL" | sudo tee /etc/sudoers.d/stack
 sudo su - stack
 #git clone https://github.com/openstack-dev/devstack -b stable/yoga
 # 使用私有git代码
-git clone https://gitlab.iefcu.cn/xiaoyun/devstack.git -b stable/yoga
+git clone https://gitlab.iefcu.cn/openstack/devstack.git -b stable/yoga
 ```
 
 #### 配置local.conf进行安装
@@ -134,8 +134,8 @@ IMAGE_URLS="http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-disk.img"
 
 # use adam git mirror
 GIT_BASE=https://gitlab.iefcu.cn
-NOVNC_REPO=https://gitlab.iefcu.cn/xiaoyun/noVNC.git
-SPICE_REPO=https://gitlab.iefcu.cn/xiaoyun/spice-html5.git
+NOVNC_REPO=https://gitlab.iefcu.cn/openstack/noVNC.git
+SPICE_REPO=https://gitlab.iefcu.cn/openstack/spice-html5.git
 
 # Credentials
 DATABASE_PASSWORD=admin
@@ -149,9 +149,10 @@ HOST_IP="your vm ip"
 ```
 
 尝试: 由于devstack无法在localrc中配置项目名, 所有手动修改一下
+=> 最后使用nginx的rewrite模块更好`rewrite /openstack/(.*) /adam/$1 break;`
 ```
 #CINDER_REPO=${CINDER_REPO:-${GIT_BASE}/openstack/cinder.git}
-sed -i -e 's#:-${GIT_BASE}/openstack/#:-${GIT_BASE}/xiaoyun/#' stackrc
+sed -i -e 's#:-${GIT_BASE}/openstack/#:-${GIT_BASE}/adam/#' stackrc
 ```
 
 切换到files目录下，执行如下命令
@@ -347,6 +348,40 @@ VNCSERVER_PROXYCLIENT_ADDRESS=$VNCSERVER_LISTEN
 
 ## 更多资料
 
+#### 启用swift
+
+https://blog.51cto.com/u_15301988/3125269#52swift%E8%8A%82%E7%82%B9
+```
+enable_service s-proxy s-object s-container s-account
+```
+
+https://www.cnblogs.com/edisonxiang/p/5051666.html
+```
+SWIFT_HASH=66a3d6b56c1f479c8b4e70ab5c2000f5 # 干嘛用的? 还必须要填，否则会提示: ENTER A RANDOM SWIFT HASH
+SWIFT_REPLICAS=1
+```
+
+#### 启用freezer插件
+
+关键字《devstack enable freezer》
+
+https://docs.openstack.org/freezer/latest/install/devstack_plugin.html
+修改local.conf配置:
+```
+enable_plugin freezer-api https://git.openstack.org/openstack/freezer-api.git master
+enable_plugin freezer https://git.openstack.org/openstack/freezer.git master
+enable_plugin freezer-web-ui https://git.openstack.org/openstack/freezer-web-ui.git master
+export FREEZER_BACKEND='sqlalchemy' # 不使用ES作为数据库
+```
+
+或者使用本地git仓库
+```
+enable_plugin freezer-api https://gitlab.iefcu.cn/openstack/freezer-api.git stable/yoga
+enable_plugin freezer https://gitlab.iefcu.cn/openstack/freezer.git stable/yoga
+enable_plugin freezer-web-ui https://gitlab.iefcu.cn/openstack/freezer-web-ui.git stable/yoga
+export FREEZER_BACKEND='sqlalchemy' # 不使用ES作为数据库, ES部署暂时有问题...
+```
+
 #### openstack git镜像仓库
 
 根据devstack里面的stackrc配置，可以看到官方git仓库是opendev.org
@@ -376,8 +411,8 @@ SPICE_REPO=https://gitclone.com/github.com/git/spice/spice-html5.git
 - gitlab.iefcu.cn
 ```
 GIT_BASE=https://gitlab.iefcu.cn
-NOVNC_REPO=https://gitlab.iefcu.cn/xiaoyun/noVNC.git
-SPICE_REPO=https://gitlab.iefcu.cn/xiaoyun/spice-html5.git
+NOVNC_REPO=https://gitlab.iefcu.cn/openstack/noVNC.git
+SPICE_REPO=https://gitlab.iefcu.cn/openstack/spice-html5.git
 ```
   自己搭建的本地私有git镜像仓库(注意必须在组织openstack下)
   FIXME: 怎么快捷的导入所有的git仓库?
@@ -519,6 +554,43 @@ devstack@q-svc.service
 https://www.daimajiaoliu.com/daima/4ed5946659003e8
 
 ## FAQ
+
+#### Socket /var/run/openvswitch/ovnnb_db.sock not found
+
+肯定是没有清理干净残留数据...
+
+#### ln: failed to create symbolic link '/var/run/ovn/openvswitch': File exists
+
+删除残留数据? rm /var/run/ovn/openvswitch
+```
++lib/neutron_plugins/ovn_agent:install_ovn:363  sudo ln -s /var/run/openvswitch /var/run/ovn
+ln: failed to create symbolic link '/var/run/ovn/openvswitch': File exists
+```
+
+#### Unable to acquire the dpkg frontend lock (/var/lib/dpkg/lock-frontend), is another process using it?
+
+关键字《ubuntu 禁用 apt.systemd.daily install》
+
+修改apt.daily配置文件: /etc/apt/apt.conf.d/20auto-upgrades
+```
+APT::Periodic::Update-Package-Lists "0";
+APT::Periodic::Unattended-Upgrade "0";
+```
+
+禁用apt.daily服务
+```
+sudo systemctl stop apt-daily.service
+sudo systemctl disable apt-daily.service
+sudo systemctl stop apt-daily-upgrade.service
+sudo systemctl disable apt-daily-upgrade.service
+```
+
+#### ovs-vsctl: unix:/var/run/openvswitch/db.sock: database connection failed (No such file or directory)
+
+启动这个ovs服务即可? 至少有这个db.sock了!
+```
+sudo systemctl start openvswitch-switch
+```
 
 #### pass_env values cannot contain whitespace
 
