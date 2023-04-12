@@ -568,6 +568,7 @@ openstack service list
 
 cinder_target_helper(kolla-ansible源码中定义)
 提供iscsi服务的程序，redhat是lioadm, 其他是tgtadm
+=> 对应镜像问题centos-source-tgtd not found
 
 #### 其他
 

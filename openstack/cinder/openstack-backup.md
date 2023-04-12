@@ -252,6 +252,22 @@ Freezer的特性介绍
 
 openstack可以用第三方的进行备份，由于openstack是半成品，有很多第三方公司对其开发了备份工具，比如# Freezer，其实手动备份也是可以的，但备份不太好管理。
 
+关键字《openstack karbor 安装使用》
+karbor源码 => karbor资料非常少呢, 而且下载源码，发现只有rocky等版本, 没有最新版本
+```
+git clone https://git.openstack.org/openstack/karbor
+```
+看源码，应该是这个备份nova实例
+karbor/services/protection/protection_plugins/server/nova_protection_plugin.py: ProtectOperation: on_main
+=> 没有看懂是怎么备份cinder卷的...
+
+karbor/services/protection/protection_plugins/volume/cinder_protection_plugin.py: ProtectOperation: _create_backup
+=> 看看怎么备份cinder卷的, 就是调用cinder命令去备份
+
+[OpenStack Train版本新特性大全及快速安装|万字长文](https://posts.careerengine.us/p/5e0d341f36cd9f65d96a0ecc)
+https://wiki.openstack.org/wiki/Karbor
+
+[OpenStack Karbor介绍](https://www.jianshu.com/p/f43de1ccb2b7)
 
 [openstack中 虚拟机实例的备份 与 恢复](https://blog.csdn.net/weiyuanke/article/details/7639742)
 我们需要备份如下的文件：
