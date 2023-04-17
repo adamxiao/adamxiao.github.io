@@ -241,6 +241,91 @@ https://www.cnblogs.com/potato-chip/p/10196503.html
 debug = True
 => 明显这个更合理
 
+#### 尝试使用libvirt光打内存快照
+
+问题:
+- 打完内存快照后，虚拟机关机么?
+- 在一台机器上打上内存快照，实际上恢复，也是有要求的！！！例如cpu型号等...
+  现在我们恢复都没考虑这个问题，一旦设备信息变化，可能有问题!
+
+尝试对openstack虚拟机使用savevm打内存快照, 报错存储磁盘不支持快照
+```
+virsh qemu-monitor-command $DOMAIN --hmp 'savevm snap1'
+Error: Device '' is writable but does not support snapshots
+```
+
+尝试使用virsh save命令 => 可以...
+(应该就是调用migrate to file, 然后就关机了...)
+```
+virsh save $DOMAIN adam.memory --verbose
+file adam.memory
+adam.memory: Libvirt QEMU Suspend Image, version 2, XML length 72836, running
+=> 有元数据等信息, 例如xml配置
+```
+
+尝试恢复虚拟机
+```
+(nova-libvirt)[root@kolla2 ~]# virsh restore adam.memory
+Domain restored from adam.memory
+```
+
+尝试使用snapshot-create-as => 没有禁用disk快照的参数，不能只保存内存
+```
+virsh snapshot-create-as $DOMAIN livesnap1 --memspec /home/livesnap2mem,snapshot=external
+error: unsupported configuration: source for disk 'vda' is not a regular file; refusing to generate external snapshot name
+```
+
+#### libvirt快照
+
+就这两个命令
+```
+virsh help | grep snapshot
+    snapshot-create                Create a snapshot from XML
+    snapshot-create-as             Create a snapshot from a set of args
+```
+
+```
+snapshot-create-as  instance-00000001 snapshot1 "First Snapshot" --disk-only --atomic 
+     --diskspec vda,snapshot=external,file=/var/lib/libvirt/images/snap1-of-instance1-volume1-base.qcow2 
+     --diskspec  vdb,snapshot=external,file=/var/lib/libvirt/images/snap1-of-instance1-volume2-base.qcow2
+```
+
+最终调用: src/qemu/qemu_driver.c: qemuDomainSnapshotCreateXML
+  qemuDomainSnapshotCreateActiveExternal - external checkpoint or disk snapshot
+  或者 qemuDomainSnapshotCreateActiveInternal - internal checkpoint
+=> 最终内部快照包含内存, 也是libvirt调用qemu的命令savevm
+
+```
+    } else if (virDomainObjIsActive(vm)) {
+        if (flags & VIR_DOMAIN_SNAPSHOT_CREATE_DISK_ONLY ||
+            snap->def->memory == VIR_DOMAIN_SNAPSHOT_LOCATION_EXTERNAL) {
+            /* external checkpoint or disk snapshot */
+            if (qemuDomainSnapshotCreateActiveExternal(driver,
+                                                       vm, snap, flags) < 0)
+                goto endjob;
+        } else {
+            /* internal checkpoint */
+            if (qemuDomainSnapshotCreateActiveInternal(driver,
+                                                       vm, snap, flags) < 0)
+                goto endjob;
+        }
+```
+
+磁盘外部快照，最终调用qemu命令: blockdev-snapshot-sync
+  src/qemu/qemu_monitor_json.c: qemuMonitorJSONDiskSnapshot
+=> 判定qemu不支持事务的话就直接运行
+```
+    cmd = qemuMonitorJSONMakeCommandRaw(actions != NULL,
+                                        "blockdev-snapshot-sync",
+                                        "s:device", device,
+                                        "s:snapshot-file", file,
+                                        "s:format", format,
+                                        "S:mode", reuse ? "existing" : NULL,
+                                        NULL);
+```
+
+保存内存快照的内存到文件， 调用入口是? qemuDomainSaveMemory -> qemuMigrationSrcToFile
+
 #### openstack 内存快照
 
 问题:
@@ -292,7 +377,66 @@ openstack快照实现：openstack并未采用virDomainSnapshotCreateXML()来实�
 （raw 启动的虚拟机会比QCOW2 启动的虚拟机I/O 效率更高一些(25%)
 qcow2是一种当下比较主流的虚拟化磁盘格式，具有占用空间小，支持加密，支持压缩，支持快照的特点）
 
+#### 搜索资料《openstack instance memory snapshot》
+
+https://wiki.openstack.org/wiki/Fuel/External_Snapshots
+导入导出内存快照?
+
+https://blueprints.launchpad.net/nova/+spec/instance-memory-snapshot
+openstack不支持内存快照
+
+关键字《qemu内存快照内存如何保存》
+
+[qemu内存迁移格式](https://blog.csdn.net/huang987246510/article/details/103791410)
+qemu内存迁移功能基于savevm和loadvm接口实现，savevm可以保存一个运行态虚拟机所有内存和设备状态到镜像文件，loadvm可以实现从镜像状态文件读取信息，恢复虚拟机。
+
+内存镜像格式
+save命令生成的内存镜像格式由两部分组成，第一部分由libvirt写入，第二部分由qemu写入。libvirt写入的元数据，主要用于内存快照的恢复，由header，xml和cookie组成。qemu写入的部分是内存数据，包括描述内存的元数据和真正的内存数据。如下图所示：
+
+[QEMU / KVM 快照介绍](https://matianxin.github.io/2021/01/18/Openstack/QemuKvmSnapshot/)
+（4）还可以使用 “–live” 参数创建系统还原点，包括磁盘、内存和设备状态等。使用这个参数时，虚机不会被 Paused（那怎么实现的？）。其后果是增加了内存 dump 文件的大小，但是减少了系统的 downtime。该参数只能用于做外部的系统还原点（external checkpoint）。
+```
+snapshot-create-as 0000002e livesnap3  --memspec /home/s1/livesnap3mem,snapshot=external --diskspec vda,snapshot=external --live
+Domain snapshot livesnap3 created
+virsh # snapshot-dumpxml 0000002e livesnap3
+  <memory snapshot='external' file='/home/s1/livesnap3mem'/>
+  <disks>
+    <disk name='vda' snapshot='external' type='file'>
+      <driver type='qcow2'/>
+      <source file='/home/s1/testvm/testvm1.livesnap3'/>
+    </disk>
+  </disks>
+```
+
+[OpenEuler 21.09 管理虚拟机](https://docs.openeuler.org/zh/docs/21.09/docs/StratoVirt/%E8%99%9A%E6%8B%9F%E6%9C%BA%E7%AE%A1%E7%90%86.html)
+
+虚拟机内存快照是指将虚拟机的设备状态和内存信息保存在快照文件中。
+
+互斥特性
+虚拟机配置了如下设备或使用了如下特性时，不能制作和使用内存快照：
+
+- vhost-net 设备
+- vfio 直通设备
+- balloon 设备
+- 大页内存
+- mem-shared 特性
+- 配置了内存后端文件 mem-path
+
+https://zhuanlan.zhihu.com/p/353234988
+=> 使用virsh save保存内存快照
+
+云盘虚机不支持用snapshot-create-as的方式来打磁盘和内存快照，可用下面方式：
+- 1.为保证硬盘快照和内存快照制作时间点一致，先执行virsh suspend <domain>, 把虚机置为paused状态
+- 2.执行virsh save <domain> 为云盘虚机打一个内存快照存到本地，但有个问题是虚机会被关机，因此之后需要做完操作后，再把虚机启动起来
+- 3.执行rbd snap create <volumeid>为云盘虚机打一个硬盘快照
+- 4.需考虑内存快照是否要上传到ceph存储，不上传放在本地也可以
+- 5.虚机恢复：虚机先关机，1）执行rbd snap rollback回滚硬盘快照； 2）执行 virsh restore <savefile>将虚机restore成running状态
+
 #### 其他资料
+
+[QEMU快照(SNAPSHOT)机制原理及关键技术理解](https://blog.csdn.net/liu_xing_hui/article/details/32718839)
+（2）外置系统还原点（External system checkpoint），也可以成为外置内存快照：
+ 内存状态，处理器状态，设备状态和磁盘状态将被保存到一个文件中，内存和设备的状态将被保存到另外一个新的文件qcow2或QED中.
 
 https://github.com/bohai/openstack-note/blob/master/QF_vm_snapshot.md
 磁盘快照:

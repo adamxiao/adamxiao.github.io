@@ -1,5 +1,25 @@
 # 临时计划
 
+[How to increase instance memory in OpenStack](https://urclouds.com/2020/01/01/how-to-increase-instance-memory-in-openstack/)
+
+[openstack ussuri版本基于内网三台物理机集群kolla-ansible部署及与ceph 集群 集成](https://www.cnblogs.com/weiwei2021/p/14200722.html)
+
+[OpenStack集成Ceph](https://www.orchome.com/16757)
+
+https://www.cnblogs.com/MarkGuo/p/17095781.html
+安装部署ceph
+7、ceph为对接openstack做准备
+
+tar 实现增量备份
+
+TODO: 20336
+https://www.expreview.com/61416.html
+Percentage Used: 设备使用寿命百分比的估算
+```
+smartctl -a /dev/disk0
+Percentage Used:                    1%
+```
+
 #### 创建libvirtd容器，里面运行libvirtd
 
 ```
@@ -51,6 +71,9 @@ FAQ
 gnome terminal 的配置方案, 类似desert
 
 #### 同步手机照片
+
+关键字《Syncthing ubuntu使用》
+https://linux.cn/article-11793-1.html
 
 [(二十三)小众但好用: Syncthing 把手机变成同步网盘](https://zhuanlan.zhihu.com/p/121544814)
 
