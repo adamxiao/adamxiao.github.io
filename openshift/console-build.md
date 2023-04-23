@@ -39,6 +39,34 @@ oc new-project console-test
 oc new-app http://192.168.120.13/xiaoyun/kcp-console.git#test-build-release-4.9
 ```
 
+#### 修改yarn.lock的镜像仓库
+
+目前我是通过手动修改的
+```
+export YOUR_CI_REGISTRY=http://docker.iefcu.cn:5565/repository/npm-group/
+sed -i -e "s#https://registry.yarnpkg.com/#${YOUR_CI_REGISTRY}#g" yarn.lock
+sed -i -e "s#https://registry.npmjs.org/#${YOUR_CI_REGISTRY}#g" yarn.lock
+```
+
+关键字《yarn.lock resolved change registry》
+
+https://stackoverflow.com/questions/48258087/how-to-use-different-yarn-registry-regardless-of-registry-in-the-yarn-lock-file
+=> 待尝试这个方法 => 不行
+```
+sed -i -e "/resolved:* .*$/d" yarn.lock
+yarn config set registry <YOUR_REGISTRY>
+yarn install
+```
+
+[The Ultimate Guide to yarn.lock Lockfiles](https://www.arahansen.com/the-ultimate-guide-to-yarn-lock-lockfiles/)
+=> 了解yarn.lock文件使用
+
+https://www.npmjs.com/package/swap-lock-registry
+=> 还有人写了一个工具修改yarn.lock的registry地址...
+```
+swap-lock-registry -u https://registry.npmjs.com [lock-files...]
+```
+
 ## 从二进制手动构建镜像
 
 console镜像主要包括两个程序：
@@ -141,3 +169,53 @@ docker run -it --name node -v $PWD:/opt/app-root/src -w /opt/app-root/src hub.ie
 
 发现官网另外一个项目对console项目做的离线包处理。
 ![](../imgs/2022-03-02-09-38-37.png)
+
+## FAQ
+
+#### yarn run build exit 1
+
+=> 最后发现是因为有两个未使用的变量导致的, 去除掉即可，是某人最近引入的
+
+关键字《yarn ts-node exit 1》
+
+```
+    [34] ./node_modules/monaco-editor/esm/vs/editor/editor.worker.js 1.07 KiB {0} [built]
+        + 23 hidden modules
+error Command failed with exit code 1.
+info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.
+error Command failed with exit code 1.
+info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.
+```
+
+猜测:
+- 可能是docker run没有privilage权限啦? 以前不需要，现在需要了?
+
+思路:
+- strace看看进程怎么退出-1了?
+
+
+#### yarn run build编译内存不足
+
+发现8g内存不够，居然内存不足，编译失败
+```
+css-loader-parser: postcss.plugin was deprecated. Migration guide:
+https://evilmartians.com/chronicles/postcss-8-plugin-migration
+Killed
+error Command failed with exit code 137.
+info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.
+error Command failed with exit code 137.
+info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.
+root@fa0b2b80ba6f:/opt/app-root/src/frontend# Error: write EPIPE
+```
+
+使用free定时监控，发现内存真的消耗完了
+```
+Fri Apr 21 08:47:33 UTC 2023
+              total        used        free      shared  buff/cache   available
+Mem:           7629        6871         500          23         256          30
+Swap:             0           0           0
+Fri Apr 21 08:47:34 UTC 2023
+-bash: fork: Cannot allocate memory
+
+while true ; do free -m ;date;sleep 1; done
+```

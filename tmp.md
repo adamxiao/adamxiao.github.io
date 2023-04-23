@@ -125,6 +125,8 @@ find -mtime -30 -name "*.md"
 find -mtime +30 -name "*.md"
 #查找 30~60天内修改的文件
 find -mtime +30 -mtime -60 -name "*.md"
+# 查找最近180分钟修改的当前目录下的.php文件
+find . -name '*.php' -mmin -180
 ```
 
 #### shell 并行运行工具
@@ -234,6 +236,27 @@ https://blog.51cto.com/mingongge/5182870
 
 https://www.cnblogs.com/ggjucheng/archive/2012/01/14/2322659.html
 tcpdump -r /tmp/adam.pcap -n arp net 10.90.3.67
+
+[(好)Using tcpdump on the command line](https://docs.netgate.com/pfsense/en/latest/diagnostics/packetcapture/tcpdump.html)
+https://danielmiessler.com/study/tcpdump/
+
+```
+https://clouddocs.f5.com/training/community/adc/html/class4/module1/lab02.html
+Host Filters
+tcpdump host 192.168.2.5 This will filter the packet capture to only gather packets going to or coming from the host 192.168.2.5.
+tcpdump src host 192.168.2.5 This will filter the packet capture to only gather packets coming from 192.168.2.5.
+tcpdump dst host 192.168.2.5 This will filter the packet capture to only gather packets going to 192.168.2.5.
+Port Filters
+tcpdump port 443 This will filter the packet capture to only gather packets with a source or destination of port 443.
+tcpdump src port 1055 This will capture traffic being sourced from port 1055.
+tcpdump dst port 443 This will capture traffic destined for port 443.
+```
+
+https://www.xmodulo.com/filter-split-merge-pcap-linux.html
+```
+editcap -A '2023-04-19 12:02:35' -B '2023-04-19 12:02:45' adam.pcap new.pcap
+editcap -A '2023-04-19 16:01:50' -B '2023-04-19 16:02:00' new-adam.pcap new-new.pcap
+```
 
 #### xfs相关
 
