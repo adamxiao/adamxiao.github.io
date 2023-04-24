@@ -102,13 +102,13 @@ export volume_id=aa00b686-b23c-4751-86de-f6991be36995
 ./uniqb-cinder-cli.py delete -i $volume_id
 ./uniqb-cinder-cli.py delete -i $volume_id -n vol2
 curl -H "X-Auth-Token: ${token}" -X DELETE \
-  http://${cinder_api_host}:8776/v3/${project_id}/volumes/${volume_id}
+  http://${cinder_api_host}:8776/v3/${project}/volumes/${volume_id}
 ```
 
 获取cinder服务
 ```
 curl -H "X-Auth-Token: ${token}" -X GET \
-  http://${cinder_api_host}:8776/v3/{project}/os-services
+  http://${cinder_api_host}:8776/v3/${project}/os-services
 ```
 
 ## 卷挂载流程
@@ -135,7 +135,7 @@ ConfigParser.NoSectionError: No section: 'vol'
 
 对应rest接口是
 ```
-/v3/{project_id}/volumes/{volume_id}/action
+/v3/{project}/volumes/{volume_id}/action
 Initialize volume attachment
 
 curl -v -H "Content-Type: application/json" -H "X-Auth-Token: ${token}" \
