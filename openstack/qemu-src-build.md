@@ -91,6 +91,9 @@ index 0056b52..3c5a744 100644
 ```
 ../configure --enable-kvm --target-list=x86_64-softmmu --enable-linux-aio \
 --enable-debug --enable-trace-backends=log
+
+../configure --enable-kvm --target-list=x86_64-softmmu --enable-linux-aio \
+--enable-debug --enable-trace-backends=log --firmwarepath=/usr/share/qemu-kvm/
 ```
 
 手动运行qemu测试
@@ -101,7 +104,40 @@ index 0056b52..3c5a744 100644
 ./qemu-system-x86_64 -m 1000 -smp 2,sockets=1,cores=2,threads=1 \
   -machine pc-i440fx-4.1,accel=kvm,usb=off,dump-guest-core=off \
   -display vnc=0.0.0.0:1 \
-  -drive file=/home/xy/centos-ksvd2020.qcow2,if=none,id=drive-virtio0,cache=none -device virtio-blk-pci,drive=drive-virtio0,id=virtio0,bus=pci.0,addr=0xa,bootindex=100,serial=8023543499286-0
+  -drive file=/home/kylin-ksvd/centos-ksvd2020.qcow2,if=none,id=drive-virtio0,cache=none -device virtio-blk-pci,drive=drive-virtio0,id=virtio0,bus=pci.0,addr=0xa,bootindex=100,serial=8023543499286-0
+```
+
+## centos7环境处理
+
+缺少依赖
+```
+ERROR: glib-2.40 gthread-2.0 is required to compile QEMU
+ERROR: zlib check failed
+       Make sure to have the zlib libs and headers installed.
+ERROR: pixman >= 0.21.8 not present.
+       Please install the pixman devel package.
+ERROR: User requested feature linux AIO
+       configure was not able to find it.
+       Install libaio devel
+```
+
+安装依赖
+```
+yum install -y glib2-devel zlib-devel pixman-devel libaio-devel
+```
+
+## FAQ
+
+#### qemu: could not load PC BIOS 'bios-256k.bin'
+
+谷歌解决
+https://techglimpse.com/qemu-system-x86-command-error-solution/
+```
+ls -l /usr/share/qemu/bios.bin
+find /usr -name bios.bin
+使用qemu的时候，加一个-L即可
+或者对bios.bin做一个软链接
+或者编译configure的时候加上参数, --firmwarepath=/usr/share/qemu-kvm/
 ```
 
 ## 参考资料

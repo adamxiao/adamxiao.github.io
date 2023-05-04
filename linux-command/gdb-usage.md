@@ -57,3 +57,11 @@ https://blog.csdn.net/counsellor/article/details/100034080
 display /20i $pc
 ```
 
+
+#### 其他
+
+查看堆栈
+```
+bt full
+thread apply all bt full
+```

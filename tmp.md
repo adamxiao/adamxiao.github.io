@@ -2,17 +2,6 @@
 
 [How to increase instance memory in OpenStack](https://urclouds.com/2020/01/01/how-to-increase-instance-memory-in-openstack/)
 
-[openstack ussuri版本基于内网三台物理机集群kolla-ansible部署及与ceph 集群 集成](https://www.cnblogs.com/weiwei2021/p/14200722.html)
-
-[OpenStack集成Ceph](https://www.orchome.com/16757)
-
-https://www.cnblogs.com/MarkGuo/p/17095781.html
-安装部署ceph
-7、ceph为对接openstack做准备
-
-tar 实现增量备份
-
-TODO: 20336
 https://www.expreview.com/61416.html
 Percentage Used: 设备使用寿命百分比的估算
 ```

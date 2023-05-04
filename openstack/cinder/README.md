@@ -188,6 +188,82 @@ openstack-nova-volume以active/passive模式运行
 
 总而言之，cinder-volume不支持Active/Active HA模式是Cinder的一个重大缺陷。
 
+显然volume数据卷资源也需要处理并发访问的冲突问题，比如防止删除一个volume时，另一个线程正在基于该volume创建快照，或者同时有两个线程同时执行挂载操作等。cinder-volume也是使用锁机制实现资源的并发访问，volume的删除、挂载、卸载等操作都会对volume加锁。
+
+cinder/volume/manager.py: delete_volume
+```
+    @clean_volume_locks
+    @coordination.synchronized('{volume.id}-delete_volume')
+    @objects.Volume.set_workers
+    def delete_volume(self,
+                      context: context.RequestContext,
+                      volume: objects.volume.Volume,
+                      unmanage_only=False,
+                      cascade=False) -> Optional[bool]:
+        """Deletes and unexports volume.
+
+        1. Delete a volume(normal case)
+           Delete a volume and update quotas.
+
+        2. Delete a migration volume
+           If deleting the volume in a migration, we want to skip
+           quotas but we need database updates for the volume.
+
+        3. Delete a temp volume for backup
+           If deleting the temp volume for backup, we want to skip
+           quotas but we need database updates for the volume.
+      """
+```
+
+cinder/coordination.py
+=> 这里有分布式锁的wrapper代码
+其实只调用了tzoo的几个api
+- coordinator.get_lock(lock_name)
+- coordinator.remove_lock(glob_name)
+- 还有start和stop
+
+[(好)Tooz锁(Lock)](https://xiaomu-li.cn/2021/08/05/Openstack-Tooz/#%E9%94%81lock)
+
+文件驱动则是
+```
+fasteners.InterProcessLock(path)
+            gotten = self._lock.acquire(
+                blocking=blocking,
+                # Since the barrier waiting may have
+                # taken a long time, we have to use
+                # the leftover (and not the original).
+                timeout=watch.leftover(return_none=True))
+=> 看源码是使用fcntl.lockf
+class _FcntlLock(_InterProcessLock):
+    """Interprocess lock implementation that works on posix systems."""
+
+    def trylock(self):
+        fcntl.lockf(self.lockfile, fcntl.LOCK_EX | fcntl.LOCK_NB)
+
+    def unlock(self):
+        fcntl.lockf(self.lockfile, fcntl.LOCK_UN)
+```
+
+[tooz lock openstack官方文档](https://docs.openstack.org/tooz/latest/user/tutorial/lock.html)
+
+https://docs.openstack.org/tooz/latest/reference/index.html#file
+文件锁配置方法:
+```
+file://DIRECTORY[?timeout=TIMEOUT]
+```
+
+异常场景:
+- 加锁前，共享存储异常
+  没有问题，大不了加锁失败
+- 加锁后, 共享存储异常
+  也没有问题，其他程序无法获取锁
+  => 就是最后自己无法解锁了
+- 解锁中，共享存储异常
+  => 无法解锁
+
+唯一的缺点就是创建文件不能保证是原子操作!
+=> 提前创建好文件，使用大锁? 至少是需要基于卷的锁...
+=> 但是我们的上层其实也有锁，关系不是很大， 例如调用者也锁定了卷
 
 [OpenStack 高可用和灾备解决方案完整操作手册](https://toutiao.io/posts/clheol/preview)
 
