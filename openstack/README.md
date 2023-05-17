@@ -37,6 +37,25 @@ openstack service list
 +----------------------------------+-------------+----------------+
 ```
 
+#### xxx
+
+[OpenStack Nova 架构及源码分析](https://jckling.github.io/2021/05/23/OpenStack/OpenStack%20Nova/)
+- nova 和其他组件之间的交互使用 HTTP 请求
+- 内部组件之间使用 oslo_messaging 库实现 RPC 调用，这里还涉及消息队列 RabbitMQ ，遵循 AMQP 协议
+- 大部分 nova 组件都可以运行在多个服务器上，然后使用一个管理器监听 RPC 消息
+- 而 nova-compute 是运行在计算主机上的单进程，用于管理计算资源
+- nova 内部组件共享本地数据库，通过对象层访问，确保兼容性和安全性
+  nova-compute 访问数据库由 nova-conductor 代理
+
+
+https://developer.aliyun.com/article/237378
+
+OpenStack中的RESTful API开发框架
+OpenStack 早期的核心项目(EG. Keystone/Nova/Glance/Neutron)使用了由几个模块组合出来的一个框架： Paste + PasteDeploy + Routes + WebOb 。这些模块分别负责了应用的 WSGI 化、URL 路由和请求处理等功能。但是这种框架存在着较为复杂的弊端，所以现在 Openstack 社区的新项目已经开始使用新的 Web 框架 Pecan。
+
+Pecan 是一个基于对象路由的框架，即灵活又简单。Pecan 主要实现了 URL 路由功能，支持 RESTful API 。Pecan 没有实现模板、session 管理、 ORM 等功能，但是这些功能可以通过其他的模块来实现。对于 OpenStack 来说，Pecan 是一个很好的选择，因为 OpenStack 项目中统一使用 sqlalchemy 来实现ORM，API的实现也不需要模板功能，安全控制则基于 Keystone 体系。使用 Pecan 来开发 REST 服务，代码量很少，代码结构也清晰。
+
+
 思路:
 * 1.devstack安装部署
 

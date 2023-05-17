@@ -34,6 +34,16 @@ openstack volume create --image c0a27c4d-151f-484a-937c-dd35d4d3cefa \
   --size 8 --availability-zone nova my-new-volume
 ```
 
+基于卷克隆卷
+```
+openstack volume create --source xxx vol-clone
+```
+
+基于卷快照克隆卷
+```
+openstack volume create --snapshot xxx vol-clone
+```
+
 删除卷
 ```
 openstack volume delete my-new-volume

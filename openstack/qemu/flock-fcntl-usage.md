@@ -2,6 +2,14 @@
 
 关键字《flock 获取锁状态》
 
+## 问题
+
+```
+libvirt: QEMU Driver error : 内部错误：qemu unexpectedly closed the monitor: qemu-kvm: -realtime mlock=off: warning: '-realtime mlock=...' is deprecated, please use '-overcommit mem-lock=...' instead
+2023-05-06T01:39:28.882339Z qemu-kvm: -drive file=/home/kylin-ksvd/ISO/ZStack-Cloud-x86_64-DVD-4.2.2-c76.iso,format=raw,if=none,id=drive-ide0-0-0,readonly=on: Failed to get exclusive lock
+Is another process using the image [/home/kylin-ksvd/ISO/ZStack-Cloud-x86_64-DVD-4.2.2-c76.iso]?
+```
+
 ## 共享存储flock
 
 [flock v.s. fcntl](https://www.jianshu.com/p/a4ea27c6ed1f)
@@ -225,10 +233,10 @@ flock和fcntl在内核中都用`struct file_lock`实现。其主要差别就在�
   通过其中一个加锁，通过另一个无法解锁，并且在前一个解锁前也无法上锁。测试程序如程序三：
 
 ```
-#include stdio.h>
-#include unistd.h>
-#include stdlib.h>
-#include sys/file.h>
+#include<stdio.h>
+#include<unistd.h>
+#include<stdlib.h>
+#include<sys/file.h>
 int main (int argc, char ** argv)
 {
     int ret;
@@ -262,8 +270,7 @@ get lock2, ret: -1
 #### ocfs2不支持fcntl锁
 
 关键字《ocfs2不支持fcntl锁》
-
-https://www.jianshu.com/p/643cbd96a00c
+=> 确实不支持
 
 ## 两种锁的关系
 
