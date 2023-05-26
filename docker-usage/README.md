@@ -2,6 +2,12 @@
 
 未分类零散知识点
 
+设置容器的自动重启策略
+```
+docker container update --restart=always ksvd-MStorage
+docker container update --restart=no ksvd-MStorage
+```
+
 将一些镜像方法记录下来
 
 java mvn项目编译方法 ![](../asserts/mvn-settings.xml)

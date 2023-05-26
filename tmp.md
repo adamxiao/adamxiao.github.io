@@ -1,5 +1,49 @@
 # 临时计划
 
+```
+enable_ironic: "yes"
+ronic_dnsmasq_interface: "eth1"
+ironic_cleaning_network: "enp4s3"
+ironic_dnsmasq_dhcp_ranges:
+  - range: "192.168.83.100,192.168.83.110"
+    routers: "192.168.83.192"
+ironic_dnsmasq_boot_file: pxelinux.0
+ironic_inspector_kernel_cmdline_extras: ['ipa-lldp-timeout=90.0', 'ipa-collect-lldp=1']
+ironic_http_port: "8089"
+```
+
+[虚拟机支持BMC IPMi](http://www.chenshake.com/the-virtual-machine-supports-bmc-ipmi-with-the-support-of-the/)
+最近打算搞裸机测试，如果用虚拟机来做裸机测试，最大的一个难点就是如何模拟IPMI。
+OpenStack经常都是项目开发过程中，解决了很多现实的问题，专门开发了一个IPMI模拟工具。
+```
+yum -y install python3-pip python3-devel gcc libvirt-devel ipmitool
+pip3 install --upgrade pip
+pip3 install virtualbmc
+```
+
+网络虚拟化不支持tftp协议
+丢弃源mac地址为xxx的包, 阻止该死的外部dhcp服务器
+```
+ovs-ofctl add-flow mdvs2 "priority=100,dl_src=30:85:a9:a3:b7:37 actions=drop"
+```
+
+关键字《etcd使用grpc协议》
+
+[学习etcd的消息协议gRPC一点随想](https://yemilice.com/2021/04/06/etcd%E7%9A%84%E6%B6%88%E6%81%AF%E5%8D%8F%E8%AE%AE-grpc%E5%AD%A6%E4%B9%A0%E9%9A%8F%E6%83%B3/)
+
+etcd之间使用了grpc协议(基于http/2)
+
+[从 HTTP 到 gRPC：APISIX 中 etcd 操作的迁移之路](https://www.apiseven.com/blog/migrate-etcd-operation-from-http-to-grpc-in-apisix)
+
+[将你的grpc服务注册到etcd中](https://zhuanlan.zhihu.com/p/450777806)
+
+关键字《ip over ip tunnel》
+[揭秘 IPIP 隧道](https://morven.life/posts/networking-3-ipip/)
+
+[一文读懂 HTTP/2 及 HTTP/3 特性](https://blog.fundebug.com/2019/03/07/understand-http2-and-http3/)
+
+[探索 OpenStack 之（9）：深入块存储服务Cinder （功能篇）](https://developer.aliyun.com/article/378435)
+
 [How to increase instance memory in OpenStack](https://urclouds.com/2020/01/01/how-to-increase-instance-memory-in-openstack/)
 
 https://www.expreview.com/61416.html

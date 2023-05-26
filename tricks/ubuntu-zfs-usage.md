@@ -12,6 +12,20 @@ zpool list
 
 zpool import -N -f 'boot-pool'
 
+[ZFS on Ubuntu](https://zhouyuqian.com/2021/04/02/zfs/)
+
+查看存储池列表
+```
+zfs list
+```
+
+查看存储池的状态信息
+```
+zpool status data1
+```
+
+显示 ZFS 存储池命令历史记录 `zpool history`
+
 ## FAQ
 
 #### cannot import 'boot-pool': one or more devices is read only
