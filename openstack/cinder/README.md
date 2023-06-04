@@ -68,6 +68,15 @@ openstack volume type create --property volume_backend_name=huawei huawei
 获取镜像列表
 openstack image list
 
+#### cinder local-attach
+
+安装cinder额外组件，扩展cinder命令
+https://github.com/openstack/python-brick-cinderclient-ext.git
+
+```
+cinder local-attach {vol-id}
+```
+
 ## cinder rest api
 
 cinder官方api文档: https://docs.openstack.org/api-ref/block-storage/v3/index.html
