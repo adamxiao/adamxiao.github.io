@@ -25,7 +25,20 @@ pip3 install virtualbmc
 丢弃源mac地址为xxx的包, 阻止该死的外部dhcp服务器
 ```
 ovs-ofctl add-flow mdvs2 "priority=100,dl_src=30:85:a9:a3:b7:37 actions=drop"
+ovs-ofctl add-flow mdvs2 "table=5,priority=100,dl_src=30:85:a9:a3:b7:37 actions=drop"
+ovs-ofctl add-flow mdvs2 "table=5,priority=100,dl_src=6c:b3:11:33:da:df actions=drop"
+ovs-ofctl add-flow mdvs2 "table=5,priority=99,udp,src_port=67 actions=drop" => TODO: test
+ovs-ofctl add-flow mdvs2 "priority=100,dl_src=8c:2a:8e:84:64:35 actions=drop"
 ```
+
+Cobbler 介绍
+Cobbler 是一个 Linux 服务器安装的服务，可以通过网络启动 (PXE) 的方式来快速安装、重装物理服务器和虚拟机，同时还可以管理 DHCP，DNS 等。
+
+Cobbler 可以使用命令行方式管理，也提供了基于 Web 的界面管理工具 (cobbler-web)，还提供了 API 接口，可以方便二次开发使用。
+
+Cobbler 是较早前的 kickstart 的升级版，优点是比较容易配置，还自带 web 界面比较易于管理。
+
+Cobbler 内置了一个轻量级配置管理系统，但它也支持和其它配置管理系统集成，如 Puppet，暂时不支持 SaltStack。
 
 关键字《etcd使用grpc协议》
 

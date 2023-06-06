@@ -245,6 +245,9 @@ qemu-img convert -f qcow2 -O raw debian10.img /dev/sda
 
 ## devstack 安装使用ironic
 
+关键字《devstack ironic plugin》
+[ironic官方文档](https://docs.openstack.org/ironic/latest/contributor/dev-quickstart.html#deploying-ironic-with-devstack)
+
 ```
 # Reclone each time
 RECLONE=no
