@@ -65,6 +65,7 @@ devstack部署ironic, 使用vm模拟裸金属服务器
 关键字《kolla-ansible enable ironic》《kolla-ansible 启用 ironic》
 
 https://docs.openstack.org/kolla-ansible/latest/reference/bare-metal/ironic-guide.html
+https://docs.openstack.org/kolla-ansible/rocky/reference/ironic-guide.html
 
 #### 添加节点
 

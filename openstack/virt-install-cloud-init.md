@@ -161,3 +161,26 @@ virt-install --name debian \
 
 [Launch an instance using ISO image](https://docs.openstack.org/nova/rocky/user/launch-instance-using-ISO-image.html)
 
+
+### diskimage-builder构建镜像
+
+关键字《diskimage-builder 用法》
+
+https://davycloud.com/post/using-diskimage-builder-to-build-image/
+
+安装diskimage-builder
+```
+pip install diskimage-builder
+# 大部分的镜像格式需要用到 qemu-img 工具，得额外安装一下：
+yum install qemu-img
+apt install qemu-utils
+```
+
+快速使用
+```
+一个虚机镜像至少需要指定 2 个 elements，例如：
+disk-image-create  centos7 vm
+```
+
+https://xionchen.github.io/2016/10/01/dib-introduction/
+dib的安装方式有两种:pip安装和源码安装. 如果不需要对代码进行改变和定制的话可以直接进行源码安装,否则的话推荐使用源码安装

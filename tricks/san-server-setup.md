@@ -78,6 +78,12 @@ exit
 
 #### 客户端关联使用
 
+安装软件包
+```
+$rpm -qf /usr/sbin/iscsiadm
+iscsi-initiator-utils
+```
+
 首先修改客户端的iqn, 跟上面的iqn一致
 ```bash
 sed -i -e 's/:\w\+$/:sanclient1/' /etc/iscsi/initiatorname.iscsi
@@ -87,7 +93,10 @@ cat /etc/iscsi/initiatorname.iscsi
 然后关联使用
 ```bash
 iscsiadm -m discovery -t st -p 10.90.3.28
+10.90.3.28:3260,1 iqn.2005-10.org.freenas.ctl:ubuntu1
 iscsiadm -m node -L all
+Logging in to [iface: default, target: iqn.2005-10.org.freenas.ctl:ubuntu1, portal: 10.90.3.28,3260] (multiple)
+Login to [iface: default, target: iqn.2005-10.org.freenas.ctl:ubuntu1, portal: 10.90.3.28,3260] successful.
 ```
 
 客户端需要重启iscsid, 让修改initiatorname.iscsi生效
@@ -137,6 +146,26 @@ fc为fcsan
 [9:0:0:0]    disk    iqn.2002-10.com.infortrend:raid.uid579524.201,t,0x1  /dev/sdi   3600d02310008d7c462bd594015b44935   214GB
 [9:0:0:1]    disk    iqn.2002-10.com.infortrend:raid.uid579524.201,t,0x1  /dev/sdj   3600d02310008d7c45e58417a7554715c   214GB
 [9:0:0:7]    enclosu iqn.2002-10.com.infortrend:raid.uid579524.201,t,0x1  -          -       -
+```
+
+## ubuntu使用ipsan存储服务
+
+#### ubuntu客户端使用
+
+安装工具包
+```
+sudo apt install open-iscsi
+```
+
+然后关联使用
+```bash
+iscsiadm -m discovery -t st -p 10.90.3.25
+iscsiadm -m node -L all
+```
+
+注销所有sanserver的登录
+```
+iscsiadm -m node -U all
 ```
 
 ## 相关资料

@@ -18,6 +18,9 @@ https://posts.careerengine.us/p/5dd4b21fb1bc2b756d694c16
 openstack server create --flavor m1.tiny --image cirros --nic net-id=f7e02e069858447397c5e980c55c4f94 --security-group bc02ec6c-370b-4f16-92cb-4c65d0b272ff --key-name key wellqin01
 
 # 其中flavor类型模板，image镜像，选的是cirros镜像， net-id是网络id，-security-group后面是指定的安全组id，--key-name是创建的秘钥对名称key，wellqin01是实例名称
+
+openstack image create --disk-format qcow2 --container-format bare --public \
+            --property os_type=linux --file ./cirros-0.3.4-x86_64-disk.img cirros
 ```
 
 检查实例的状态和登录实例:

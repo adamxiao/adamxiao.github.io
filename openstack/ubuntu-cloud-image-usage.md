@@ -36,6 +36,8 @@ https://docs.openstack.org/image-guide/obtain-images.html
 - ubuntu-22.04-server-cloudimg-arm64.img (release-20230518)
   => 有cloudinit可以设置密码, vnc也能用
 
+- ubuntu-18.04-server-cloudimg-amd64.img (release-20230525) => ok
+
 参考google cloud， 看使用ubuntu 22.04 server arm64版本怎么样?
 https://cloud.google.com/compute/docs/images/os-details?hl=zh-cn#general-info
 

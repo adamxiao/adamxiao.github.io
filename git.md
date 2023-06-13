@@ -180,6 +180,15 @@ https://gitenterprise.me/2016/03/30/how-to-migrate-a-git-repository/
   `git push --mirror git@github.myorg/myrepo.git`
 * Step 4 – Import into GerritHub.io (Optional)
 
+或者clone和push, 这样只能迁移代码.
+```
+git clone xxx
+git branch -a  | grep remote | awk '{print $1}' |sed -e 's#remotes/origin/##'  | grep -v HEAD |xargs -I % git co %
+git remote add new xxx
+git push -u new --all
+git push -u new --tags
+```
+
 ## ~/.gitconfig example
 
 ```

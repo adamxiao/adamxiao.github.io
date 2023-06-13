@@ -446,6 +446,18 @@ SPICE_REPO=https://gitlab.iefcu.cn/openstack/spice-html5.git
 * ENABLED_SERVICES 计算节点只启用的服务?
   ENABLED_SERVICES=n-cpu,q-agt,c-vol,placement-client
 
+https://gist.github.com/pajayrao/af864f618b0dd78e7244f79009fd7dd7
+* ADMIN_PASSWORD -> Admin Password
+* DATABASE_PASSWORD -> Database Password
+* RABBIT_PASSWORD -> Password for rabbit queue
+* SERVICE_PASSWORD -> Password for other services
+* HOST_IP -> Controller node IP
+* FLAT_INTERFACE -> Interface for bridge
+* FIXED_RANGE -> Fixed IP range for assignment
+* FIXED_NETWORK_SIZE -> Size of the FIXED IP range
+* FLOATING_RANGE -> External IP range for assignment
+* MULTI_HOST -> 1 # for multinode
+
 #### 网络配置
 
 配置网络
@@ -553,7 +565,111 @@ devstack@q-svc.service
 
 https://www.daimajiaoliu.com/daima/4ed5946659003e8
 
+#### 使用kvm虚拟机安装devstack
+
+准备一个ubuntu cloud镜像: ubuntu-20.04-server-cloudimg-amd64.img (例如release-0506)
+
+配置cloud init配置: ubuntu-devstack.yml
+=> 配置了用户; apt mirror; pip mirror;等等
+```
+#cloud-config
+apt:
+  primary:
+    - arches: [default]
+      uri: http://docker.iefcu.cn:5565/repository/ubuntu-cn-proxy
+hostname: devstack
+timezone: Asia/Shanghai
+ssh_pwauth: False
+
+write_files:
+  - path: /etc/pip.conf
+    permissions: '0755'
+    content: |
+      [global]
+      index-url = http://docker.iefcu.cn:5565/repository/aliyun-pypi/simple
+      trusted-host = docker.iefcu.cn
+
+#runcmd:
+#  - echo 10.90.3.38 docker.iefcu.cn >> /etc/hosts
+
+users:
+  - name: adam
+    sudo: ["ALL=(ALL) NOPASSWD:ALL"]
+    shell: /bin/bash
+    plain_text_passwd: ksvd2020
+    lock_passwd: false
+  - name: stack
+    homedir: /opt/stack
+    ssh_authorized_keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC5c83qpURHtdTE01HbIstsIQ4LHtVK6NFMVXrEnxcXvYccNaKfhuCU/7gh3f6ZLNd/osOrsL2ab89mzmBidI4KHlpvD+kOWf+VYfw4fhA4kSGb9wKdp0jiFY2MVBq4aWlT5u5pMnWNLQXyqNWmsV02qPrmKelQ5SroMP+OElrURFHzC8Qt2SyxBbMy+T1u5P7SlBzx3riYhHIwPjUZ1qf0YPto8X0yab3bUQmBXocIGetzn+tKe3oO8TRVgt8xoghHmK34j6mPuoUXp162BcCnai71ChXrBThZ/fC+a/JFaNyHXk6Q77JNNi16Fh+AsFg88cOqGAy5OVL7Oa0GTLDLGU697qY96q9W+jsWHMv5uT4a9gRFzHbz5OxFxNaVFe9ShMsDqjendSjL/ACudknQpHEHRseBptzkhbsL+b8vDOJSiHyjzhUrg4FPvU8qBMC1PK6lvbbCdUK1UbWBtSkqIp/a8WvjQF3iZcdwbkD1L12J5m1sq1Aw3/p8K3lrWjU= xiaoyun@KSVDI-VDI-02bm
+    sudo: ["ALL=(ALL) NOPASSWD:ALL"]
+    shell: /bin/bash
+```
+
+本机简单测试:
+```
+rm -f ubuntu-devstack.iso
+cloud-localds ubuntu-devstack.iso ubuntu-devstack.yml
+qemu-img create -f qcow2 -b /home/vm-images/ubuntu-20.04-server-cloudimg-amd64.img /home/vm-images/ubuntu.img
+virt-install --os-variant ubuntu20.04 \
+        --name ubuntu \
+        --memory 2048 \
+        --vcpus 4 \
+        --network bridge=virbr0 \
+        --disk ubuntu.img,device=disk,bus=virtio \
+        --disk ubuntu-devstack.iso,device=cdrom \
+        --graphics none \
+        --import
+```
+
+#### devstack neutron网络配置
+
+devstack neutron config
+[Using DevStack with neutron Networking](https://docs.openstack.org/devstack/latest/guides/neutron.html)
+
+```
+## Neutron options
+Q_USE_SECGROUP=True
+FLOATING_RANGE="172.18.161.0/24"
+IPV4_ADDRS_SAFE_TO_USE="10.0.0.0/22"
+Q_FLOATING_ALLOCATION_POOL=start=172.18.161.250,end=172.18.161.254
+PUBLIC_NETWORK_GATEWAY="172.18.161.1"
+PUBLIC_INTERFACE=eth0
+
+# Open vSwitch provider networking configuration
+Q_USE_PROVIDERNET_FOR_PUBLIC=True
+OVS_PHYSICAL_BRIDGE=br-ex
+PUBLIC_BRIDGE=br-ex
+OVS_BRIDGE_MAPPINGS=public:br-ex
+```
+
 ## FAQ
+
+#### (未解决)Unable to create the network. No tenant network is available for allocation
+
+最后想调试neutron程序, 结果重启neutron服务就可以了?
+```
+sudo systemctl restart devstack@q-svc.service
+```
+
+https://docs.openstack.org/neutron/latest/admin/config-network-segment-ranges.html#create-a-tenant-network
+
+发现居然没有netowrk-segment-range插件?
+```
+$ openstack network segment range list
+Network segment ranges list not supported by Network API: No Extension found for network-segment-range
+```
+
+应该是这个provider分配不了导致?
+```
+$ openstack network show net1
++---------------------------+--------------------------------------+
+| Field                     | Value                                |
++---------------------------+--------------------------------------+
+| provider:network_type     | vxlan                                |
+| provider:physical_network | None                                 |
+| provider:segmentation_id  | 875                                  |
+```
 
 #### Socket /var/run/openvswitch/ovnnb_db.sock not found
 
