@@ -241,6 +241,11 @@ boot || goto failed
 goto start
 ```
 
+## 无盘启动系统
+
+https://learn.microsoft.com/en-us/answers/questions/599494/how-do-i-create-a-diskless-windows-10-pc-booting-f
+=> 系统如果有支持iscsi的网卡，则任意系统都能支持无盘iscsi启动了!
+
 ## ubuntu ipxe iscsi启动
 
 关键字《iscsi ipxe启动ubuntu》
@@ -307,6 +312,7 @@ update-initramfs -u
 ```
 
 [How to create an bootable iSCSI target with Linux as Operating System?](https://github.com/intel/intelRSD/issues/26#issuecomment-311656769)
+=> 验证成功
 - 1.Install Ubuntu 16.04 Server on a VM (in BIOS Legacy mode for remote booting via iPXE, or UEFI mode for iSCSI Out of Band)
 - 2.Start the VM and switch in it to a root account
 - 3.Install packages for iSCSI:
@@ -327,6 +333,51 @@ update-initramfs -u
 ```
 - 7.Shutdown the VM and convert it to a raw format image
 - 8.Copy the image to your base logical volume
+
+## centos pxe iscsi启动
+
+=> 不行
+
+关键字《centos boot from iscsi》
+
+在youtube上搜到教程, 但是/boot分区
+https://www.youtube.com/watch?v=BxWCjf9hjwc&ab_channel=AndroidandTechSolutions
+
+## windows pxe iscsi启动
+
+youtube关键字《boot windows 10 from iscsi》
+
+https://www.youtube.com/watch?v=_elwqBKIlLI&ab_channel=RetroTechChris
+
+其实最后就是下载了别人构建好的windows镜像，就可以iscsi无盘启动了, 自己的win10镜像不行，估计还需要配置些东西!!!
+=> 而且也是bios启动, 没有efi分区 => 原来下载的是bios镜像
+
+windows无盘启动镜像下载: https://www.ccboot.com/super-image.htm
+
+CCBoot功能简介
+通过CCBoot可以让服务器实现Windows系列多款操作系统的无盘启动，CCBoot内置DHCP、gPXE、TFTP、镜像上传、和iSCSI Target 功能，iSCSI 启动的All-in-one解决方案。
+
+#### 构建windows无盘镜像
+
+关键字《build diskless windows image》
+
+[Windows 10 - 11 installation on a iSCSI target #324](https://github.com/ipxe/ipxe/discussions/324)
+=> 没啥收获
+
+[CCBoot - Create Boot Image](https://www.ccboot.com/wiki-creating-boot-image.htm)
+=> 使用CCBoot配置无盘启动服务器...
+Note: If the uploaded image doesnot boot good or has long boot time then try our super image instead. 
+但是里面提到使用vmware创建boot image: 4) Install the CCBoot Client software and then restart.
+
+[CCBoot - Using VMware to Create Boot Image](https://www.ccboot.com/wiki-create-ccboot-image-using-vmware.htm)
+- 1) Install VMware Workstation on a computer.
+- 2) Create a virtual machine in VMware.
+- 3) Install Windows system in the virtual machine, named it as "Windows 7 x64" and optimize the system if it’s necessary.
+- 4) Install the CCBoot Client software and then restart.
+- 5) Shutdown virtual machine.
+
+[CCBoot - Create Boot Image](https://www.ccboot.com/wiki-creating-boot-image.htm)
+[CCBoot - Standard Method to Create Boot Image for Legacy PCs](https://www.ccboot.com/wiki-standard-method-for-creating-image.htm)
 
 ## 编译ipxe
 
@@ -356,3 +407,17 @@ make bin/undionly.kpxe
 http://bbs.c3.wuyou.net/archiver/?tid-424838.html&page=1
 
 TODO:
+
+## 其他资料(未验证)
+
+[Arch Linux iSCSI/Boot](https://wiki.archlinux.org/title/ISCSI/Boot)
+Arch Linux can be installed on an iSCSI target.
+
+关键字《centos boot from iscsi target》《centos boot from iscsi lun》
+
+[CentOS iSCSI Disks](https://docs.centos.org/en-US/centos/install-guide/iSCSI/)
+https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/installation_guide/sect-iscsi-disks-startup
+
+
+https://forums.centos.org/viewtopic.php?t=71900
+I can install CentOS to an iSCSI volume, no issue. But I am unsure how to boot into the installation. My computer does not support configuring iscsi in the bios, so I am unable to use the ibft boot table.

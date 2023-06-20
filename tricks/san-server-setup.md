@@ -166,6 +166,7 @@ iscsiadm -m node -L all
 注销所有sanserver的登录
 ```
 iscsiadm -m node -U all
+iscsiadm -m discoverydb -t sendtargets -p <IP>:<port> -o delete
 ```
 
 ## 相关资料
@@ -260,3 +261,7 @@ iscsiadm: initiator reported error (24 - iSCSI login failed due to authorization
 Login to [iface: default, target: iqn.2005-10.org.freenas.ctl:adam80, portal: 10.90.3.21,3260] successful.
 iscsiadm: Could not log into all portals
 ```
+
+#### 参考资料
+
+https://www.linuxteck.com/how-to-configure-iscsi-target-initiator-on-rhel-centos-7-6/

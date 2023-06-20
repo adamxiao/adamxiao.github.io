@@ -232,6 +232,32 @@ rsync -avh /mnt/ $remote_server:/data/ubuntu-2004
 
 - [Set up PXE Server on Ubuntu20.04 and Window 10](https://medium.com/jacklee26/set-up-pxe-server-on-ubuntu20-04-and-window-10-e69733c1de87)
 
+## pxe安装windows
+
+=> 未尝试成功，暂放弃, 暂时可以使用dd到硬盘上的方式pxe安装windows
+
+[一步步搭建PXE网络装机](https://yunfwe.cn/2018/06/03/2018/%E4%B8%80%E6%AD%A5%E6%AD%A5%E6%90%AD%E5%BB%BAPXE%E7%BD%91%E7%BB%9C%E8%A3%85%E6%9C%BA/)
+
+Windows 系统的安装需要一个 WinPE 的安装环境，先通过网络引导启动 WinPE，然后在 WinPE 环境中安装 Windows 镜像。
+
+还记得之前和 pxelinux.0 同一目录的 memdisk 文件吧，这通过这个文件可以将 iso 镜像加载到内存中启动，就利用这个方式来启动 WinPE 镜像。
+
+```
+label Install windows for vmware (WinPE)
+    menu label Install Windows for vmware (WinPE)
+    kernel memdisk
+    append initrd=/windows/win8pe.iso ksdevice=bootif raw iso
+```
+
+进入 WinPE 桌面环境后连接到服务端的 Samba 共享目录，然后执行 Windows 系统安装镜像中的 setup.exe
+
+=> 暂未下载到合适的winpe带网络的iso文件
+下载winpe.iso: https://www.ithome.com/0/255/784.htm
+
+关键字《winpe iso下载》
+
+http://www.downcc.com/k/winpe/
+ 
 ## ubuntu部署pxe服务环境
 
 ```

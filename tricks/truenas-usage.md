@@ -80,6 +80,44 @@ https://zhuanlan.zhihu.com/p/481986009
 参考: https://www.utopiafar.com/2022/02/22/backup_remote_files_with_truenas/
 创建一个rsync任务, 使用密钥, pull服务器的目录
 
+## 配置服务
+
+#### 配置http服务
+
+使用容器应用，部署nginx容器
+
+#### 配置dnsmasq服务
+
+=> 后来最简单使用dnsmasq命令启动dhcp服务的... 需要创建配置文件/etc/dnsmasq.conf
+
+关键字《truenas scale setup dnsmasq》
+
+https://www.truenas.com/community/threads/trying-to-setup-dnsmasq-in-jail.17088/
+=> 这个是truenas core(freebsd)的用法
+
+```
+pkg install dnsmasq
+edit /usr/local/etc/dnsmasq.conf
+edit /etc/rc.conf and added
+dnsmasq_enable="YES"
+```
+
+[TrueNAS SCALE APP应用安装教程，自定义app安装](https://www.truenasscale.com/2021/12/10/67.html)
+介绍
+TrueNAS SCALE不仅有很多可以直接安装的应用，还支持自定义安装其他的容器镜像。在SCALE里有2种安装自定义应用的方式。
+弄懂了自定义应用的安装，其他所有的应用都是一样的
+
+系统自带（官方的）启动docker镜像
+Truecharts社区的custom-app
+这两个不同点在于：
+- 启动docker镜像**可以设置独立的网络接口和IP**，但是不能反向代理，默认不能和其他应用内部通信。
+- custom-app可以使用社区的traefik反向代理，集成有健康检查，运行权限控制等
+  个人推荐使用custom-app
+
+启动docker镜像, 设置网络:
+- 主机接口：选择你的主网络接口
+- IPAM Type：选择静态ip，这里不能选择dhcp，因为每次重启容器的MAC地址都会改变，所以你如果选择dhcp的话，它的IP会一直的改变，所以只能选择静态IP。
+
 ## FAQ
 
 - 虚拟机使用磁盘创建pool, 需要uuid
