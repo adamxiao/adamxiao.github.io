@@ -1,5 +1,33 @@
 # pxe安装系统
 
+## 原理
+
+#### 网络引导程序NBP
+
+[浅谈pxe和ipxe](https://zhuanlan.zhihu.com/p/591334237)
+
+网络引导程序（Network Bootstrap Program，NBP ） 是引导链过程中的第一个环节，它们通常通过 TFTP 请求一小组补充文件，以便运行一个极简的操作系统执行器（例如，Windows PE 或基本的 Linux 内核 + initrd）。
+
+常见的 NBP：iPXE、PXELINUX、GRUBx64
+
+[(好)从无盘启动看 Linux 启动原理](https://z.itpub.net/article/detail/1DF87A7A5B7FBDF9E7DA28E3A12A9075)
+
+由于我需要从网络启动，过程会变得复杂一些，主要变化如下
+
+- 在 MBR 引导前，需要执行一系列的 PXE 流程，目的是挂载 iscsi 磁盘。
+- 在加载 linux 内核后，由于之前 iPXE 固件已经退出，还需要再次挂载 iscsi 磁盘。
+
+无盘启动并不是说完全没有磁盘，只是客户端本身没有磁盘，我们需要在远端给机器提供一种文件存储和磁盘共享的方案。我这里选择的是 iscsi 共享，相比于 NFS 和 samba 共享，它更底层，对系统的兼容性更好。
+
+
+由于 linux 内核启动后，之前 ipxe 对应的环境已经退出，因此之前挂载的 iscsi 磁盘也无法访问，需要在 initrd 的 init shell 中重新挂载 iscsi 磁盘。因此我需要在上文的 4 步骤之前挂载 iscsi 磁盘，修改如下：
+
+- 加载网卡内核驱动
+- 启动网络
+- 启动 iscsi 客户端挂载网络磁盘。
+
+可以使用如下方式编辑已经生成好的 initrd 文件。
+
 ## 准备pxe环境
 
 使用dnsmasq准备dhcp和tftp服务

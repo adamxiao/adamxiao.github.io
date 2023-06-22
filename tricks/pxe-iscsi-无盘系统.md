@@ -421,3 +421,30 @@ https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/in
 
 https://forums.centos.org/viewtopic.php?t=71900
 I can install CentOS to an iSCSI volume, no issue. But I am unsure how to boot into the installation. My computer does not support configuring iscsi in the bios, so I am unable to use the ibft boot table.
+
+## FAQ
+
+#### Could not open SAN device: No such device
+
+iqn没有被允许访问target lun
+
+在iPXE上使用命令查询自己的iqn: echo ${initiator-iqn}
+
+原来是配置文件中使用hostname作为iqn后缀导致的... => dhcp给这个主机分配了hostname了。。。
+```
+boot.ipxe.cfg:isset ${hostname} && set initiator-iqn ${base-iqn}:${hostname} || set initiator-iqn ${base-iqn}:${mac}
+```
+
+#### window10 bios系统起不来
+
+windows过一会就转圈圈，iscsi就没有连接了
+
+我的虚拟机内存配置为4g，一直转圈圈, 改为8g内存可以了?
+=> 还是不行，ksvd的虚拟机就行。。。ubuntu 20.04的virt虚拟机不行?
+
+#### Security Violation
+
+UEFI固件换一下就好了
+```
+	<loader readonly='yes' type='rom'>/usr/share/OVMF/OVMF_CODE-pure-efi.fd</loader>
+```
