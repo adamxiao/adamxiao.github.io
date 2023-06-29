@@ -44,6 +44,16 @@ docker run \
     jpillora/dnsmasq
 ```
 
+或者映射目录进去, 但是配置文件一定需要一个dnsmasq.conf
+```
+docker run ... \
+    -v $HOME/Desktop/dnsmasq.d:/etc/dnsmasq.d \
+    --entrypoint \
+    "webproc" \
+    jpillora/dnsmasq \
+    "--config" "/etc/dnsmasq.d/dnsmasq.conf" "--" "dnsmasq" "--no-daemon" "--conf-file=/etc/dnsmasq.d/dnsmasq.conf"
+```
+
 ## FAQ
 
 1. dns上游请求有问题，导致dnsmasq有问题, 连本地定义的dns都不处理!

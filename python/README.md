@@ -1,5 +1,18 @@
 # python编写脚本
 
+#### subprocess 调用外部程序
+
+```
+import subprocess
+
+try:
+	subprocess.check_call(['ipmitool', 'sel', 'time', 'set', t])
+	return 0
+except subprocess.CalledProcessError as error:
+	info('failed to set sel time')
+	return -1
+```
+
 #### try except
 
 https://www.w3schools.com/python/python_try_except.asp

@@ -424,6 +424,13 @@ I can install CentOS to an iSCSI volume, no issue. But I am unsure how to boot i
 
 ## FAQ
 
+#### Could not open SAN device: Error 0x3232094
+
+需要新版本的ipxe, 更新之后确实可以了!!!(自己编译的)
+
+未知错误?
+https://ipxe.org/err/3232094
+
 #### Could not open SAN device: No such device
 
 iqn没有被允许访问target lun

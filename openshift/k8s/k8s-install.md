@@ -63,6 +63,18 @@ sudo sed -i 's/^[^#].* swap /#&/' /etc/fstab
 echo "install finished, please continue!"
 ```
 
+## FAQ
+
+#### [ERROR FileContent--proc-sys-net-bridge-bridge-nf-call-iptables]: /proc/sys/net/bridge/bridge-nf-call-iptables contents are not set to 1
+
+Kubernetes 环境中，很多时候都要求节点内核参数开启 bridge-nf-call-iptables:
+
+```
+sysctl -w net.bridge.bridge-nf-call-iptables=1
+```
+
+参考官方文档 [Network Plugin Requirements](https://kubernetes.io/docs/concepts/extend-kubernetes/compute-storage-net/network-plugins/#network-plugin-requirements)
+
 ## 参考资料
 
 - [简单了解一下K8S，并搭建自己的集群](https://zhuanlan.zhihu.com/p/97605697)

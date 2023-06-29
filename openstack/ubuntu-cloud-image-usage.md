@@ -352,6 +352,11 @@ libvirt/Ignition-config
 
 [OpenShift Assisted Installer – 让安装更加简单](https://www.talkwithtrend.com/Article/257115)
 
+## FAQ
+
+#### image cloud-init初始化后，放到另外一个虚拟机硬件中跑，密码居然不正确了，cloud-init重新初始化了?
+
+xxx
 
 ## 参考资料
 

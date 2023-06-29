@@ -130,6 +130,28 @@ CHANGED: partition=2 start=33556480 old: size=50329600 end=83886080 new: size=13
 #然后扩容分区2文件系统    
 #xfs_growfs /
 ```
+	
+### 重复名称vg,pv处理
+
+关键字《lvm vg show id》
+
+https://unix.stackexchange.com/questions/677054/lvm2-how-to-list-physical-partition-identifiers-with-the-uuid-of-the-vg-they-a
+```
+vgs -o vg_name,vg_uuid,pv_uuid
+```
+
+先重命名一个，然后就不重复了，就可以删除了
+```
+vgrename 4vrdpY-MCJM-HBfT-RVhe-WnTr-2NGr-NDOJ6H old --force
+```
+
+关键字《vgremove by uuid》
+还有其他方法待尝试:
+https://unix.stackexchange.com/questions/587879/how-to-remove-missing-pv-when-vg-has-a-duplicate-name
+```
+pvremove /dev/sdb2 --force --force
+wipefs -a /dev/sdb2
+```
 
 ## FAQ
 

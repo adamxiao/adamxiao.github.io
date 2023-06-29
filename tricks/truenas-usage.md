@@ -89,6 +89,7 @@ https://zhuanlan.zhihu.com/p/481986009
 #### 配置dnsmasq服务
 
 => 后来最简单使用dnsmasq命令启动dhcp服务的... 需要创建配置文件/etc/dnsmasq.conf
+  => 然后配置`Cron Jobs`和`Init/Shutdown Scripts`来保持dnsmasq进程的运行?
 
 关键字《truenas scale setup dnsmasq》
 
@@ -127,6 +128,16 @@ Truecharts社区的custom-app
 
 - 修改iscsi chap密码，居然不是实时生效?
   重启生效, 看有什么方法不重启生效?
+
+#### 怎么同步手动打的名称为xxx的快照到另一个truenas
+
+#### Read-only file system 30
+
+https://www.truenas.com/community/threads/encountered-read-only-file-system-problem-unable-to-create-anything.53756/
+```
+zfs get readonly
+zfs set readonly=off data1/adam-backup
+```
 
 ## 其他
 
