@@ -45,6 +45,44 @@ fcntl(3, F_SETLK, {l_type=F_WRLCK, l_whence=SEEK_SET, l_start=0, l_len=0}) = -1 
 Posix locks: fcntl/lockf => 不支持 ocfs2, flock 支持ocfs2
 fcntl 支持glusterfs, qemu镜像用的是fcntl
 
+## qemu使用flock替换fcntl加锁逻辑
+
+#### 限制条件
+
+- 由于nfs4只读打开的img fd，不能加互斥锁
+- glusterfs/nfs, fcntl和flock会相互影响, 不能对一个img文件同时加fcntl和flock锁，会影响锁判断
+
+#### 开机加锁逻辑
+
+=> 权限0不处理, 适配主机迁移
+
+- 只读 RDONLY 打开img fd: 10
+- 读写 RDWR   打开img fd: 11
+- 加锁只读fd: (注意: 加的都是读锁)
+  0 1 3, 共享 1 3
+  (RAW_PL_PREPARE处理的)
+  => 改为不做任何处理
+- 检查只读fd权限: (注意: 这里反向检查了, 而且是检查是否能够加写锁)
+  1 3, 共享 0 1 3
+  => 改为先加锁, 然后解锁 `flock(fd, LOCK_SH)`, 
+- 加锁读写fd: (同只读fd的加锁)
+  0 1 3, 共享 1 3
+  => 改为 `flock(fd, LOCK_EX)`
+- 关闭只读 img fd
+
+### 互斥分析
+
+#### qemu 互斥 qemu
+
+已有旧qemu运行, 新qemu会互斥!
+=> 检查只读fd时, 会加锁失败
+
+主机迁移场景: TODO:
+
+#### qemu-img info 互斥 qemu
+
+已有qemu运行, qemu-img info会互斥!
+=> 检查只读fd时, 会加锁失败
 
 ## qemu使用fcntl问题
 
@@ -70,6 +108,80 @@ fcntl 支持glusterfs, qemu镜像用的是fcntl
 write(1, "qemu_lock_fd_test exclusive is 1, fd is 10, off 201, ret 0\n", 59) = 59 <0.000013>
 write(1, "raw_check_lock_bytes qemu_lock_fd_test write off 201 failed, ret=-11\n", 69) = 69 <0.000012> 
 ```
+
+#### qemu锁类型定义
+
+perm: 100, shared_perm: 200
+
+- 0: consistent read
+- 1: write
+- 2: wirte unchanged
+- 3: resize
+- 4: change node
+
+获取加锁逻辑分析:
+```
+strace -o ~/adam.strace.log -f -s 1024 -e flock,fcntl,open,close,write -T -tt -p `pidof libvirtd`
+```
+
+#### qemu开机加锁逻辑
+
+- 只读 RDONLY 打开img fd: 10
+- 读写 RDWR   打开img fd: 11
+- 加锁只读fd: (注意: 加的都是读锁)
+  0 1 3, 共享 1 3
+- 检查只读fd权限: (注意: 这里反向检查了, 而且是检查是否能够加写锁)
+  1 3, 共享 0 1 3
+- 加锁读写fd: (同只读fd的加锁)
+  0 1 3, 共享 1 3
+- 关闭只读 img fd
+
+#### qemu-img info 加锁逻辑
+
+- 只读 RDONLY 打开img fd: 10
+- 加锁只读fd: (注意: 加的都是读锁)
+  共享 1 3
+- 检查只读fd权限: (注意: 这里反向检查了, 而且是检查是否能够加写锁)
+  1 3
+- 中间处理数据...
+- 解锁只读img fd
+  共享 1 3
+- 关闭只读 img fd
+
+如果是加上--force-share参数，则没有任何加锁和检查锁的逻辑!
+
+#### qemu主机迁移加锁逻辑
+
+- 初始逻辑同qemu开机加锁逻辑
+- 目的qemu只读打开 img fd
+- 等待迁移完成...
+- 源qemu 只读打开 img fd
+- 源qemu加锁只读fd
+  0 (consistent read)
+- 源qemu关闭读写img fd (这样目的qemu就能接管img的读写了!)
+- 源qemu解锁只读fd (无效操作吧?)
+  1 3, 共享 1 3
+
+- 目的qemu加锁只读 img fd (=> 这里临时保证互斥吧?) => 后续的逻辑跟首次qemu开机的逻辑是一样的咯!
+  0 (consistent read)
+- 目的qemu读写打开 img fd
+- 目的qemu加锁只读 img fd
+  1 3, 共享 1 3
+- 目的qemu检查只读fd权限: (注意: 这里反向检查了, 而且是检查是否能够加写锁)
+  1 3, 共享 0 1 3 (同基础开机逻辑)
+- 目的qemu加锁读写 img fd
+  0 1 3, 共享 1 3
+- 目的qemu关闭只读fd
+- 源qemu退出，完成迁移
+
+#### qemu存储迁移加锁逻辑
+
+TODO:
+
+#### 离线扩容, 离线convert
+
+qemu-img resize => 有冲突检测!
+qemu-img convert => 有冲突检测!
 
 #### raw_check_perm接口
 

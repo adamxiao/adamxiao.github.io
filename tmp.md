@@ -1,6 +1,12 @@
 # 临时计划
 
 ```
+ubuntu@ubuntu:/mnt$ sudo qemu-img convert -f qcow2 -t none -O raw GUEST.IMG /dev/nvme0n1
+qemu-img: error while writing sector 0: No space left on device
+```
+=> 然后/dev/nvme0n1这个设备都不见了???
+
+```
 enable_ironic: "yes"
 ronic_dnsmasq_interface: "eth1"
 ironic_cleaning_network: "enp4s3"

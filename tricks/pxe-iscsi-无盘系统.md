@@ -408,6 +408,37 @@ http://bbs.c3.wuyou.net/archiver/?tid-424838.html&page=1
 
 TODO:
 
+#### 使用ipxe安装ubuntu
+
+关键字《ubuntu install use ipxe》
+
+https://gist.github.com/robinsmidsrod/21a15a562bc45d4ce25dcde507fb3100
+配置nfs服务器，然后启动ubuntu desktop live os
+```
+set nfs-server          ${next-server}
+set nfs-mountpt         /srv/nfs
+set nfs-root-boot      nfs://${nfs-server}/${nfs-mountpt}/ubuntu2004/
+set nfs-root-linux      ${nfs-server}:${nfs-mountpt}/ubuntu2004/
+
+:ubuntu2004_live
+kernel ${nfs-root-boot}/vmlinuz
+initrd ${nfs-root-boot}/initrd
+imgargs vmlinuz initrd=initrd nfsroot=${nfs-root-linux} netboot=nfs boot=casper ip=dhcp
+boot
+goto start
+```
+
+使用如下menu配置，验证成功
+```
+:ubuntu2-install
+set base-url http://10.90.3.25:9080/ubuntu2004
+kernel ${base-url}/vmlinuz
+initrd ${base-url}/initrd
+imgargs vmlinuz initrd=initrd ip=dhcp boot=casper netboot=nfs nfsroot=10.90.3.25:/mnt/pool1/pxe/ubuntu2004/ splash toram ---
+boot || goto failed
+goto start
+```
+
 ## 其他资料(未验证)
 
 [Arch Linux iSCSI/Boot](https://wiki.archlinux.org/title/ISCSI/Boot)
