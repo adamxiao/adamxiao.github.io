@@ -119,6 +119,19 @@ Truecharts社区的custom-app
 - 主机接口：选择你的主网络接口
 - IPAM Type：选择静态ip，这里不能选择dhcp，因为每次重启容器的MAC地址都会改变，所以你如果选择dhcp的话，它的IP会一直的改变，所以只能选择静态IP。
 
+#### 加密
+
+关键字《truenas scale lock dataset》
+
+https://www.truenas.com/community/threads/lock-an-encrypted-dataset.90364/
+From my experience, once unlocked, the only way to re-lock an encrypted dataset that uses a keyfile is to disconnect the pool. Until then, the keyfile lives on the boot pool. For passphrase protected datasets, you can lock them at will.
+
+只有使用密码加密的datasets，才可以主动加密，解密
+
+[Storage Encryption](https://www.truenas.com/docs/scale/scaletutorials/storage/datasets/encryptionscale/)
+
+You can only lock and unlock an encrypted dataset if it is secured with a passphrase instead of a key file. Before locking a dataset, verify that it is not currently in use.
+
 ## FAQ
 
 - 虚拟机使用磁盘创建pool, 需要uuid

@@ -116,6 +116,37 @@ df -h
 
 ## FAQ
 
+#### maproot nobody
+
+nfs服务器配置
+```
+/home/nfs_dir/data 192.168.99.111(rw)
+```
+
+客户端挂载后，权限是如下的:
+```
+nfsnobody:x:65534:65534:Anonymous NFS User
+ls -li
+182714371 drwxr-xr-x  3 nfsnobody  nfsnobody  4.0K Jul  6 15:18 adam
+182714370 drwxr-xr-x 25 kylin-ksvd kylin-ksvd 4.0K Jul  6 14:57 server_vm_backups
+```
+
+关键字《centos nfs server maproot》
+
+https://superuser.com/questions/1225848/how-to-map-nfs-client-root-user-to-nfs-server-root-user
+
+`man 5 exports`, 可以查看到`User ID Mapping`的解释, 默认客户端的root用户会被限制权限，配置`no_root_squash`就可以
+
+https://unix.stackexchange.com/questions/9840/why-cant-root-on-one-machine-change-nfs-mounted-content-from-another-machine
+https://www.netbsd.org/docs/network/netboot/nfs.html
+
+建议将root用户映射为kylin-ksvd用户, 配置示例如下:
+(前提: 先创建好用户?)
+```
+/storage -alldirs -maproot=kylin-ksvd -network 192.168.10.0/24
+/export/client/root -maproot=root:wheel    client.test.net
+```
+
 #### Permission denied
 
 https://www.truenas.com/community/threads/nfs-share-problem.93617/

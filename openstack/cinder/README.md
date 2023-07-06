@@ -68,6 +68,33 @@ openstack volume type create --property volume_backend_name=huawei huawei
 获取镜像列表
 openstack image list
 
+#### remove service
+
+关键字《cinder remove service》
+
+https://platform9.com/kb/openstack/deleting-a-cinder-service-from-host
+```
+docker exec cinder_api \
+  cinder-manage service remove cinder-backup node1
+
+cinder-manage service remove cinder-volume <UUID>@netapp_std1
+openstack volume service list --service cinder-volume
+```
+
+#### 列举服务
+
+```
+[ssh_10.90.3.21] root@node1: ~$cinder service-list --binary cinder-volume --host node1
++---------------+------------+------+---------+-------+----------------------------+---------+-----------------+
+| Binary        | Host       | Zone | Status  | State | Updated_at                 | Cluster | Disabled Reason |
++---------------+------------+------+---------+-------+----------------------------+---------+-----------------+
+| cinder-volume | node1@mmj  | nova | enabled | up    | 2023-07-04T14:01:31.000000 | -       | -               |
+| cinder-volume | node1@mmj2 | nova | enabled | up    | 2023-07-04T14:01:30.000000 | -       | -               |
++---------------+------------+------+---------+-------+----------------------------+---------+-----------------+
+```
+
+cinder list backend
+
 #### cinder local-attach
 
 安装cinder额外组件，扩展cinder命令

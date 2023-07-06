@@ -169,6 +169,16 @@ iscsiadm -m node -U all
 iscsiadm -m discoverydb -t sendtargets -p <IP>:<port> -o delete
 ```
 
+删除session
+关键字《iscsiadm remove session》
+https://helpdesk.kaseya.com/hc/en-gb/articles/4407512021521-Remove-ISCSI-sessions-using-the-Linux-command-line
+```
+iscsiadm -m node -T <iqn> -p <ip address>:<port number> -u
+iscsiadm -m node -o delete -T <iqn>
+iscsiadm -m discoverydb -t sendtargets -p <IP>:<port> -o delete
+```
+
+
 ## 相关资料
 
 https://blog.51cto.com/wgmml/1597982
