@@ -12,7 +12,7 @@ https://docs.openstack.org/kilo/config-reference/content/huawei-storage-driver.h
 #### 1.配置华为san存储xml配置文件
 
 /etc/cinder/cinder_huawei_conf.xml
-注意点:需要给这个文件正确的权限,cinder会把用户名和密码修改一下hwcloud/Huawei@2020
+注意点:需要给这个文件正确的权限,cinder会把用户名和密码修改一下
 ```
 <?xml version='1.0' encoding='UTF-8'?>
 <config>

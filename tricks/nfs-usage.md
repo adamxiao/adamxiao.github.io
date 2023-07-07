@@ -133,6 +133,8 @@ ls -li
 
 关键字《centos nfs server maproot》
 
+=> 最后发现不同版本的nfs服务器，配置格式不一样，我们的centos环境不能这样配置...
+
 https://superuser.com/questions/1225848/how-to-map-nfs-client-root-user-to-nfs-server-root-user
 
 `man 5 exports`, 可以查看到`User ID Mapping`的解释, 默认客户端的root用户会被限制权限，配置`no_root_squash`就可以
@@ -145,6 +147,7 @@ https://www.netbsd.org/docs/network/netboot/nfs.html
 ```
 /storage -alldirs -maproot=kylin-ksvd -network 192.168.10.0/24
 /export/client/root -maproot=root:wheel    client.test.net
+/home/joe       pc001(rw,all_squash,anonuid=2000,anongid=2000)
 ```
 
 #### Permission denied
