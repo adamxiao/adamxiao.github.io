@@ -45,3 +45,11 @@ Nmap done: 1 IP address (1 host up) scanned in 3.98 seconds
 --osscan-limit： 将os检测限制为可能的目标
 --osscan-guess ： 推测操作系统检测结果
 ```
+
+#### 扫描端口
+
+https://wiki.wgpsec.org/knowledge/tools/nmap.html
+```
+nmap 192.168.0.8
+nmap -p 1-65535 192.168.0.8		# -p选项，只扫描指定的端口
+```

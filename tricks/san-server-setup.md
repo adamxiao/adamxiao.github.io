@@ -148,6 +148,49 @@ fc为fcsan
 [9:0:0:7]    enclosu iqn.2002-10.com.infortrend:raid.uid579524.201,t,0x1  -          -       -
 ```
 
+## ubuntu安装san存储服务
+
+关键字《ubuntu setup san server》
+
+- https://www.howtoforge.com/tutorial/how-to-setup-iscsi-storage-server-on-ubuntu-2004-lts/
+- https://linuxhint.com/iscsi_storage_server_ubuntu/
+- [(好)iSCSI : Configure iSCSI Target (tgt)](https://www.server-world.info/en/note?os=Ubuntu_20.04&p=iscsi&f=2)
+
+安装服务端
+```
+apt install tgt -y
+systemctl status tgt
+```
+
+创建文件镜像
+```
+# create a disk image
+mkdir /var/lib/iscsi_disks
+dd if=/dev/zero of=disk01.img count=0 bs=1 seek=10G
+```
+
+创建iscsi target
+编辑文件: /etc/tgt/conf.d/ubuntu1.conf
+```
+# create new
+# if you set some devices, add <target>-</target> and set the same way with follows
+# naming rule : [ iqn.(year)-(month).(reverse of domain name):(any name you like) ]
+<target iqn.2020-05.world.srv:dlp.ubuntu1>
+    # provided devicce as a iSCSI target
+    backing-store /var/lib/iscsi_disks/disk01.img
+    # iSCSI Initiator's IQN you allow to connect
+    initiator-name iqn.2020-05.world.srv:node01.initiator01
+    # authentication info ( set anyone you like for "username", "password" )
+    incominguser username password
+</target> 
+```
+
+重启生效, 查看状态
+```
+sudo systemctl restart tgt
+sudo tgtadm --mode target --op show
+```
+
 ## ubuntu使用ipsan存储服务
 
 #### ubuntu客户端使用
