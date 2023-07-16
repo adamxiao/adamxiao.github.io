@@ -34,6 +34,12 @@ https://www.cnblogs.com/jiuchongxiao/p/9222953.html
 systemctl kill --kill-who=main --signal=SIGUSR2 systemd-journald.service
 ```
 
+#### 只看错误日志?
+
+```
+journalctl -p err -b
+```
+
 ## FAQ
 
 #### keepalived没有journal日志没有输出

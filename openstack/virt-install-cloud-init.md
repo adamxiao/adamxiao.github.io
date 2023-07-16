@@ -6,6 +6,14 @@
 
 [Provision a VM with Cloud Image and Cloud-init](https://zhimin-wen.medium.com/provision-a-vm-with-cloud-image-and-cloud-init-36f356a33b90)
 
+## cloud-init概念
+
+主要是一下几个服务
+- cloud-init-local.service
+- cloud-init.service
+- cloud-config.service
+- cloud-final.service
+
 ## 安装使用
 
 #### step-0: Create your cloud-init configuration file; here is my sample cloud-init file.
@@ -184,3 +192,65 @@ disk-image-create  centos7 vm
 
 https://xionchen.github.io/2016/10/01/dib-introduction/
 dib的安装方式有两种:pip安装和源码安装. 如果不需要对代码进行改变和定制的话可以直接进行源码安装,否则的话推荐使用源码安装
+
+#### 使用私有镜像仓库源
+
+https://docs.openstack.org/diskimage-builder/latest/elements/apt-sources/README.html
+
+```
+DIB_APT_SOURCES=/etc/apt/sources.list
+```
+
+#### 构建debian镜像
+
+https://docs.openstack.org/ironic-python-agent-builder/latest/admin/dib.html
+构建IPA镜像, 基于debian
+```
+export DIB_APT_SOURCES=/etc/apt/sources.list
+export DIB_RELEASE=bullseye
+# 配置用户名密码
+export DIB_DEV_USER_USERNAME=ipa
+export DIB_DEV_USER_PWDLESS_SUDO=yes
+export DIB_DEV_USER_PASSWORD='123'
+
+disk-image-create -o ironic-python-agent \
+    ironic-python-agent-ramdisk debian devuser
+```
+
+#### 其他资料
+
+- [HowTo Create OpenStack Cloud Image with NVIDIA GPU and Network Drivers](https://docs.nvidia.com/networking/display/public/SOL/HowTo+Create+OpenStack+Cloud+Image+with+NVIDIA+GPU+and+Network+Drivers)
+
+- [(好)制作openstack镜像](https://hlyani.github.io/notes/openstack/make_openstack_image.html)
+  => 有windows, ubuntu, centos等镜像制作方法，还有qemu-img制作镜像的方法
+
+3、安装cloud-utils-growpart来允许分区来调整大小
+```
+yum install -y cloud-utils-growpart
+```
+
+- [Diskimage-builder简介](https://xionchen.github.io/2016/10/01/dib-introduction/)
+  3.4 DIB运行的阶段
+  dib通过element和阶段来组织脚本,一个element可能在不同的阶段做不同的事情.
+  所有的阶段如下:
+  - root.d
+  - extra-data.d
+  - pre-install.d
+  - install.d
+  - post-install.d
+  - block-device.d
+  - finalise.d
+  - cleanup.d
+
+  DIB这个工具目前而言,制作镜像的能力主要覆盖社区的基础设施.如果需要定制自己的镜像也可以按照这个框架来.但是进行复杂的定制需要对DIB本身,shell和操作系统三个方面比较都比较了解.所以在之后会细致的解读DIB的源码.
+
+- [(好)用 Diskimage-Builder 制作镜像](https://davycloud.com/post/using-diskimage-builder-to-build-image/)
+  OpenStack 上的虚机最常用的镜像格式是 qcow2。早期的时候，要制作这样的镜像需要从 iso 镜像手动创建虚机，然后安装完系统后把磁盘保存为镜像。整个过程非常繁琐。
+  现在常用的 Linux 系统如 Ubuntu、CentOS 都提供了现成的 qcow2 格式的最小安装镜像文件，可以直接下载使用。现在的难题变成了如何制作一个安装了自定义软件的定制镜像。
+  快速开始
+  一个虚机镜像至少需要指定 2 个 elements，例如：
+```
+disk-image-create  centos7 vm
+其中 centos7 是指定操作系统发行版，这个是必需的。其它还有哪些操作系统支持，可以在文档里查询。
+vm 就是指镜像是供虚拟机用的。如果要制作可供 Ironic 使用的裸金属镜像，则需要指定 baremetal。
+```

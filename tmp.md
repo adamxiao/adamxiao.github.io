@@ -1,5 +1,8 @@
 # 临时计划
 
+https://docs.openstack.org/openstack-helm-images/latest/vbmc.html
+=> 有libvirt 镜像编译?
+
 ```
 ubuntu@ubuntu:/mnt$ sudo qemu-img convert -f qcow2 -t none -O raw GUEST.IMG /dev/nvme0n1
 qemu-img: error while writing sector 0: No space left on device
