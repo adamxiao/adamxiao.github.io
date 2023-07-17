@@ -1,25 +1,21 @@
 # openstack ironic裸金属管理
 
-TODO:
-- 查看ipmi驱动属性?
-  ironic driver-properties pxe_ipmitool
-  例如: deploy_kernel
+#### 扩展调研问题
+
 - 裸金属机器系统的网络配置?
-  => 例如配置bond口?
-  => 以及是否通过
-- 节点配置静态ip?
+  => 例如配置bond口, 配置网卡静态ip?
+- ironic还可以对节点硬盘RAID?
+- ironic还可以对节点系统安装应用程序?
+- ironic展示节点的控制台console?
+- ironic使用inspector获取硬件配置?
 
-- 怎么制作ironic用户镜像?
-  我觉得只要能dhcp获取ip地址就行了吧? => 尝试部署系统，确实也是dhcp
-  以及安装cloud-init，跟制作openstack镜像类似吧?
+#### iornic实现的功能
 
-目标:
-- 使用IPMI管理裸设备 => ok
-  例如开机关机重启，pxe启动等
-- 部署实例到裸设备上
+- 使用IPMI管理裸设备
+  例如开机关机重启，设置pxe启动, 设置硬盘等
+
+- 部署系统到裸设备上
   例如部署centos系统
-
-关键字《openstack ironic文档》
 
 [简书 - OpenStack - Ironic](https://www.jianshu.com/p/ab799d414158)
 OpenStack Ironic就是一个进行裸机部署安装的项目。
@@ -29,18 +25,6 @@ Ironic实现的功能，就是可以很方便的对指定的一台或多台裸�
 - （2）安装操作系统、驱动程序；
 - （3）安装应用程序。
 
-我们把fake驱动排除，其他的驱动可以分为两类：
-- 一是以pex 或者 iscsi 为前缀的驱动采用PXE部署机制，这些驱动**将根硬盘作为iSCSI设备暴露给ironic conductor，由conductor将镜像复制到这里.**
-- 二是以agent_ 为前缀的驱动采用Agent部署机制，conductor准备一个存储在swift上的镜像URL给IPA，由IPA下载镜像和完成部署的操作。
-
-**openstack ironic 支持用虚拟模拟物理机进行测试!!!**
-
-[Openstack Ironic standalone 方式部署](https://www.xiexianbin.cn/openstack/ironic/index.html)
-ironic如果配置成standalone服务，其他服务如glance，neutron，nova，cinder等无需安装。
-
-[Ironic 裸金属管理服务 原创](https://blog.51cto.com/u_15301988/3160308)
-devstack部署ironic, 使用vm模拟裸金属服务器
-
 #### 安装ironic
 
 关键字《kolla-ansible enable ironic》《kolla-ansible 启用 ironic》
@@ -48,7 +32,18 @@ devstack部署ironic, 使用vm模拟裸金属服务器
 [(kolla官方文档)Ironic - Bare Metal provisioning](https://docs.openstack.org/kolla-ansible/latest/reference/bare-metal/ironic-guide.html)
 https://docs.openstack.org/kolla-ansible/rocky/reference/ironic-guide.html
 
-添加iron配置(基本参考官方文档)
+参考kolla官方文档，安装ironic环境非常容易
+
+下载部署内核和镜像(配置inspector需要...)
+```
+curl https://tarballs.opendev.org/openstack/ironic-python-agent/dib/files/ipa-centos9-master.kernel \
+  -o /etc/kolla/config/ironic/ironic-agent.kernel
+
+curl https://tarballs.opendev.org/openstack/ironic-python-agent/dib/files/ipa-centos9-master.initramfs \
+  -o /etc/kolla/config/ironic/ironic-agent.initramfs
+```
+
+在个global.yml中, 添加iron配置(基本参考官方文档)
 ```
 enable_ironic: "yes"
 ironic_dnsmasq_interface: "enp4s3"
@@ -60,31 +55,79 @@ ironic_inspector_kernel_cmdline_extras: ['ipa-lldp-timeout=90.0', 'ipa-collect-l
 ironic_http_port: "8089"
 ```
 
+kolla容器:
+- ubuntu-source-ironic-neutron-agent:yoga ironic_neutron_agent
+- ubuntu-source-dnsmasq:yoga              ironic_dnsmasq
+- ubuntu-source-ironic-pxe:yoga           ironic_http
+- ubuntu-source-ironic-pxe:yoga           ironic_tftp
+- ubuntu-source-ironic-inspector:yoga     ironic_inspector
+- ubuntu-source-ironic-api:yoga           ironic_api
+- ubuntu-source-ironic-conductor:yoga     ironic_conductor
+- ubuntu-source-nova-compute-ironic:yoga  nova_compute_ironic
+
 #### 系统部署流程
 
+我们把fake驱动排除，其他的驱动可以分为两类：
+- 一是以pex 或者 iscsi 为前缀的驱动采用PXE部署机制，这些驱动**将根硬盘作为iSCSI设备暴露给ironic conductor，由conductor将镜像复制到这里.**
+- 二是以agent_ 为前缀的驱动采用Agent部署机制，conductor准备一个存储在swift上的镜像URL给IPA，由IPA下载镜像和完成部署的操作。
+
+
 参考官方文档: https://docs.openstack.org/ironic/yoga/user/architecture.html
+
+以下是我验证的，官方的系统部署安装流程:
+(还有其他系统安装部署方法，暂未调研)
 
 Example: PXE Boot and Direct Deploy Process¶
 This process is how Direct deploy works.
 ![](2023-07-11-15-57-01.png)
 
-=> 注意： 是通过节点的网络接口获取dhcp，配置pxe的，而不是ironic的dhcp...
+=> 注意： 是通过节点的网络接口获取dhcp，配置pxe的，而不是ironic的inspector dhcp...
 
-#### openstack创建另外一个public物理口网络
+#### 配置 Provisioning Network
 
-配置 Provisioning Network
+=> 就是系统安装部署获取pxe dhcp ip地址的网络
+(目前我就复用public1网络即可)
 
 参考: https://blog.51cto.com/u_15301988/3244722
 
 首先配置一个 Physical Network 作为 Provisioning Network，用于提供 DHCP、PXE 功能，即裸金属节点部署网络。
 
-配置新的 Physical Network
-```
-编辑配置文件: /etc/kolla/neutron-server/ml2_conf.ini
-dd:
-```
+#### 裸金属服务器的生命周期
+
+[IRONIC的网络方案系列（一）](https://cloud.tencent.com/developer/news/161748)
+
+Ironic是OpenStack社区的子项目，专门用于提供裸机服务。它既可以独立使用也可以与nova、neutron等组件集成使用。对于被Ironic管理的物理服务器而言，主要有上架、部署、回收这三个阶段。
+
+- 上架阶段指的是，当物理服务器完成硬件安装、网络连线等工作后。由管理员将机器的信息注册到Ironic中进行纳管。这个阶段，需要使用Ironic inspect功能以实现物理服务器硬件配置信息以及上联接入交换机信息的自动采集。
+
+- 部署阶段指的是，当物理服务器完成上架后，处于可用状态。租（用）户根据业务需要指定镜像、网络等信息创建物理服务器实例。云平台执行资源调度、操作系统安装、网络配置等工作。有别于传统的人工部署和预先部署，租户可以在任意时刻按需选择不同的镜像、网络等信息。这个阶段，需要使用Ironic provision功能以实现配置信息的下发与自动化部署。一旦实例创建成功后，租（用）户可以使用物理服务器运行业务。
+
+- 回收阶段指的是，当物理服务器完成使用，由租（用）户申请释放资源。这个阶段，可以使用Ironic clean功能清理物理服务器上的残留数据。
+
+#### 裸金属节点状态机
+
+Ironic状态机：
+[(好)Ironic 裸金属管理服务 原创](https://blog.51cto.com/u_15301988/3160308)
+[ironic官方文档 - 状态机](https://docs.openstack.org/ironic/latest/user/states.html)
+
+![](../imgs/69c1621926449668895fab770923672f.webp)
+
+状态变更过程(管理员录入裸金属节点的流程):
+- 注册节点, 节点状态为enroll
+- 验证节点, 节点状态变为verifing, 然后manage
+- 发布节点, 节点状态变为available
+
+节点发布后，就可以用来部署用户镜像，制作虚拟机实例了，后续的状态变更见官方文档
+
+[(好)Ironic 裸金属管理服务 原创](https://blog.51cto.com/u_15301988/3160308)
+- available：用户可以对一个处于可用状态的裸金属节点发起 actice API 请求执行操作系统部署，请求的同时需要将部署的详细信息（e.g. user-image、instance metadata、网络资源分配）持久化到裸金属数据库表记录中；
+- deploying：部署准备阶段，此时 Ironic 会主动 cache ramdisk 到 ironic-conductor 并执行启动动作。如果此时的裸金属节点处于开启状态则执行重启动作；
+- wait callback：等待裸金属节点完成启动或重启，Ironic 根据不同 Driver 类型的策略控制裸金属节点进入操作系统引导（BootLoader）。PXE 是其默认的引导方式，在这个阶段 Ironic 会等待裸金属节点的 BootLoader 进入 ramdisk，运行在 ramdisk 中的 ironic-python-agent 会回调 Ironic，告知裸金属节点已经接收 ironic-python-agent 的控制，可以进一步执行 user-image 的注入动作，并监控进度。待 user-image 注入完成后，Ironic 会进一步控制裸金属节点从 user-image 启动，并完成控制层面的数据维护；
+- active：此状态表示裸金属节点的操作系统部署完成，但并不代表操作系统已经加载完成，裸金属节点的操作系统加载仍需要一定的等待时间。
 
 #### 添加节点
+
+注意: 添加节点，指定部署镜像，部署驱动等
 
 关键字《openstack ironic create node》《openstack ironic 添加节点》
 
@@ -104,15 +147,6 @@ ironic node-create \
     --property cpu_arch=<architecture of node's CPU>
 ```
 
-https://blog.csdn.net/OldHusband/article/details/112794051
-十、注册 Enrollment Baremetal Node
-```
-# 首先查看用到的 IPMI 的所有 Ironic Driver
-openstack baremetal driver show ipmi
-# 打印出 IPMI 驱动程序的属性清单
-openstack baremetal driver property list ipmi
-```
-
 创建节点
 (注意: ipmi协议端口默认是623)
 ```
@@ -126,6 +160,33 @@ openstack baremetal node create --driver ipmi --name BM01 \
 
 Could not find the following interface in the 'ironic.hardware.interfaces.deploy' entrypoint: iscsi. Valid interfaces are ['direct']. (HTTP 400)
 ```
+
+#### 准备部署内核和镜像
+
+下载部署内核和镜像, 主要有coreos, tinyipa, centos系统的 (也可以自己构建，不过我一直没构建出来...)
+
+https://docs.openstack.org/ironic-python-agent/queens/install/index.html
+[真官方文档 - Installing Ironic Python Agent](https://docs.openstack.org/ironic-python-agent/yoga/install/index.html)
+
+下载tinyipa使用
+```
+wget https://tarballs.opendev.org/openstack/ironic-python-agent/tinyipa/files/tinyipa-stable-yoga.gz
+wget https://tarballs.opendev.org/openstack/ironic-python-agent/tinyipa/files/tinyipa-stable-yoga.vmlinuz
+```
+
+部署时，通过这个部署内核和内存镜像，把机器pxe启动到部署系统中，然后安装用户系统镜像到硬盘上
+```
+openstack image create --disk-format aki --container-format aki --public \
+  --file ironic-agent.kernel deploy-vmlinuz
+
+openstack image create --disk-format ari --container-format ari --public \
+  --file ironic-agent.initramfs deploy-initrd
+```
+
+可以修改现有initramfs的用户密码，进行调试
+
+[Ironic Python Agent (IPA)](https://docs.openstack.org/kayobe/latest/configuration/reference/ironic-python-agent.html)
+=> kolla构建IPA镜像? => 未尝试
 
 ### openstack 裸金属命令使用
 
@@ -159,45 +220,26 @@ apt install -y python3-ironicclient
 pip install python-ironicclient
 ```
 
-#### 准备部署内核和镜像
+#### 杂项命令
 
-下载部署内核和镜像
+列举所有驱动
 ```
-$ curl https://tarballs.opendev.org/openstack/ironic-python-agent/dib/files/ipa-centos9-master.kernel \
-  -o /etc/kolla/config/ironic/ironic-agent.kernel
-
-$ curl https://tarballs.opendev.org/openstack/ironic-python-agent/dib/files/ipa-centos9-master.initramfs \
-  -o /etc/kolla/config/ironic/ironic-agent.initramfs
+openstack baremetal driver list
 ```
 
-部署时，通过这个部署内核和内存镜像，把机器pxe启动到部署系统中，然后安装用户系统镜像到硬盘上
+查看用到的 IPMI 的所有 Ironic Driver
 ```
-openstack image create --disk-format aki --container-format aki --public \
-  --file ironic-agent.kernel deploy-vmlinuz
-
-openstack image create --disk-format ari --container-format ari --public \
-  --file ironic-agent.initramfs deploy-initrd
+openstack baremetal driver show ipmi
 ```
 
-[Ironic Python Agent (IPA)](https://docs.openstack.org/kayobe/latest/configuration/reference/ironic-python-agent.html)
-=> kolla构建IPA镜像?
-
+打印出 IPMI 驱动程序的属性清单
+```
+openstack baremetal driver property list ipmi
+```
 
 #### 创建节点
 
-(注意: ipmi协议端口默认是623)
-```
-openstack baremetal node create --driver ipmi --name BM01 \
-  --deploy-interface iscsi \
-  --raid-interface agent \
-  --driver-info ipmi_username=ADMIN \
-  --driver-info ipmi_password=ADMIN \
-  --driver-info ipmi_address=10.30.10.3 \
-  --driver-info ipmi_port=623 \
-
-Could not find the following interface in the 'ironic.hardware.interfaces.deploy' entrypoint: iscsi. Valid interfaces are ['direct']. (HTTP 400)
-=> 去除iscsi参数即可
-```
+ipmi协议端口默认是623, udp, 下面的节点使用vbmc虚拟机模拟bmc物理机
 
 注册节点(注意: 需要提供部署内核和镜像)
 ```
@@ -216,13 +258,16 @@ openstack baremetal node create --driver ipmi --name VM01 \
   --driver-info deploy_ramdisk=$INITRD_UUID
 ```
 
-以及给节点创建网卡
+以及给节点创建网卡(创建裸机端口)：
 ```
-export NODE_UUID=$(openstack baremetal node list | awk '/VM01/ {print $2}')
-openstack baremetal port create 52:54:00:7d:da:b9 \
+NODE_UUID=$(openstack baremetal node list | awk '/VM01/ {print $2}')
+NODE_MAC_ADDRESS=aa:bb:cc:dd:ee:ff
+openstack baremetal port create $NODE_MAC_ADDRESS \
   --node $NODE_UUID \
   --physical-network physnet1
 ```
+- NODE_UUID：创建node时生成的uuid
+- NODE_MAC_ADDRESS：裸机的网卡mac地址；如果裸机上有多个网卡，就输入和Ironic Pxe服务相连的网卡；（Pxe简单说用于下载镜像，可以参考我的相关文章）
 
 查看节点
 ```
@@ -236,6 +281,12 @@ openstack baremetal node list
 openstack baremetal node show 831ac23b-7daa-462b-ab28-6dd2972c5000
 ```
 
+管理并检查节点状态为可用
+```
+openstack baremetal node manage BM01
+openstack baremetal node provide BM01
+```
+
 Change Node Power State (开机关机等?)
 ```
 openstack baremetal node power off BM01
@@ -243,28 +294,35 @@ openstack baremetal node power on BM01
 openstack baremetal node reboot BM01
 ```
 
-管理并检查节点状态为可用
+#### 创建flavor
+
+类似于裸金属节点的机型吧 (openstack 创建实例都是需要制定flavor的!)
 ```
-openstack baremetal node manage BM01
-openstack baremetal node provide BM01
+openstack flavor create my-baremetal-flavor \
+  --ram 512 --disk 1 --vcpus 1 \
+  --property resources:CUSTOM_BAREMETAL_RESOURCE_CLASS=1 \
+  --property resources:VCPU=0 \
+  --property resources:MEMORY_MB=0 \
+  --property resources:DISK_GB=0
 ```
 
-管理，则是检查节点的IPMI的可用状态
-/var/log/kolla/ironic/ironic-conductor.log
+#### 设置节点启动设备
+
+例如设置为pxe启动
 ```
-Command: ipmitool -I lanplus -H 10.30.10.3 -L ADMINISTRATOR -p 6230 -U ADMIN -R 1 -N 5 -f /tmp/tmpq4atxoud power status
-Exit code: 1
-Stdout: ''
-Stderr: 'Error: Unable to establish IPMI v2 / RMCP+ session\n': oslo_concurrency.processutils.ProcessExecutionError: Unexpected error while running command.
-2023-07-11 10:36:30.999 7 WARNING ironic.drivers.modules.ipmitool [req-d0822a47-9736-484e-9baa-4c77ef82f2a6 6737de59870d4c149b842d813ff0d1f7 7096ea09f9844f87beecd990d32480e2 - default default] IPMI Error encountered, retrying "ipmitool -I lanplus -H 10.30.10.3 -L ADMINISTRATOR -p 6230 -U ADMIN -R 1 -N 5 -f /tmp/tmp31k606js power status" for node fc63d131-627a-41fc-ac18-ffe902c7e308. Error: Unexpected error while running command.
+openstack baremetal node boot device set BM01 pxe
+=> <device>  One of bios, cdrom, disk, pxe, safe, wanboot
+openstack baremetal node boot device show BM01
++-------------+-------+
+| Field       | Value |
++-------------+-------+
+| boot_device | pxe   |
+| persistent  | False |
++-------------+-------+
+=> 重启后，配置就会变化为None
 ```
 
-手动执行命令, ipmitool命令失败了? => 原来是端口搞错了，是623...
-```
-echo ADMIN > /tmp/tmpq4atxoud
-ipmitool -I lanplus -H 10.30.10.3 -L ADMINISTRATOR -p 6230 -U ADMIN -R 1 -N 5 -f /tmp/tmpq4atxoud power status
-Error: Unable to establish IPMI v2 / RMCP+ session
-```
+### 系统部署细节调研
 
 #### pxe启动部署镜像
 
@@ -286,12 +344,407 @@ boot
 ```
 => 6385是ironic_api监听的端口
 
-#### pxe启动失败, exec format error
+#### ipa安装部署系统流程步骤
 
-xxx, 重新下载，以及构建kernel镜像?
-=> 原来是我把kernel和initram搞反了。。。
+查看ipa调试日志, 发现它在下载镜像, 安装到硬盘上, 然后校验?
+```
+ironic-python-agent[414]: 2023-07-14 13:26:47.204 414 INFO root [-] Picked root device /dev/vda for node f9d4b0fd-a8d0-4685-8a5f-da3f69249fb4 based on root device hints None
+ironic-python-agent[414]: 2023-07-14 13:26:47.205 414 INFO ironic_python_agent.extensions.standby [-] Attempting to download image from http://10.30.2.98:8089/agent_images/f9d4b0fd-a8d0-4685-8a5f-da3f69249fb4
+ironic-python-agent[414]: 2023-07-14 13:27:31.760 414 INFO ironic_python_agent.extensions.standby [-] Image streamed onto device /dev/vda in 44.554930210113525 seconds
+ironic-python-agent[414]: 2023-07-14 13:27:31.760 414 DEBUG ironic_python_agent.extensions.standby [-] Verifying image at /dev/vda against sha512 checksum 2238ec208cf2c91330fb5a1da8a7e0725250dded2d7a68368f3a35e27c9530d5e4668043175dbdf5558100b1a1dbded0e388ac4f6c2b3e5c1c551304bbaa22dd verify_image /opt/ironic-python-agent/lib64/python3.6/site-packages/ironic_python_agent/extensions/standby.py:395
+ironic-python-agent[414]: 2023-07-14 13:27:31.760 414 DEBUG ironic_python_agent.extensions.standby [-] Verifying image at /dev/vda against sha512 checksum 2238ec208cf2c91330fb5a1da8a7e0725250dded2d7a68368f3a35e27c9530d5e4668043175dbdf5558100b1a1dbded0e388ac4f6c2b3e5c1c551304bbaa22dd verify_image /opt/ironic-python-agent/lib64/python3.6/site-packages/ironic_python_agent/extensions/standby.py:395
+```
+
+镜像大小就是qcow2镜像的大小，改成raw格式了?
+```
+(ironic-http)[root@kolla images]# ls f9d4b0fd-a8d0-4685-8a5f-da3f69249fb4/
+disk
+(ironic-http)[root@kolla images]# pwd
+/var/lib/ironic/images
+(ironic-http)[root@kolla images]# ls -li f9d4b0fd-a8d0-4685-8a5f-da3f69249fb4/
+total 803716
+15344498 -rw-r--r-- 2 ironic ironic 2147483648 Jul 14 17:00 disk
+```
+
+#### 验证qemu-img生成pc硬盘系统
+
+- 首先进入ubuntu 20.04 livecd
+
+- 然后安装qemu-img工具
+
+- 然后挂载img nfs服务器
+
+- 最后转换img到pc硬盘
+```
+qemu-img convert -f qcow2 -O raw debian10.img /dev/sda
+```
+=> 比较慢，跟img的虚拟大小有关!!!
+
+待尝试其他镜像: win10, win7, win2012, ubuntu 20.04, centos7等
+
+- debian 10 => ok
+- win10 => ok
+- ubuntu 20.04 => ok
+  focal-server-cloudimg-amd64.img
+  网上的这个镜像不是很好, 不能自动扩容磁盘分区，居然没有物理网卡
+  用自己安装的虚拟机ubuntu-kolla感觉挺好
+- zstack => ok
+  zstack c76系统，可以不错
+- KSVD => ok
+
+#### vbmc模拟裸金属机器
+
+kolla部署ironic的文档有相关资料:
+https://brk3.github.io/post/kolla-ironic-libvirt/
+
+安装使用, 例如把libvirt虚拟机virtual-baremetal配置作为一个裸金属机器:
+```
+yum install python-pip python-devel libvirt-devel gcc
+pip install virtualbmc
+vbmc add virtual-baremetal --port 6230 --username admin --password password --address 0.0.0.0
+vbmc start --libvirt-uri=qemu:///session virtual-baremetal
+```
+
+使用ipmitool验证:
+```
+ipmitool -I lanplus -H <host node ip> -L ADMINISTRATOR -p 6230 \
+  -U admin -R 12 -N 5 -P password power status
+```
+
+注意事项:
+- vbmcd 这个命令启动vbmc程序
+- $HOME/.vbmc/master.pid 这个可能要启动前需要手动删除
+
+关键字《vbmc docker container》
+
+https://hub.docker.com/r/solidcommand/virtualbmc
+```
+docker run -d --name virtualbmc --network host \
+  -v $HOME/.ssh/id_rsa:/virtualbmc/.ssh/id_rsa:ro \
+  solidcommand/virtualbmc
+
+docker exec -i -t virtualbmc vbmc add ironic-vm1 --port 6231 --libvirt-uri 'qemu+ssh://root@node8/system' --no-daemon
+docker exec -i -t virtualbmc vbmc add ironic-vm1 --port 6231 --libvirt-uri 'qemu+tcp://root@node8/system' --no-daemon
+docker exec -i -t virtualbmc vbmc start 'ironic-vm1' --no-daemon
+docker exec -i -t virtualbmc vbmc list
+
+ipmitool -I lanplus -U admin -P password -H 127.0.0.1 -p 6231 power status
+```
+
+## 概念
+
+### 部署方式
+
+参考openstack ironic架构文档: https://docs.openstack.org/ironic/yoga/user/architecture.html
+
+默认是direct部署?
+
+Example: PXE Boot and Direct Deploy Process¶
+This process is how Direct deploy works.
+![](2023-07-11-15-57-01.png)
+
+=> 注意： 是通过节点的网络接口获取dhcp，配置pxe的，而不是ironic的dhcp...
+
+https://docs.openstack.org/ironic/yoga/admin/interfaces/deploy.html
+还有其他部署方式:
+
+- Ansible deploy
+- Anaconda deploy
+- Ramdisk deploy
+- Custom agent deploy
+
+https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/9/html-single/performing_an_advanced_rhel_9_installation/index
+RHEL9可以以如下方式安装:
+- GUI-based installations
+- System or cloud image-based installations
+- Advanced installations
+  - Perform an automated RHEL installation using Kickstart
+  - Register and install RHEL from the Content Delivery Network
+
+#### 准备部署镜像
+
+=> agent下载镜像进行安装，而不是提供iscsi设备安装
+
+[(好)Ironic介绍](https://doodu.gitbooks.io/openstack/content/ironicji_zhu_fen_xiang.html)
+我们把fake驱动排除，其他的驱动可以分为两类：
+
+- 一是以pex 或者 iscsi 为前缀的驱动采用PXE部署机制，这些驱动将根硬盘作为iSCSI设备暴露给ironic conductor，由conductor将镜像复制到这里.
+- 二是以agent_ 为前缀的驱动采用Agent部署机制，conductor准备一个存储在swift上的镜像URL给IPA，由IPA下载镜像和完成部署的操作。
+从Kilo版开始，所有驱动使用agent进行部署。
+
+### 其他
+
+[【重识云原生】计算第2.6节——裸金属方案](https://blog.csdn.net/junbaozi/article/details/123834314)
+=> 提到了很多裸金属支持的功能
+
+- 1.2.4 带外批量运维
+  支持在线批量管理物理服务器生命周期，如开关机、重启、挂卷、删除、监控、远程登录、状态查询等。
+- 1.2.5 VPC网络+自定义网络
+  支持多种方式与虚拟机互联，可以建立虚拟私有网络（VPC），也可以通过自定义网络，以满足不同网络安全需求。VPC网络构建出一个安全隔离的网络环境，可以灵活自定义IP地址范围、配置路由表和网关、 创建子网等，实现弹性IP、弹性带宽、共享带宽等功能。
+- 1.2.8 管理节点提供部署服务
+  小规模部署服务如DHCP服务、TFTP服务、PXE服务等可以由管理节点提供，而不需要单独配置一台部署服务器，造成资源浪费；当然，达到一定规模，单独配置部署服务器十分有必要的，可以减轻管理节点压力，专机专用。
+
+从PACKET的架构图看，PACKET的裸金属云服务主要分为以下几个模块：
+- Magnum IP模块的功能是多租户的IP地址管理，IPAM是IP Address Management的缩写。
+- PB&J模块的功能是电源和启动管理。
+- Tinkerbell模块的作用是iPXE服务器和镜像管理。
+- Soren模块的功能是流量管理和分析。
+- Narwhal模块的功能是物理交换机和SDN的管理。
+- SOS模块的功能是串口和远程登录的管理。
+
+服务器启动，通过iPXE引导已经制作好的iSCSI系统镜像，这样就免去了安装操作系统的过程，并且服务器也不需要系统硬盘，节省了成本。
+=> 这个怎么实现的? 某些系统支持性不是很好吧?
+
+网络方面，裸金属服务器本质上是运行在Underlay网络的，如果要和云上已有的云主机、云存储等云产品打通，需要为其封装成overlay网络，如此才能够和云主机一样的配置ACL、VPC、负载均衡等网络功能。
+
+对于网络打通，一方面现有头部云厂商均基于智能网卡方案，在一张PCI扩展卡上实现了基于VirtIO的网络半虚拟化能力，以此完成Overlay网络封装；另一方，对于裸金属集群，会有专有裸金属网关来负责VPC网络打通（例如腾讯云的就叫XGW）。
+
+裸金属服务基于开源社区OpenStack的Ironic组件能力，通过华为自研增强实现裸金属服务器的发放功能。裸金属服务通过PXE技术从服务器自动下载并加载操作系统，调用IPMI带外管理接口实现裸金属服务器的上电、下电、重启等操作，通过调用Nova组件的接口实现计算资源管理，调用Neutron组件的接口实现网络的发放和配置，调用Cinder组件的接口为裸金属服务器提供基于远端存储的云硬盘。通过Cloud-init从metadata服务等数据源获取数据并对裸金属服务器进行配置，包括：主机名、用户名、密码等。
+=> cloud-init配置, 我这边失败的, why?
+
+裸金属镜像里面不植入任何管理软件，如果用户有自动化挂载云硬盘和组Bond的高级特性需求，可选择在裸金属服务里面安装华为提供的Agent完成挂载云硬盘和组Bond功能。
+
+3. Neutron中的SDN插件会接收到Port创建和更新的消息，通过SDN设置TOR交换机上的VLAN，自动化完成网络配置工作，无需手动配置交换机。
+
+https://github.com/huaweicloudDocs/bms/blob/master/cn.zh-cn/API%E5%8F%82%E8%80%83/%E5%88%9B%E5%BB%BA%E8%A3%B8%E9%87%91%E5%B1%9E%E6%9C%8D%E5%8A%A1%E5%99%A8.md
+说明： 此时，对于安装了Cloud-init镜像的Linux裸金属服务器，若指定user_data字段，则该adminPass字段无效；对于安装了Cloudbase-init镜像的Windows裸金属服务器，若指定元数据metadata字段中的admin_pass，则该adminPass字段无效。
+- 不支持文件注入功能。
+- 目前仅支持创建包周期裸金属服务器。
+- 不支持市场镜像创建裸金属服务器
+
+[HCS裸金属服务介绍](https://www.huoban.com/news/post/713.html)
+华为HCS裸金属服务基于开源社区OpenStack的Ironic组件能力，并通过华为自研增强实现裸金属服务器的发放功能。裸金属服务通过PXE技术从服务器自动下载并加载操作系统，调用IPMI带外管理接口实现裸金属服务器的上电、下电、重启等操作，通过调用Nova组件的接口实现计算资源管理，调用Neutron组件的接口实现网络的发放和配置，调用Cinder组件的接口为裸金属服务器提供基于远端存储的云硬盘。通过Cloud-init从metadata服务等数据源获取数据并对裸金属服务器进行配置，包括：主机名、用户名密码等。
+
+[使用disk-image-builder（DIB）制作Ironic 裸金属镜像](http://120.132.124.40:8877/zixun/24411.html)
+很奇怪前面定义的密码安装完系统之后不能登录，
+
+https://doc.hcs.huawei.com/zh-cn/api/ecs/ApicomCreateServersV2.html
+使用支持Cloud-init或Cloudbase-init功能的镜像创建云服务器时，adminPass参数无效。对于Linux弹性云服务器，如果需要注入密码，只能使用user_data进行注入，对于Windows弹性云服务器，如果需要注入密码，只能通过元数据admin_pass进行注入。
+
+
+#### 网络
+
+[ironic-简介](https://www.bladewan.com/2017/05/08/ironic/)
+在Newton版前，ironic都是不支持多租户，都是在一个flat网络上，互相之间是没有隔离关系的。
+
+=> 后面的版本怎么支持多租户的? => 优先级低
+
+[OpenStack Ironic 裸金属服务搭建](https://howardlau.me/programming/openstack-ironic-baremetal.html)
+上图是一种可行的网络拓扑，其中 API 和 DB 服务器和普通的 Web 服务器一样，可以部署在任意的地方，只要裸机控制节点和裸金属服务器可以访问就行了，托管在云上也是 OK 的。裸机控制节点则建议提供 3 个不同的子网，一个用于访问 API 服务器，一个用于提供裸金属集群的业务网，一个用于连接管理接口的管理网。
+
+开关机的流程：
+- 6.IPA 启动后，回调 Conductor，通知它下载用户镜像，然后 IPA 开始部署用户操作系统镜像
+- ...
+
+创建镜像
+从虚拟机镜像转换
+先像平时一样把虚拟机安装好，然后装好硬件需要的驱动，打开所有网络接口的 DHCP 功能，安装 cloud-init 包和其他需要的软件，把 vmlinuz 和 initrd 拷贝出来，导出虚拟磁盘之后用 qemu-img 转换 qcow2。
+
+驱动用的是idrac, 是什么? => 类似ipmi? => 还用了redfish
+```
+export SERVER_NAME=bm-server
+export DRIVER=idrac
+baremetal node create --driver $SERVER_NAME --name $SERVER_NAME --resource-class $FLAVOR_NAME
+```
+
+这时候，你可以手动用 baremetal port create 命令创建网卡 MAC 和节点 UUID 对应的关系，也可以用 baremetal node inspect 命令让 Ironic 自动调取远程管理接口来填充信息。
+=> 这个驱动可以inspect获取硬件信息, 而ipmi驱动不行。。。
+
+#### 制作部署用户镜像
+
+问题:
+- 跟制作openstack镜像有什么区别?
+  应该是多了一些物理设备驱动?
+- 怎么支持部署用户镜像?
+  就是网卡配置dhcp, 然后安装cloud-init?
+
+[diskimage-builder官方参考手册](https://docs.openstack.org/diskimage-builder/latest/)
+
+[Add images to the Image service](https://docs.openstack.org/ironic/yoga/install/configure-glance-images.html)
+=> 上传用户镜像，设置内核，以及initramfs作用是啥? => 分区表镜像才设置这个属性!!!
+For partition images to be used only with local boot (the default) the img_type property must be set:
+```
+ openstack image create my-image --public \
+  --disk-format qcow2 --container-format bare \
+  --property img_type=partition --file my-image.qcow2
+```
+
+#### 制作ironic-python-agent镜像
+
+[官方文档 - diskimage-builder images](https://docs.openstack.org/ironic-python-agent-builder/latest/admin/dib.html)
+
+ubuntu 20.04处理
+```
+export ELEMENTS_PATH=/usr/local/share/ironic-python-agent-builder/dib
+
+cat > sources.list.debian << EOF
+deb http://docker.iefcu.cn:5565/repository/bullseye-proxy/ bullseye main
+deb http://docker.iefcu.cn:5565/repository/bullseye-proxy/ bullseye-updates main
+EOF
+
+export DIB_RELEASE=bullseye
+export DIB_APT_SOURCES="$(pwd)/sources.list.debian"
+
+export DIB_DEV_USER_USERNAME=ipa
+export DIB_DEV_USER_PWDLESS_SUDO=yes
+export DIB_DEV_USER_PASSWORD='123'
+disk-image-create -o ironic-python-agent \
+  debian ironic-python-agent-ramdisk devuser
+```
+
+https://docs.openstack.org/ironic-python-agent/queens/install/index.html
+[真官方文档 - Installing Ironic Python Agent](https://docs.openstack.org/ironic-python-agent/yoga/install/index.html)
+=> ipa镜像解释，最官方了...
+下载tinyipa使用
+```
+wget https://tarballs.opendev.org/openstack/ironic-python-agent/tinyipa/files/tinyipa-stable-yoga.gz
+wget https://tarballs.opendev.org/openstack/ironic-python-agent/tinyipa/files/tinyipa-stable-yoga.vmlinuz
+```
+
+[官方文档 - Troubleshooting Ironic-Python-Agent (IPA)](https://docs.openstack.org/ironic-python-agent/latest/admin/troubleshooting.html)
+=> 刚好ipa安装部署系统，我想要调试，待看看 `sudo journalctl -u ironic-python-agent`
+```
+export DIB_DEV_USER_USERNAME=ipa
+export DIB_DEV_USER_PWDLESS_SUDO=yes
+export DIB_DEV_USER_PASSWORD='123'
+export DIB_DEV_USER_AUTHORIZED_KEYS=$HOME/.ssh/id_rsa.pub
+ironic-python-agent-builder -o /path/to/custom-ipa -e devuser debian
+```
+
+[ironic book - 6.0 Ironic 映像](https://ironic-book.readthedocs.io/zh_CN/latest/ironic/images.html)
+=> 很多ironic的相关知识
+
+制作ironic deploy镜像其实就是在普通镜像中添加一个ipa服务，用来裸机和ironic通信。
+官方推荐制作镜像的工具有两个，分别是CoreOS tools和disk-image-builder 具体链接如下:
+https://docs.openstack.org/project-install-guide/baremetal/ocata/deploy-ramdisk.html
+
+User 映像
+user 映像又分为 partition 映像和 whole disk 映像，两者的区别是 whole disk 映像包含分区表和 boot。目前 partition 映像已经很少 使用了，现在基本都使用 whole disk 映像。
+
+镜像驱动问题
+我们使用虚机制作的镜像安装在物理机上，很可能缺少驱动，而导致用户 系统起不来。这里我们以 CentOS 为例，说明如何重新制作驱动。
+```
+mount -o loop CentOS.iso /mnt
+cd /mnt/isolinux
+lsinitrd initrd.img | grep "\.ko" | awk -F / '{print $NF}' | tr "\n" " "
+
+# 将如上命令获得的ko列表拷贝到 /etc/dracut.conf 中
+add_drivers+=""
+
+rm -rf /boot/*kdump.img
+dracut --force
+```
+
+https://docs.openeuler.org/zh/docs/22.03_LTS/docs/thirdparty_migration/OpenStack-train.html
+deploy ramdisk镜像制作
+```
+export DIB_DEV_USER_USERNAME=ipa \
+export DIB_DEV_USER_PWDLESS_SUDO=yes \
+export DIB_DEV_USER_PASSWORD='123'
+ironic-python-agent-builder centos -o /mnt/ironic-agent-ssh -b origin/stable/rocky -e selinux-permissive -e devuser
+```
+
+[制作Openstack Ironic裸金属的部署镜像和系统镜像](https://zhuanlan.zhihu.com/p/350215847)
+
+```
+export DIB_DEV_USER_USERNAME=ipa
+export DIB_DEV_USER_PASSWORD=123
+export DIB_DEV_USER_PWDLESS_SUDO=YES
+disk-image-create ironic-agent centos7 -o ironic-agent devuser
+```
+=> 安装报错: `Element 'ironic-agent' not found`
+
+还可以用Buildroot创建OpenStack Ironic部署镜像...
+
+#### irnoic使用的技术
+
+=> 使用cloud-init初始化操作系统?
+  => 还可以使用config driver?
+
+[IRONIC的网络方案系列（一）](https://cloud.tencent.com/developer/news/161748)
+
+在描述完物理服务器的组网图之后，接着简单概述下Ironic部署需要用到的技术。
+
+- 1）：Ironic使用IPMI控制物理服务器的上下电、设置开机启动顺序（PXE启动或DISK启动）、获取电源状态、获取传感器状态、控制台重定向等。
+
+- 2）：Ironic 使用PXE引导启动用于部署的ramdisk，且这个ramdisk内包含一个agent。它与Ironic交互，执行Ironic下发的命令。注，虽然Ironic支持iScsi和PXE等多种部署方式，本文以agent部署方式为例说明。
+
+- 3）：cloud-init, 与虚拟机镜像一样，Ironic通过集成在镜像中的cloud-init初始化操作系统。包括创建用户、修改密码、配置网络等。
+
+#### 裸金属终端控制台Console
+
+=> 未验证, 后续调研一下
+
+https://blog.51cto.com/u_15301988/3160308
+
+Ironic 支持两种 Console 类型：
+
+- Shellinabox
+- Socat
+
+Shellinabox 可以将终端输出转换成 Ajax 实现的 http 服务，可以直接通过浏览器访问，呈现出类似 Terminal 的界面。Socat 与 Shellinabox 类似，都是充当一个管道作用，只不过 Socat 是将终端流重定向到 TCP 连接。Shellinabox 是比较早的方式，它的限制在于只能在 Ironic Conductor 节点上运行 WEB 服务，访问范围受限，所以社区又用 Socat 实现了一套。Socat 提供 TCP 连接，可以和 Nova 的 Serial Console 对接。要使用这两者，需要在 Ironic Conductor 节点安装相应的工具。Socat 在 yum 源里就可以找到，Shellinabox 不在标准源里，要从 EPEL 源里下载，它没有外部依赖，所以直接下载这个 rpm 包安装就可以了。Ironic 的驱动中，以 Socat 结尾的驱动是支持 Socat 的，比如 agent_ipmitool_socat，其它的则是 Shellinabox 方式。使用哪种终端方式，在创建节点时要确定好。这两种方式都是双向的，可以查看终端输出，也可以键盘输入。
+
+https://blog.csdn.net/OldHusband/article/details/112794051
+```
+openstack baremetal node set BM01 --console-interface ipmitool-socat
+openstack baremetal node set BM01 --console-interface ipmitool-shellinabox
+
+openstack baremetal node console enable $BAREMETAL_NODE_UUID
+openstack baremetal node console show $BAREMETAL_NODE_UUID
+```
+
+#### 系统启动
+
+[(好, 很长)Ironic介绍](https://doodu.gitbooks.io/openstack/content/ironicji_zhu_fen_xiang.html)
+=> 还有代码分析...
+
+- bootloader（引导程序，常见的有GRUB、LILO）
+- kernel（内核）
+- ramdisk（虚拟内存盘）
+- initrd/initramfs （初始化内存磁盘镜像）
+
+下面我们分别介绍每个概念：
+
+- `引导加载程序`是系统加电后运行的第一段软件代码。PC机中的引导加载程序由BIOS(其本质就是一段固件程序)和位于硬盘MBR（主引导记录，通常位于第一块硬盘的第一个扇区）中的OS BootLoader（比如，LILO和GRUB等）一起组成。BIOS在完成硬件检测和资源分配后，硬盘MBR中的BootLoader读到系统的RAM中，然后控制权交给OS BootLoader。
+- bootloader负责将kernel和ramdisk从硬盘读到内存中，然后跳转到内核的入口去运行。
+- kernel是Linux的内核，包含最基本的程序。
+- ramdisk是一种基于内存的虚拟文件系统，就好像你又有一个硬盘，你可以对它上面的文件添加修改删除等等操作。但是一掉电，就什么也没有了，无法保存。一般驱动程序放在这里面。
+- initrd是boot loader initialized RAM disk, 顾名思义，是在系统初始化引导时候用的ramdisk。也就是由启动加载器所初始化的RamDisk设备，它的作用是完善内核的模块机制，让内核的初始化流程更具弹性；内核以及initrd，都由 bootloader在机子启动后被加载至内存的指定位置，主要功能为按需加载模块以及按需改变根文件系统。initramfs与initrd功能类似，是initrd的改进版本，改进了initrd大小不可变等等缺点。
+
+#### IPMI接口
+
+[剖析ironic](https://doodu.gitbooks.io/openstack-ironic/content/ironicpou_xi.html)
+
+有一张图, 讲解pxe流程, 还行
+
+利用IPMI可以实现以下功能
+- 可以在服务器通电（没有启动操作系统）情况下，对它进行远程管理：开机，关机，重启
+- 基于文本的控制台重定向，可以远程查看和修改BIOS设置，系统启动过程，登入系统等
+- 可以远程通过串口IP映射(SoL)连接服务器，解决ssh服务无法访问，远程安装系统，查看系统启动故障等问题
+- 可以通过系统的串行端口进行访问
+- 故障日志记录和 SNMP 警报发送，访问系统事件日志 (System Event Log ,SEL) 和传感器状况
+
+IPMI技术功能点总结：
+
+- 远程电源控制 (on / off / cycle / status)
+- 串口的IP映射 Serial over LAN (SoL)
+- 支持健康关机（Graceful shutdown support）
+- 机箱环境监控 (温度, 风扇转速, CPU电压等)
+- 远程设备身份LED控制(Remote ID LED control)
+- 系统事件日志（System event log）
+- 平台事件跟踪（Platform Event Traps）
+- 数据记录（Data logging）
+- 虚拟KVM会话（Virtual KVM）
+- 虚拟媒介（Virtual Media）
+
+参考资料： https://en.wikipedia.org/wiki/Intelligent_Platform_Management_Interface
+
+## FAQ
 
 #### node状态一直卡在wait call-back
+
+这个问题困扰我最久, 需要搞清楚节点部署系统的流程才行
+=> 最后发现是node无法向neutron获取到pxe dhcp ip地址导致的
 
 猜测可能是nova给node配置image info有问题，看看相关日志，ironic部署server，需要vmlinuz和initrd的。。。以及最后的qcow2镜像?
 => 可能还没有到那一步，就出错了!
@@ -420,537 +873,39 @@ $ ironic driver-properties pxe_ipmitool
 
 openstack --os-baremetal-api-version 1.31 baremetal driver show ipmi
 
-#### 设置启动设备
 
-例如设置为pxe启动
-```
-openstack baremetal node boot device set BM01 pxe
-=> <device>  One of bios, cdrom, disk, pxe, safe, wanboot
-openstack baremetal node boot device show BM01
-+-------------+-------+
-| Field       | Value |
-+-------------+-------+
-| boot_device | pxe   |
-| persistent  | False |
-+-------------+-------+
-=> 重启后，配置就会变化为None
-```
+#### pxe启动失败, exec format error
 
-#### 配置端口mac地址
+xxx, 重新下载，以及构建kernel镜像?
+=> 原来是我把kernel和initram搞反了。。。
 
-创建裸机端口：
-```
-openstack baremetal port create --node  node_uuid node_mac_address
-openstack baremetal port create --node  e6423e53-740a-46f6-8c24-06fe8f21e53a  52:54:84:00:00:f7
-```
-- node_uuid：创建node时生成的uuid
-- node_mac_address：裸机的网卡mac地址；如果裸机上有多个网卡，就输入和Ironic Pxe服务相连的网卡；（Pxe简单说用于下载镜像，可以参考我的相关文章）
+#### 裸金属节点状态无法从enroll转为manage
 
-#### 创建flavor
+=> 原来是端口搞错了，物理机ipmi端口是623...
 
-类似于裸金属节点的机型吧
+查看日志: /var/log/kolla/ironic/ironic-conductor.log
 ```
-openstack flavor create my-baremetal-flavor \
-  --ram 512 --disk 1 --vcpus 1 \
-  --property resources:CUSTOM_BAREMETAL_RESOURCE_CLASS=1 \
-  --property resources:VCPU=0 \
-  --property resources:MEMORY_MB=0 \
-  --property resources:DISK_GB=0
+Command: ipmitool -I lanplus -H 10.30.10.3 -L ADMINISTRATOR -p 6230 -U ADMIN -R 1 -N 5 -f /tmp/tmpq4atxoud power status
+Exit code: 1
+Stdout: ''
+Stderr: 'Error: Unable to establish IPMI v2 / RMCP+ session\n': oslo_concurrency.processutils.ProcessExecutionError: Unexpected error while running command.
+2023-07-11 10:36:30.999 7 WARNING ironic.drivers.modules.ipmitool [req-d0822a47-9736-484e-9baa-4c77ef82f2a6 6737de59870d4c149b842d813ff0d1f7 7096ea09f9844f87beecd990d32480e2 - default default] IPMI Error encountered, retrying "ipmitool -I lanplus -H 10.30.10.3 -L ADMINISTRATOR -p 6230 -U ADMIN -R 1 -N 5 -f /tmp/tmp31k606js power status" for node fc63d131-627a-41fc-ac18-ffe902c7e308. Error: Unexpected error while running command.
 ```
 
-#### ipa安装部署系统流程步骤
-
-查看ipa调试日志, 发现它在下载镜像, 安装到硬盘上, 然后校验?
+手动执行命令, ipmitool命令失败了?
 ```
-ironic-python-agent[414]: 2023-07-14 13:26:47.204 414 INFO root [-] Picked root device /dev/vda for node f9d4b0fd-a8d0-4685-8a5f-da3f69249fb4 based on root device hints None
-ironic-python-agent[414]: 2023-07-14 13:26:47.205 414 INFO ironic_python_agent.extensions.standby [-] Attempting to download image from http://10.30.2.98:8089/agent_images/f9d4b0fd-a8d0-4685-8a5f-da3f69249fb4
-ironic-python-agent[414]: 2023-07-14 13:27:31.760 414 INFO ironic_python_agent.extensions.standby [-] Image streamed onto device /dev/vda in 44.554930210113525 seconds
-ironic-python-agent[414]: 2023-07-14 13:27:31.760 414 DEBUG ironic_python_agent.extensions.standby [-] Verifying image at /dev/vda against sha512 checksum 2238ec208cf2c91330fb5a1da8a7e0725250dded2d7a68368f3a35e27c9530d5e4668043175dbdf5558100b1a1dbded0e388ac4f6c2b3e5c1c551304bbaa22dd verify_image /opt/ironic-python-agent/lib64/python3.6/site-packages/ironic_python_agent/extensions/standby.py:395
-ironic-python-agent[414]: 2023-07-14 13:27:31.760 414 DEBUG ironic_python_agent.extensions.standby [-] Verifying image at /dev/vda against sha512 checksum 2238ec208cf2c91330fb5a1da8a7e0725250dded2d7a68368f3a35e27c9530d5e4668043175dbdf5558100b1a1dbded0e388ac4f6c2b3e5c1c551304bbaa22dd verify_image /opt/ironic-python-agent/lib64/python3.6/site-packages/ironic_python_agent/extensions/standby.py:395
+echo ADMIN > /tmp/tmpq4atxoud
+ipmitool -I lanplus -H 10.30.10.3 -L ADMINISTRATOR -p 6230 -U ADMIN -R 1 -N 5 -f /tmp/tmpq4atxoud power status
+Error: Unable to establish IPMI v2 / RMCP+ session
 ```
 
-镜像大小就是qcow2镜像的大小，改成raw格式了?
-```
-(ironic-http)[root@kolla images]# ls f9d4b0fd-a8d0-4685-8a5f-da3f69249fb4/
-disk
-(ironic-http)[root@kolla images]# pwd
-/var/lib/ironic/images
-(ironic-http)[root@kolla images]# ls -li f9d4b0fd-a8d0-4685-8a5f-da3f69249fb4/
-total 803716
-15344498 -rw-r--r-- 2 ironic ironic 2147483648 Jul 14 17:00 disk
-```
+#### Could not find the following interface in the 'ironic.hardware.interfaces.deploy' entrypoint: iscsi
 
-### kolla安装ironic
-
-global.yml配置
-```
-enable_ironic: "yes"
-ronic_dnsmasq_interface: "eth1"
-ironic_cleaning_network: "enp4s3"
-ironic_dnsmasq_dhcp_ranges:
-  - range: "192.168.83.100,192.168.83.180"
-    routers: "192.168.83.192"
-ironic_dnsmasq_boot_file: pxelinux.0
-ironic_inspector_kernel_cmdline_extras: ['ipa-lldp-timeout=90.0', 'ipa-collect-lldp=1']
-ironic_http_port: "8089"
-```
-
-kolla容器:
-- ubuntu-source-ironic-neutron-agent:yoga ironic_neutron_agent
-- ubuntu-source-dnsmasq:yoga              ironic_dnsmasq
-- ubuntu-source-ironic-pxe:yoga           ironic_http
-- ubuntu-source-ironic-pxe:yoga           ironic_tftp
-- ubuntu-source-ironic-inspector:yoga     ironic_inspector
-- ubuntu-source-ironic-api:yoga           ironic_api
-- ubuntu-source-ironic-conductor:yoga     ironic_conductor
-- ubuntu-source-nova-compute-ironic:yoga  nova_compute_ironic
-
-### 验证qemu-img生成pc硬盘系统
-
-- 首先进入ubuntu 20.04 livecd
-
-- 然后安装qemu-img工具
-
-- 然后挂载img nfs服务器
-
-- 最后转换img到pc硬盘
-```
-qemu-img convert -f qcow2 -O raw debian10.img /dev/sda
-```
-=> 比较慢，跟img的虚拟大小有关!!!
-
-待尝试其他镜像: win10, win7, win2012, ubuntu 20.04, centos7等
-
-- debian 10 => ok
-- win10 => ok
-- ubuntu 20.04 => ok
-  focal-server-cloudimg-amd64.img
-  网上的这个镜像不是很好, 不能自动扩容磁盘分区，居然没有物理网卡
-  用自己安装的虚拟机ubuntu-kolla感觉挺好
-- zstack => ok
-  zstack c76系统，可以不错
-- KSVD => ok
-
-## devstack 安装使用ironic
-
-关键字《devstack ironic plugin》
-[ironic官方文档](https://docs.openstack.org/ironic/latest/contributor/dev-quickstart.html#deploying-ironic-with-devstack)
+ipmi驱动不支持iscsi安装部署系统, 支持direct安装
 
 ```
-# Reclone each time
-RECLONE=no
-
-# Enable Ironic plugin
-enable_plugin ironic https://git.openstack.org/openstack/ironic stable/stein
-
-# Enable Swift for the direct deploy interface.
-enable_service s-proxy
-enable_service s-object
-enable_service s-container
-enable_service s-account
-
-# Swift temp URL's are required for the direct deploy interface
-SWIFT_ENABLE_TEMPURLS=True
-
-# Create 3 virtual machines to pose as Ironic's baremetal nodes.
-IRONIC_VM_COUNT=1
-IRONIC_BAREMETAL_BASIC_OPS=True
-DEFAULT_INSTANCE_TYPE=baremetal
-
-# Enable additional hardware types, if needed.
-#IRONIC_ENABLED_HARDWARE_TYPES=ipmi,fake-hardware
-# Don't forget that many hardware types require enabling of additional
-# interfaces, most often power and management:
-#IRONIC_ENABLED_MANAGEMENT_INTERFACES=ipmitool,fake
-#IRONIC_ENABLED_POWER_INTERFACES=ipmitool,fake
-# The 'ipmi' hardware type's default deploy interface is 'iscsi'.
-# This would change the default to 'direct':
-#IRONIC_DEFAULT_DEPLOY_INTERFACE=direct
-
-# Change this to alter the default driver for nodes created by devstack.
-# This driver should be in the enabled list above.
-IRONIC_DEPLOY_DRIVER=ipmi
-
-# The parameters below represent the minimum possible values to create
-# functional nodes.
-IRONIC_VM_SPECS_RAM=1280
-IRONIC_VM_SPECS_DISK=10
-
-# Size of the ephemeral partition in GB. Use 0 for no ephemeral partition.
-IRONIC_VM_EPHEMERAL_DISK=0
-
-# To build your own IPA ramdisk from source, set this to True
-IRONIC_BUILD_DEPLOY_RAMDISK=False
-
-VIRT_DRIVER=ironic
-
-# Log all output to files
-LOGFILE=/opt/stack/devstack.log
-LOGDIR=/opt/stack/logs
-IRONIC_VM_LOG_DIR=/opt/stack/ironic-bm-logs
+Could not find the following interface in the 'ironic.hardware.interfaces.deploy' entrypoint: iscsi. Valid interfaces are ['direct']. (HTTP 400)
 ```
-
-#### vbmc模拟裸金属机器
-
-kolla部署ironic的文档有相关资料:
-https://brk3.github.io/post/kolla-ironic-libvirt/
-
-安装使用, 例如把libvirt虚拟机virtual-baremetal配置作为一个裸金属机器:
-```
-yum install python-pip python-devel libvirt-devel gcc
-pip install virtualbmc
-vbmc add virtual-baremetal --port 6230 --username admin --password password --address 0.0.0.0
-vbmc start --libvirt-uri=qemu:///session virtual-baremetal
-```
-
-使用ipmitool验证:
-```
-ipmitool -I lanplus -H <host node ip> -L ADMINISTRATOR -p 6230 \
-  -U admin -R 12 -N 5 -P password power status
-```
-
-注意事项:
-- vbmcd 这个命令启动vbmc程序
-- $HOME/.vbmc/master.pid 这个可能要启动前需要手动删除
-
-关键字《vbmc docker container》
-
-https://hub.docker.com/r/solidcommand/virtualbmc
-```
-docker run -d --name virtualbmc --network host \
-  -v $HOME/.ssh/id_rsa:/virtualbmc/.ssh/id_rsa:ro \
-  solidcommand/virtualbmc
-
-docker exec -i -t virtualbmc vbmc add ironic-vm1 --port 6231 --libvirt-uri 'qemu+ssh://root@node8/system' --no-daemon
-docker exec -i -t virtualbmc vbmc add ironic-vm1 --port 6231 --libvirt-uri 'qemu+tcp://root@node8/system' --no-daemon
-docker exec -i -t virtualbmc vbmc start 'ironic-vm1' --no-daemon
-docker exec -i -t virtualbmc vbmc list
-
-ipmitool -I lanplus -U admin -P password -H 127.0.0.1 -p 6231 power status
-```
-
-## 概念
-
-### 部署方式
-
-参考openstack ironic架构文档: https://docs.openstack.org/ironic/yoga/user/architecture.html
-
-默认是direct部署?
-
-Example: PXE Boot and Direct Deploy Process¶
-This process is how Direct deploy works.
-![](2023-07-11-15-57-01.png)
-
-=> 注意： 是通过节点的网络接口获取dhcp，配置pxe的，而不是ironic的dhcp...
-
-https://docs.openstack.org/ironic/yoga/admin/interfaces/deploy.html
-还有其他部署方式:
-
-- Ansible deploy
-- Anaconda deploy
-- Ramdisk deploy
-- Custom agent deploy
-
-https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/9/html-single/performing_an_advanced_rhel_9_installation/index
-RHEL9可以以如下方式安装:
-- GUI-based installations
-- System or cloud image-based installations
-- Advanced installations
-  - Perform an automated RHEL installation using Kickstart
-  - Register and install RHEL from the Content Delivery Network
-
-#### 准备部署镜像
-
-=> agent下载镜像进行安装，而不是提供iscsi设备安装
-
-[(好)Ironic介绍](https://doodu.gitbooks.io/openstack/content/ironicji_zhu_fen_xiang.html)
-我们把fake驱动排除，其他的驱动可以分为两类：
-
-- 一是以pex 或者 iscsi 为前缀的驱动采用PXE部署机制，这些驱动将根硬盘作为iSCSI设备暴露给ironic conductor，由conductor将镜像复制到这里.
-- 二是以agent_ 为前缀的驱动采用Agent部署机制，conductor准备一个存储在swift上的镜像URL给IPA，由IPA下载镜像和完成部署的操作。
-从Kilo版开始，所有驱动使用agent进行部署。
-
-#### 裸金属节点状态机
-
-https://docs.openstack.org/ironic/latest/user/states.html
-
-Ironic状态机：
-https://blog.51cto.com/u_15301988/3160308
-https://docs.openstack.org/ironic/latest/user/states.html
-[(好)Ironic 裸金属管理服务 原创](https://blog.51cto.com/u_15301988/3244722)
-![](../imgs/69c1621926449668895fab770923672f.webp)
-
-状态变更过程:
-- 注册节点, 节点状态为enroll
-- 验证节点, 节点状态变为verifing, 然后manage
-- 发布节点, 节点状态变为available
-
-### 其他
-
-[【重识云原生】计算第2.6节——裸金属方案](https://blog.csdn.net/junbaozi/article/details/123834314)
-=> 提到了很多裸金属支持的功能
-
-- 1.2.4 带外批量运维
-  支持在线批量管理物理服务器生命周期，如开关机、重启、挂卷、删除、监控、远程登录、状态查询等。
-- 1.2.5 VPC网络+自定义网络
-  支持多种方式与虚拟机互联，可以建立虚拟私有网络（VPC），也可以通过自定义网络，以满足不同网络安全需求。VPC网络构建出一个安全隔离的网络环境，可以灵活自定义IP地址范围、配置路由表和网关、 创建子网等，实现弹性IP、弹性带宽、共享带宽等功能。
-- 1.2.8 管理节点提供部署服务
-  小规模部署服务如DHCP服务、TFTP服务、PXE服务等可以由管理节点提供，而不需要单独配置一台部署服务器，造成资源浪费；当然，达到一定规模，单独配置部署服务器十分有必要的，可以减轻管理节点压力，专机专用。
-
-从PACKET的架构图看，PACKET的裸金属云服务主要分为以下几个模块：
-- Magnum IP模块的功能是多租户的IP地址管理，IPAM是IP Address Management的缩写。
-- PB&J模块的功能是电源和启动管理。
-- Tinkerbell模块的作用是iPXE服务器和镜像管理。
-- Soren模块的功能是流量管理和分析。
-- Narwhal模块的功能是物理交换机和SDN的管理。
-- SOS模块的功能是串口和远程登录的管理。
-
-服务器启动，通过iPXE引导已经制作好的iSCSI系统镜像，这样就免去了安装操作系统的过程，并且服务器也不需要系统硬盘，节省了成本。
-=> 这个怎么实现的? 某些系统支持性不是很好吧?
-
-网络方面，裸金属服务器本质上是运行在Underlay网络的，如果要和云上已有的云主机、云存储等云产品打通，需要为其封装成overlay网络，如此才能够和云主机一样的配置ACL、VPC、负载均衡等网络功能。
-
-对于网络打通，一方面现有头部云厂商均基于智能网卡方案，在一张PCI扩展卡上实现了基于VirtIO的网络半虚拟化能力，以此完成Overlay网络封装；另一方，对于裸金属集群，会有专有裸金属网关来负责VPC网络打通（例如腾讯云的就叫XGW）。
-
-裸金属服务基于开源社区OpenStack的Ironic组件能力，通过华为自研增强实现裸金属服务器的发放功能。裸金属服务通过PXE技术从服务器自动下载并加载操作系统，调用IPMI带外管理接口实现裸金属服务器的上电、下电、重启等操作，通过调用Nova组件的接口实现计算资源管理，调用Neutron组件的接口实现网络的发放和配置，调用Cinder组件的接口为裸金属服务器提供基于远端存储的云硬盘。通过Cloud-init从metadata服务等数据源获取数据并对裸金属服务器进行配置，包括：主机名、用户名、密码等。
-=> cloud-init配置, 我这边失败的, why?
-
-裸金属镜像里面不植入任何管理软件，如果用户有自动化挂载云硬盘和组Bond的高级特性需求，可选择在裸金属服务里面安装华为提供的Agent完成挂载云硬盘和组Bond功能。
-
-3. Neutron中的SDN插件会接收到Port创建和更新的消息，通过SDN设置TOR交换机上的VLAN，自动化完成网络配置工作，无需手动配置交换机。
-
-https://github.com/huaweicloudDocs/bms/blob/master/cn.zh-cn/API%E5%8F%82%E8%80%83/%E5%88%9B%E5%BB%BA%E8%A3%B8%E9%87%91%E5%B1%9E%E6%9C%8D%E5%8A%A1%E5%99%A8.md
-说明： 此时，对于安装了Cloud-init镜像的Linux裸金属服务器，若指定user_data字段，则该adminPass字段无效；对于安装了Cloudbase-init镜像的Windows裸金属服务器，若指定元数据metadata字段中的admin_pass，则该adminPass字段无效。
-- 不支持文件注入功能。
-- 目前仅支持创建包周期裸金属服务器。
-- 不支持市场镜像创建裸金属服务器
-
-[HCS裸金属服务介绍](https://www.huoban.com/news/post/713.html)
-华为HCS裸金属服务基于开源社区OpenStack的Ironic组件能力，并通过华为自研增强实现裸金属服务器的发放功能。裸金属服务通过PXE技术从服务器自动下载并加载操作系统，调用IPMI带外管理接口实现裸金属服务器的上电、下电、重启等操作，通过调用Nova组件的接口实现计算资源管理，调用Neutron组件的接口实现网络的发放和配置，调用Cinder组件的接口为裸金属服务器提供基于远端存储的云硬盘。通过Cloud-init从metadata服务等数据源获取数据并对裸金属服务器进行配置，包括：主机名、用户名密码等。
-
-[使用disk-image-builder（DIB）制作Ironic 裸金属镜像](http://120.132.124.40:8877/zixun/24411.html)
-很奇怪前面定义的密码安装完系统之后不能登录，
-
-https://doc.hcs.huawei.com/zh-cn/api/ecs/ApicomCreateServersV2.html
-使用支持Cloud-init或Cloudbase-init功能的镜像创建云服务器时，adminPass参数无效。对于Linux弹性云服务器，如果需要注入密码，只能使用user_data进行注入，对于Windows弹性云服务器，如果需要注入密码，只能通过元数据admin_pass进行注入。
-
-
-#### 网络
-
-[ironic-简介](https://www.bladewan.com/2017/05/08/ironic/)
-在Newton版前，ironic都是不支持多租户，都是在一个flat网络上，互相之间是没有隔离关系的。
-
-=> 后面的版本怎么支持多租户的? => 优先级低
-
-[OpenStack Ironic 裸金属服务搭建](https://howardlau.me/programming/openstack-ironic-baremetal.html)
-上图是一种可行的网络拓扑，其中 API 和 DB 服务器和普通的 Web 服务器一样，可以部署在任意的地方，只要裸机控制节点和裸金属服务器可以访问就行了，托管在云上也是 OK 的。裸机控制节点则建议提供 3 个不同的子网，一个用于访问 API 服务器，一个用于提供裸金属集群的业务网，一个用于连接管理接口的管理网。
-
-开关机的流程：
-- 6.IPA 启动后，回调 Conductor，通知它下载用户镜像，然后 IPA 开始部署用户操作系统镜像
-- ...
-
-创建镜像
-从虚拟机镜像转换
-先像平时一样把虚拟机安装好，然后装好硬件需要的驱动，打开所有网络接口的 DHCP 功能，安装 cloud-init 包和其他需要的软件，把 vmlinuz 和 initrd 拷贝出来，导出虚拟磁盘之后用 qemu-img 转换 qcow2。
-
-驱动用的是idrac, 是什么? => 类似ipmi? => 还用了redfish
-```
-export SERVER_NAME=bm-server
-export DRIVER=idrac
-baremetal node create --driver $SERVER_NAME --name $SERVER_NAME --resource-class $FLAVOR_NAME
-```
-
-这时候，你可以手动用 baremetal port create 命令创建网卡 MAC 和节点 UUID 对应的关系，也可以用 baremetal node inspect 命令让 Ironic 自动调取远程管理接口来填充信息。
-=> 这个驱动可以inspect获取硬件信息, 而ipmi驱动不行。。。
-
-#### 制作部署用户镜像
-
-[diskimage-builder官方参考手册](https://docs.openstack.org/diskimage-builder/latest/)
-
-[Add images to the Image service](https://docs.openstack.org/ironic/yoga/install/configure-glance-images.html)
-=> 上传用户镜像，设置内核，以及initramfs作用是啥? => 分区表镜像才设置这个属性!!!
-For partition images to be used only with local boot (the default) the img_type property must be set:
-```
- openstack image create my-image --public \
-  --disk-format qcow2 --container-format bare \
-  --property img_type=partition --file my-image.qcow2
-```
-
-#### 制作ironic-python-agent镜像
-
-[官方文档 - diskimage-builder images](https://docs.openstack.org/ironic-python-agent-builder/latest/admin/dib.html)
-
-ubuntu 20.04处理
-```
-export ELEMENTS_PATH=/usr/local/share/ironic-python-agent-builder/dib
-
-cat > sources.list.debian << EOF
-deb http://docker.iefcu.cn:5565/repository/bullseye-proxy/ bullseye main
-deb http://docker.iefcu.cn:5565/repository/bullseye-proxy/ bullseye-updates main
-EOF
-
-export DIB_RELEASE=bullseye
-export DIB_APT_SOURCES="$(pwd)/sources.list.debian"
-
-export DIB_DEV_USER_USERNAME=ipa
-export DIB_DEV_USER_PWDLESS_SUDO=yes
-export DIB_DEV_USER_PASSWORD='123'
-disk-image-create -o ironic-python-agent \
-  debian ironic-python-agent-ramdisk devuser
-```
-
-https://docs.openstack.org/ironic-python-agent/queens/install/index.html
-[真官方文档 - Installing Ironic Python Agent](https://docs.openstack.org/ironic-python-agent/yoga/install/index.html)
-=> ipa镜像解释，最官方了...
-下载tinyipa使用
-```
-wget https://tarballs.opendev.org/openstack/ironic-python-agent/tinyipa/files/tinyipa-stable-yoga.gz
-wget https://tarballs.opendev.org/openstack/ironic-python-agent/tinyipa/files/tinyipa-stable-yoga.vmlinuz
-```
-
-[官方文档 - Troubleshooting Ironic-Python-Agent (IPA)](https://docs.openstack.org/ironic-python-agent/latest/admin/troubleshooting.html)
-=> 刚好ipa安装部署系统，我想要调试，待看看 `sudo journalctl -u ironic-python-agent`
-```
-export DIB_DEV_USER_USERNAME=ipa
-export DIB_DEV_USER_PWDLESS_SUDO=yes
-export DIB_DEV_USER_PASSWORD='123'
-export DIB_DEV_USER_AUTHORIZED_KEYS=$HOME/.ssh/id_rsa.pub
-ironic-python-agent-builder -o /path/to/custom-ipa -e devuser debian
-```
-
-[ironic book - 6.0 Ironic 映像](https://ironic-book.readthedocs.io/zh_CN/latest/ironic/images.html)
-=> 很多ironic的相关知识
-
-制作ironic deploy镜像其实就是在普通镜像中添加一个ipa服务，用来裸机和ironic通信。
-官方推荐制作镜像的工具有两个，分别是CoreOS tools和disk-image-builder 具体链接如下:
-https://docs.openstack.org/project-install-guide/baremetal/ocata/deploy-ramdisk.html
-
-User 映像
-user 映像又分为 partition 映像和 whole disk 映像，两者的区别是 whole disk 映像包含分区表和 boot。目前 partition 映像已经很少 使用了，现在基本都使用 whole disk 映像。
-
-镜像驱动问题
-我们使用虚机制作的镜像安装在物理机上，很可能缺少驱动，而导致用户 系统起不来。这里我们以 CentOS 为例，说明如何重新制作驱动。
-```
-mount -o loop CentOS.iso /mnt
-cd /mnt/isolinux
-lsinitrd initrd.img | grep "\.ko" | awk -F / '{print $NF}' | tr "\n" " "
-
-# 将如上命令获得的ko列表拷贝到 /etc/dracut.conf 中
-add_drivers+=""
-
-rm -rf /boot/*kdump.img
-dracut --force
-```
-
-https://docs.openeuler.org/zh/docs/22.03_LTS/docs/thirdparty_migration/OpenStack-train.html
-deploy ramdisk镜像制作
-```
-export DIB_DEV_USER_USERNAME=ipa \
-export DIB_DEV_USER_PWDLESS_SUDO=yes \
-export DIB_DEV_USER_PASSWORD='123'
-ironic-python-agent-builder centos -o /mnt/ironic-agent-ssh -b origin/stable/rocky -e selinux-permissive -e devuser
-```
-
-[制作Openstack Ironic裸金属的部署镜像和系统镜像](https://zhuanlan.zhihu.com/p/350215847)
-
-```
-export DIB_DEV_USER_USERNAME=ipa
-export DIB_DEV_USER_PASSWORD=123
-export DIB_DEV_USER_PWDLESS_SUDO=YES
-disk-image-create ironic-agent centos7 -o ironic-agent devuser
-```
-=> 安装报错: `Element 'ironic-agent' not found`
-
-还可以用Buildroot创建OpenStack Ironic部署镜像...
-
-#### irnoic使用的技术
-
-=> 使用cloud-init初始化操作系统?
-  => 还可以使用config driver?
-
-[IRONIC的网络方案系列（一）](https://cloud.tencent.com/developer/news/161748)
-
-在描述完物理服务器的组网图之后，接着简单概述下Ironic部署需要用到的技术。
-
-- 1）：Ironic使用IPMI控制物理服务器的上下电、设置开机启动顺序（PXE启动或DISK启动）、获取电源状态、获取传感器状态、控制台重定向等。
-
-- 2）：Ironic 使用PXE引导启动用于部署的ramdisk，且这个ramdisk内包含一个agent。它与Ironic交互，执行Ironic下发的命令。注，虽然Ironic支持iScsi和PXE等多种部署方式，本文以agent部署方式为例说明。
-
-- 3）：cloud-init, 与虚拟机镜像一样，Ironic通过集成在镜像中的cloud-init初始化操作系统。包括创建用户、修改密码、配置网络等。
-
-#### 裸金属服务器的生命周期
-
-[IRONIC的网络方案系列（一）](https://cloud.tencent.com/developer/news/161748)
-
-Ironic是OpenStack社区的子项目，专门用于提供裸机服务。它既可以独立使用也可以与nova、neutron等组件集成使用。对于被Ironic管理的物理服务器而言，主要有上架、部署、回收这三个阶段。
-
-- 上架阶段指的是，当物理服务器完成硬件安装、网络连线等工作后。由管理员将机器的信息注册到Ironic中进行纳管。这个阶段，需要使用Ironic inspect功能以实现物理服务器硬件配置信息以及上联接入交换机信息的自动采集。
-
-- 部署阶段指的是，当物理服务器完成上架后，处于可用状态。租（用）户根据业务需要指定镜像、网络等信息创建物理服务器实例。云平台执行资源调度、操作系统安装、网络配置等工作。有别于传统的人工部署和预先部署，租户可以在任意时刻按需选择不同的镜像、网络等信息。这个阶段，需要使用Ironic provision功能以实现配置信息的下发与自动化部署。一旦实例创建成功后，租（用）户可以使用物理服务器运行业务。
-
-- 回收阶段指的是，当物理服务器完成使用，由租（用）户申请释放资源。这个阶段，可以使用Ironic clean功能清理物理服务器上的残留数据。
-
-#### 裸金属终端Console
-
-=> TODO: 验证一下?
-
-https://blog.51cto.com/u_15301988/3160308
-
-Ironic 支持两种 Console 类型：
-
-- Shellinabox
-- Socat
-
-Shellinabox 可以将终端输出转换成 Ajax 实现的 http 服务，可以直接通过浏览器访问，呈现出类似 Terminal 的界面。Socat 与 Shellinabox 类似，都是充当一个管道作用，只不过 Socat 是将终端流重定向到 TCP 连接。Shellinabox 是比较早的方式，它的限制在于只能在 Ironic Conductor 节点上运行 WEB 服务，访问范围受限，所以社区又用 Socat 实现了一套。Socat 提供 TCP 连接，可以和 Nova 的 Serial Console 对接。要使用这两者，需要在 Ironic Conductor 节点安装相应的工具。Socat 在 yum 源里就可以找到，Shellinabox 不在标准源里，要从 EPEL 源里下载，它没有外部依赖，所以直接下载这个 rpm 包安装就可以了。Ironic 的驱动中，以 Socat 结尾的驱动是支持 Socat 的，比如 agent_ipmitool_socat，其它的则是 Shellinabox 方式。使用哪种终端方式，在创建节点时要确定好。这两种方式都是双向的，可以查看终端输出，也可以键盘输入。
-
-#### 系统启动
-
-[(好, 很长)Ironic介绍](https://doodu.gitbooks.io/openstack/content/ironicji_zhu_fen_xiang.html)
-=> 还有代码分析...
-
-- bootloader（引导程序，常见的有GRUB、LILO）
-- kernel（内核）
-- ramdisk（虚拟内存盘）
-- initrd/initramfs （初始化内存磁盘镜像）
-
-下面我们分别介绍每个概念：
-
-- `引导加载程序`是系统加电后运行的第一段软件代码。PC机中的引导加载程序由BIOS(其本质就是一段固件程序)和位于硬盘MBR（主引导记录，通常位于第一块硬盘的第一个扇区）中的OS BootLoader（比如，LILO和GRUB等）一起组成。BIOS在完成硬件检测和资源分配后，硬盘MBR中的BootLoader读到系统的RAM中，然后控制权交给OS BootLoader。
-- bootloader负责将kernel和ramdisk从硬盘读到内存中，然后跳转到内核的入口去运行。
-- kernel是Linux的内核，包含最基本的程序。
-- ramdisk是一种基于内存的虚拟文件系统，就好像你又有一个硬盘，你可以对它上面的文件添加修改删除等等操作。但是一掉电，就什么也没有了，无法保存。一般驱动程序放在这里面。
-- initrd是boot loader initialized RAM disk, 顾名思义，是在系统初始化引导时候用的ramdisk。也就是由启动加载器所初始化的RamDisk设备，它的作用是完善内核的模块机制，让内核的初始化流程更具弹性；内核以及initrd，都由 bootloader在机子启动后被加载至内存的指定位置，主要功能为按需加载模块以及按需改变根文件系统。initramfs与initrd功能类似，是initrd的改进版本，改进了initrd大小不可变等等缺点。
-
-#### IPMI接口
-
-[剖析ironic](https://doodu.gitbooks.io/openstack-ironic/content/ironicpou_xi.html)
-
-有一张图, 讲解pxe流程, 还行
-
-利用IPMI可以实现以下功能
-- 可以在服务器通电（没有启动操作系统）情况下，对它进行远程管理：开机，关机，重启
-- 基于文本的控制台重定向，可以远程查看和修改BIOS设置，系统启动过程，登入系统等
-- 可以远程通过串口IP映射(SoL)连接服务器，解决ssh服务无法访问，远程安装系统，查看系统启动故障等问题
-- 可以通过系统的串行端口进行访问
-- 故障日志记录和 SNMP 警报发送，访问系统事件日志 (System Event Log ,SEL) 和传感器状况
-
-IPMI技术功能点总结：
-
-- 远程电源控制 (on / off / cycle / status)
-- 串口的IP映射 Serial over LAN (SoL)
-- 支持健康关机（Graceful shutdown support）
-- 机箱环境监控 (温度, 风扇转速, CPU电压等)
-- 远程设备身份LED控制(Remote ID LED control)
-- 系统事件日志（System event log）
-- 平台事件跟踪（Platform Event Traps）
-- 数据记录（Data logging）
-- 虚拟KVM会话（Virtual KVM）
-- 虚拟媒介（Virtual Media）
-
-参考资料： https://en.wikipedia.org/wiki/Intelligent_Platform_Management_Interface
-
-
-## FAQ
 
 #### please change the port vnic_type back to "normal"
 
@@ -1001,7 +956,7 @@ du -sb /home/adam/ubuntu-server.img.qcow2
 
 #### 部署debian10镜像没有配置好用户名密码
 
-cloud-init被ds-identify给禁用了 (查看/run/cloud-init/下的日志得到)
+=> cloud-init被ds-identify给禁用了 (查看/run/cloud-init/下的日志得到)
 新增配置文件: /etc/cloud/ds-identify.cfg
 ```
 policy: search,found=all,maybe=none,notfound=enabled
@@ -1043,11 +998,22 @@ passwd debian<<EOF
 EOF
 ```
 
-#### ironic node 一直是 wait call-back 状态
-
-=> 注意： 是通过节点的网络接口获取dhcp，配置pxe的，而不是ironic的dhcp...
-
 ## 其他资料
+
+旧的调研单 #29923
+
+https://xie.infoq.cn/article/240621481a0745456ecb89f6f
+为什么说 OpenStack Ironic 是一个神秘的组件:
+
+原因一：Ironic 使用了 BMC（Baseboard Manager Controller）即基板管理控制器，独立的系统在服务器通过额外的硬件控制器和 PXE（Pre-boot Execution Environment）网络启动，直接把事先做好的操作系统磁盘镜像克隆到物理服务器上，免去了使用 Kickstart 自动安装系统的过程，高效省时；
+
+原因二：Ironic 是通过 Nova 来调用的，是模拟 Nova 的一个虚拟化驱动，其创建和管理物理服务器资源是和虚拟化实例创建部署流程一样。
+
+[suse - 29 Installing Baremetal (Ironic)](https://documentation.suse.com/soc/9/html/suse-openstack-cloud-clm-all/install-ironic-overview.html)
+资料挺多的...
+29.3.1 Redfish Protocol Support
+
+[Configuring the Bare Metal (Ironic) Service (optional)](https://docs.openstack.org/openstack-ansible-os_ironic/latest/configure-ironic.html)
 
 https://docs.openstack.org/ironic/latest/user/deploy.html
 => 官方ironic用户部署系统文档?
@@ -1068,19 +1034,6 @@ https://ironic-book.readthedocs.io/zh_CN/latest/inspector/inspector.html
 ironic inspector 主要是帮助我们收集裸机信息的。
 => 但是IPMI不支持?
 
-[(好)Ironic 裸金属管理服务 原创](https://blog.51cto.com/u_15301988/3160308)
-- available：用户可以对一个处于可用状态的裸金属节点发起 actice API 请求执行操作系统部署，请求的同时需要将部署的详细信息（e.g. user-image、instance metadata、网络资源分配）持久化到裸金属数据库表记录中；
-- deploying：部署准备阶段，此时 Ironic 会主动 cache ramdisk 到 ironic-conductor 并执行启动动作。如果此时的裸金属节点处于开启状态则执行重启动作；
-- wait callback：等待裸金属节点完成启动或重启，Ironic 根据不同 Driver 类型的策略控制裸金属节点进入操作系统引导（BootLoader）。PXE 是其默认的引导方式，在这个阶段 Ironic 会等待裸金属节点的 BootLoader 进入 ramdisk，运行在 ramdisk 中的 ironic-python-agent 会回调 Ironic，告知裸金属节点已经接收 ironic-python-agent 的控制，可以进一步执行 user-image 的注入动作，并监控进度。待 user-image 注入完成后，Ironic 会进一步控制裸金属节点从 user-image 启动，并完成控制层面的数据维护；
-- active：此状态表示裸金属节点的操作系统部署完成，但并不代表操作系统已经加载完成，裸金属节点的操作系统加载仍需要一定的等待时间。
-=> 确实是pxe安装系统啊?
-
-配置 Provisioning Network
-首先配置一个 Physical Network 作为 Provisioning Network，用于提供 DHCP、PXE 功能，即裸金属节点部署网络。
-
-配置新的 Physical Network
-=> 需要配置安装网络? physnet1
-
 [(好)浅谈pxe和ipxe](https://zhuanlan.zhihu.com/p/591334237)
 iPXE 对 PXE 功能进行了扩展，是先前的 PXE 实现的超集，支持更多协议。最为主要的是，iPXE 支持灵活的配置脚本。
 
@@ -1090,7 +1043,6 @@ iPXE 对 PXE 功能进行了扩展，是先前的 PXE 实现的超集，支持�
 - 开源的iPXE允许我们做适配性修改
 - iPXE 支持http协议的web server启动，我们可以设置统一的http请求，在web server端实现下发不同启动模板的逻辑，并可以添加认证功能
 - 适配性强，除了传统X86架构，还引进了国产ARM架构，我们只需要编译一个ARM架构的iPXE启动程序，即可快速适配新架构服务器的自动部署flat_networks = public
-
 
 [pxe之linux ipxe](https://www.jianshu.com/p/e60dce231e61)
 Tiny PXE Server (mistyprojects.co.uk)这个东东过于强大，这里不做描述
@@ -1102,20 +1054,19 @@ Tiny PXE Server (mistyprojects.co.uk)这个东东过于强大，这里不做描�
 - 2）：Ironic 使用PXE引导启动用于部署的ramdisk，且这个ramdisk内包含一个agent。它与Ironic交互，执行Ironic下发的命令。注，虽然Ironic支持iScsi和PXE等多种部署方式，本文以agent部署方式为例说明。
 - 3）：cloud-init, 与虚拟机镜像一样，Ironic通过集成在镜像中的cloud-init初始化操作系统。包括创建用户、修改密码、配置网络等。
 
-## 其他
 
-旧的调研单 #29923
+#### devstack 安装使用ironic
 
-https://xie.infoq.cn/article/240621481a0745456ecb89f6f
-为什么说 OpenStack Ironic 是一个神秘的组件:
+=> 一直未验证成功!!! 后续再尝试一下!
 
-原因一：Ironic 使用了 BMC（Baseboard Manager Controller）即基板管理控制器，独立的系统在服务器通过额外的硬件控制器和 PXE（Pre-boot Execution Environment）网络启动，直接把事先做好的操作系统磁盘镜像克隆到物理服务器上，免去了使用 Kickstart 自动安装系统的过程，高效省时；
+关键字《devstack ironic plugin》
+[ironic官方文档](https://docs.openstack.org/ironic/latest/contributor/dev-quickstart.html#deploying-ironic-with-devstack)
 
-原因二：Ironic 是通过 Nova 来调用的，是模拟 Nova 的一个虚拟化驱动，其创建和管理物理服务器资源是和虚拟化实例创建部署流程一样。
+[(好)Ironic 裸金属管理服务 原创](https://blog.51cto.com/u_15301988/3160308)
 
 #### 独立使用ironic?
 
-=> 没有neutron支持，怎么pxe启动的? 自己配置?
+=> 没有neutron支持，怎么pxe启动的? 自己额外配置!
 
 [(好)Openstack Ironic Bare metal 实操](https://blog.csdn.net/m0_48594855/article/details/119979493)
 如果把Ironic放到庞大的系统去理解，毕竟繁琐，不适合初学者；所幸的是Ironic本身是一个相对独立的模块，有模块自己的操作命令。
@@ -1135,49 +1086,10 @@ openstack baremetal driver show ipmi | grep deploy
 | enabled_deploy_interfaces     | direct              |
 ```
 
-## 参考资料
+[Openstack Ironic standalone 方式部署](https://www.xiexianbin.cn/openstack/ironic/index.html)
+ironic如果配置成standalone服务，其他服务如glance，neutron，nova，cinder等无需安装。
 
-- [openstack官方ironic 架构](https://docs.openstack.org/ironic/latest/user/architecture.html)
-
-- [(好)Ironic 裸金属管理服务 原创](https://blog.51cto.com/u_15301988/3244722)
-
-https://documentation.suse.com/soc/9/html/suse-openstack-cloud-clm-all/install-ironic-overview.html
-资料挺多的...
-29.3.1 Redfish Protocol Support
-
-[centos7 initramfs解包 打包](https://blog.csdn.net/a363344923/article/details/99851657)
-
-解包
-```
-cd /boot
-initramfs=$(ls -a initramfs-$(uname -r).img)
-cp /boot/$initramfs /tmp
-
-mkdir -p /tmp/early_cpio
-mkdir -p /tmp/rootfs_cpio
-
-#解包early_cpio
-cd /tmp/early_cpio
-cpio -idm < ../$initramfs
-
-#解包rootfs
-cd /tmp/rootfs_cpio
-/usr/lib/dracut/skipcpio ../$initramfs | zcat | cpio -id
-```
-这样我们就把centos7原生内核的initramfs解包成了两个文件夹，early_cpio和rootfs_cpio。
-
-打包
-解包完成之后，我们可以修改initramfs rootfs的内容，完成一些定制，定制完成后，就需要压缩成内核可以识别的文件。我们将第一步解包后的两个文件夹再打包起来。
-```
-cd /tmp/early_cpio
-find . -print0 | cpio --null -o -H newc --quiet >../early_cpio.img
-
-cd /tmp/rootfs_cpio
-find . | cpio -o -H newc | gzip > ../rootfs_cpio.img
-
-cd /tmp
-cat early_cpio.img rootfs_cpio.img > newInitramfs.img
-```
+#### initramfs修改用户密码
 
 关键字《centos9 initramfs解包 打包》
 [centos7 initramfs解包 打包](https://www.jianshu.com/p/218544a3531b)
@@ -1197,11 +1109,16 @@ cd /tmp/rootfs_cpio
 /usr/lib/dracut/skipcpio ../$initramfs | zcat | cpio -id
 ```
 
+然后chroot修改root密码即可
+
 打包
 ```
 cd /tmp/rootfs_cpio
 find . | cpio -o -H newc | gzip > ../rootfs_cpio.img
 ```
 
-[Configuring the Bare Metal (Ironic) Service (optional)](https://docs.openstack.org/openstack-ansible-os_ironic/latest/configure-ironic.html)
+## 参考资料
 
+- [openstack官方ironic 架构](https://docs.openstack.org/ironic/latest/user/architecture.html)
+
+- [(好)Ironic 裸金属管理服务 原创](https://blog.51cto.com/u_15301988/3160308)
