@@ -65,6 +65,19 @@ kolla容器:
 - ubuntu-source-ironic-conductor:yoga     ironic_conductor
 - ubuntu-source-nova-compute-ironic:yoga  nova_compute_ironic
 
+ironic服务列表
+```
+$ docker ps | grep ironic
+ironic_neutron_agent => 提供dhcp, 带pxe信息?
+nova_compute_ironic => 创建裸金属主机实例入口点?
+ironic_dnsmasq
+ironic_http
+ironic_tftp
+ironic_inspector
+ironic_api => 关键api入口
+ironic_conductor => 核心ironic处理程序
+```
+
 #### 系统部署流程
 
 我们把fake驱动排除，其他的驱动可以分为两类：
@@ -322,6 +335,12 @@ openstack baremetal node boot device show BM01
 => 重启后，配置就会变化为None
 ```
 
+对应ipmi命令如下?
+```
+ipmitool -I lanplus -H xxx -U xxx -P xxx chassis bootdev pxe  
+ipmitool -I lanplus -H xxx -U xxx -P xxx chassis power reset
+```
+
 ### 系统部署细节调研
 
 #### pxe启动部署镜像
@@ -365,6 +384,29 @@ disk
 total 803716
 15344498 -rw-r--r-- 2 ironic ironic 2147483648 Jul 14 17:00 disk
 ```
+
+关键字《ironic-python-agent安装系统流程》
+
+[Ironic中pxe driver和agent driver的区别](https://www.cnblogs.com/zhangyufei/p/6410753.html)
+
+历史问题：
+以pxe_ipmitool 和agent_ipmitool为例，看起来似乎前者不使用ironic-python-agent，后者使用，但是实际上两者都使用ironic-python-agent进行部署，现在的命名其实是历史遗留问题。
+
+在kilo版本之前，pxe_ipmitool 使用ramdisk进行部署，ramdisk中只有bash脚本，没有ironic-python-agent，但是后来为了减少开发和维护的复杂度，Kilo之后，pxe_ipmitool 也使用ironic-python-agent部署。
+
+对比：
+Ironic部署裸机时，裸机在内存中使用deploy镜像启动一个自带ironic-python-agent的操作系统。如果使用的pxe_ipmitool 驱动，conductor发送rest请求，使得agent将识别到的第一块磁盘，通过iscsi协议映射到conductor节点上。然后conductor从glance下载对应的镜像，convert成raw格式，写入目标磁盘。如果使用的是agent_ipmitool驱动，conductor发送rest请求，agent自行下载镜像写入裸机磁盘上。
+
+对于qcow2 image:
+
+如果使用agent_ipmitool，每次都要下载到内存中，convert成raw格式，再写入磁盘，对目的节点内存要求更大，如果是disk size 10G的大镜像，那么就要求内存10G以上如果使用pxe_ipmitool , 每次格式转换在conductor节点上做，缓存到conductor节点上，传输的时候通过dd写入网络，对目的机器内存无要求，但是ironic节点压力大，并且需要额外的空间存放ironic缓存的镜像。
+
+对于raw image:
+
+agent_ipmitool支持将raw格式的镜像直接写入磁盘，不需要先cache到内存中，所以对内存无额外要求。这种情况下，唯一的问题是大规模部署时，每个节点都要向glance去下载一次镜像，glance的压力会更大，但是如果是pxe_ipmi driver，对ironic conductor的压力也会更大，所以也不能算是一个缺点。
+
+结论：
+agent_ipmitool + raw 镜像看起来是最完美的解决方案，但是可惜的是agent_ipmitool依赖于swift或者ceph radosgw，如果是rbd方式或者filesystem方式存放镜像，agent driver不支持。问了下社区相关人员，他们没有解决这个问题的打算。或者可以通过二次开发解决来这个问题。
 
 #### 验证qemu-img生成pc硬盘系统
 

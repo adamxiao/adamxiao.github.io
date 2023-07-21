@@ -132,6 +132,15 @@ From my experience, once unlocked, the only way to re-lock an encrypted dataset 
 
 You can only lock and unlock an encrypted dataset if it is secured with a passphrase instead of a key file. Before locking a dataset, verify that it is not currently in use.
 
+## 常用配置
+
+常用安全配置:
+
+- 配置强制跳转https
+  System Settings -> General -> GUI Settings -> HTTPS Redirect
+- 禁用免密控制台
+  System Settings -> Advance -> Console -> Show Text Console without Password Prompt
+
 ## FAQ
 
 - 虚拟机使用磁盘创建pool, 需要uuid
