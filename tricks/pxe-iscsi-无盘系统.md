@@ -334,6 +334,34 @@ update-initramfs -u
 - 7.Shutdown the VM and convert it to a raw format image
 - 8.Copy the image to your base logical volume
 
+### ubuntu UEFI和BIOS双启动
+
+关键字《配置uefi安装的ubuntu能够bios启动》
+
+[BIOS/UEFI双引导U盘安装Ubuntu](https://maxwell-lyu.github.io/2021/02/13/Tech-20210213-Ubuntu%E5%8F%8C%E5%90%AF%E5%8A%A8/)
+
+使用GPT分区表, 预留bios_grub分区, 先进行UEFI引导下的安装, 之后添加BIOS引导
+
+使用iso安装时，try ubuntu, 开始自定义分区:
+=> 可以参考官方ubuntu20.04 cloud image的分区方法: `fdisk -l`
+```
+Device      Start       End   Sectors  Size Type
+/dev/vda1  227328 209715166 209487839 99.9G Linux filesystem
+/dev/vda14   2048     10239      8192    4M BIOS boot
+/dev/vda15  10240    227327    217088  106M EFI System
+```
+
+重启虚拟机， 安装BIOS启动引导
+```
+grub-install --target=i386-pc --boot-directory=/boot /dev/sda
+```
+
+虚拟机应当成功引导进入Ubuntu桌面, 执行下面的命令, 以验证当前的引导类型
+```
+ls /sys/firmware/efi # 若成功执行, 说明为UEFI引导; 若提示找不到文件, 则为BIOS引导
+```
+
+
 ## centos pxe iscsi启动
 
 => 不行

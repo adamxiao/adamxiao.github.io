@@ -52,6 +52,14 @@ cat ./nexus-data/admin.password
 
 在 管理配置 -> 系统 -> HTTP, 有http和https代理配置! => 验证中, 亲测有效!
 
+#### 验证使用npm镜像仓库
+
+```
+npm config set registry http://docker.iefcu.cn:5565/repository/npm-group/
+使用淘宝镜像源
+npm config set registry https://registry.npm.taobao.org
+```
+
 ## 作为ubuntu软件源apt镜像仓库
 
 nexus3有apt插件, 可以配置

@@ -36,6 +36,9 @@ pip3 install virtualbmc
 ovs-ofctl add-flow mdvs2 "priority=100,dl_src=30:85:a9:a3:b7:37 actions=drop"
 ovs-ofctl add-flow mdvs2 "table=5,priority=100,dl_src=30:85:a9:a3:b7:37 actions=drop"
 ovs-ofctl add-flow mdvs2 "table=5,priority=100,dl_src=6c:b3:11:33:da:df actions=drop"
+ovs-ofctl add-flow mdvs2 "table=5,priority=100,dl_src=00:91:10:00:28:c5 actions=drop"
+ovs-ofctl add-flow mdvs2 "table=5,priority=100,dl_src=52:54:64:00:00:08 actions=drop"
+ovs-ofctl add-flow mdvs2 "table=5,priority=100,dl_src=90:e2:fc:b1:3c:9b actions=drop"
 ovs-ofctl add-flow mdvs2 "table=5,priority=99,udp,src_port=67 actions=drop" => TODO: test
 ovs-ofctl add-flow mdvs2 "priority=100,dl_src=8c:2a:8e:84:64:35 actions=drop"
 ```

@@ -17,6 +17,37 @@ TODO:
   [从零开始入门 K8s | 理解 CNI 和 CNI 插件](https://www.cnblogs.com/alisystemsoftware/p/12454503.html)
   本文整理自《CNCF x Alibaba 云原生技术公开课》第 26 讲
 
+## calico BGP
+
+关键字《calico特性》
+
+[Calico 介绍、原理与使 ](https://cloud.tencent.com/developer/article/1638845)
+
+实际上，Calico 项目提供的 BGP 网络解决方案，与 Flannel 的 host-gw 模式几乎一样。也就是说，Calico也是基于路由表实现容器数据包转发，但不同于Flannel使用flanneld进程来维护路由信息的做法，而Calico项目使用BGP协议来自动维护整个集群的路由信息。
+
+
+BGP两种模式
+
+- 全互联模式(node-to-node mesh)
+  全互联模式 每一个BGP Speaker都需要和其他BGP Speaker建立BGP连接，这样BGP连接总数就是N^2，如果数量过大会消耗大量连接。如果集群数量超过100台官方不建议使用此种模式。
+
+- 路由反射模式Router Reflection（RR）
+  RR模式 中会指定一个或多个BGP Speaker为RouterReflection，它与网络中其他Speaker建立连接，每个Speaker只要与Router Reflection建立BGP就可以获得全网的路由信息。在calico中可以通过Global Peer实现RR模式。
+
+Calico 优势 与 劣势
+
+- 优势
+  没有封包和解包过程，完全基于两端宿主机的路由表进行转发
+  可以配合使用 Network Policy 做 pod 和 pod 之前的访问控制
+- 劣势
+  **要求宿主机处于同一个2层网络下，也就是连在一台交换机上**
+  路由的数目与容器数目相同，非常容易超过路由器、三层交换、甚至node的处理能力，从而限制了整个网络的扩张。(可以使用大规模方式解决)
+  每个node上会设置大量（海量)的iptables规则、路由，运维、排障难度大。
+  原理决定了它不可能支持VPC，容器只能从calico设置的网段中获取ip。
+
+[kubernetes网络组件calico详解](https://www.cnblogs.com/yuhaohao/p/14103844.html)
+
+
 ## cni概念
 
 关键字《k8s cni》《k8s cni 开发》

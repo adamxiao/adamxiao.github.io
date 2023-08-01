@@ -5,6 +5,7 @@
 ![](../imgs/adam-vxlan-2-vlan-arch.jpg)
 
 例如br-int的vlanid 100映射为vxlanid 100, br-int1映射为`4096*n + 100`
+=> 或者只建立br-int接口, 记住这个主机上的映射关系 (一个主机上的虚拟机不超过4096个)
 
 ## 流表数据包走向
 
@@ -71,14 +72,14 @@ ovs-vsctl add-port br-int patch-tun -- set interface patch-tun type=patch option
 firewall-cmd --zone=public --add-port=4789/udp
 ```
 
-在主机A, 211上执行
+在主机A, 31上执行
 ```
-ovs-vsctl add-port br-tun vxlan-212 -- set interface vxlan-212 type=vxlan options:remote_ip=10.90.2.212 option:in_key=flow option:out_key=flow option:df_default="true"
+ovs-vsctl add-port br-tun vxlan-32 -- set interface vxlan-32 type=vxlan options:remote_ip=10.90.3.32 option:in_key=flow option:out_key=flow option:df_default="true"
 ```
 
 在主机B, 212上执行
 ```
-ovs-vsctl add-port br-tun vxlan-211 -- set interface vxlan-211 type=vxlan options:remote_ip=10.90.2.211 option:in_key=flow option:out_key=flow option:df_default="true"
+ovs-vsctl add-port br-tun vxlan-31 -- set interface vxlan-31 type=vxlan options:remote_ip=10.90.3.31 option:in_key=flow option:out_key=flow option:df_default="true"
 ```
 
 ## 配置流表
@@ -288,4 +289,4 @@ Received 2 response(s)
 
 ## 参考文档
 
-* [https://cntofu.com/book/77/vxlan_mode/compute_node/br-tun.md](https://cntofu.com/book/77/vxlan_mode/compute_node/br-tun.md)
+* [深入理解 Neutron -- OpenStack 网络实现 - br-tun](https://cntofu.com/book/77/vxlan_mode/compute_node/br-tun.md)

@@ -65,3 +65,18 @@ display /20i $pc
 bt full
 thread apply all bt full
 ```
+
+#### 调试qemu程序
+
+```
+handle  SIGUSR2  nostop  noprint  pass
+handle  SIGIO    nostop  noprint  pass
+handle  SIGALRM  nostop  noprint  pass
+handle  SIGPIPE  nostop  noprint  pass
+handle  SIGSEGV  stop    print
+cont
+bt full
+thread apply all bt full
+finish
+quit
+```
