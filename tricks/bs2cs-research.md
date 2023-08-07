@@ -61,13 +61,8 @@ Electron 是一个开源的框架，可以将 Web 应用程序转换为桌面应
 
 NW.js（原名 node-webkit）是一个类似 Electron 的框架，可以将 Web 应用程序转换为桌面应用程序。它也使用 Chromium 渲染引擎和 Node.js 运行时环境。使用 NW.js，可以将任何基于 Web 技术的应用程序打包成可在 Windows、Mac 和 Linux 上运行的桌面应用程序。
 
-[(好)如何利用 Electron 把网页变成桌面程序 原创](https://blog.51cto.com/wpbars/2956033)
-=> 将了一点点架构原理
-
-![](../imgs/4d9cb8815bfc098b7ae177869489c647.webp)
-
 https://github.com/kairyou/create-desktop-app-with-nodejs
-=> 源码! TODO: 验证
+=> 9年前的代码。。。
 
 - atom-shell
   cd atom-shell start app: ./app.sh test-app -s build app: ./app.sh test-app -b
@@ -102,7 +97,6 @@ electron
 ### 验证nodejs使用Electron
 
 [使用electron将html转为pc版桌面应用程序 原创](https://blog.51cto.com/u_15475233/4884181)
-=> TODO: 验证
 
 https://blog.csdn.net/LongtengGensSupreme/article/details/120899799
 => 这个更简单，直接使用nodejs访问在线网站...
@@ -171,6 +165,36 @@ electron-packager . 测试 --win --out 测试 --arch=x64 --app--version 1.4.0 --
 npm run package
 ```
 打包成功后，可以在项目的根目录中找到打包好的应用程序。
+
+## electron
+
+### electron原理架构
+
+[(好)如何利用 Electron 把网页变成桌面程序 原创](https://blog.51cto.com/wpbars/2956033)
+=> 将了一点点架构原理
+
+![](../imgs/4d9cb8815bfc098b7ae177869489c647.webp)
+
+[Electron入门及原理浅析](https://juejin.cn/post/7029590294647537671)
+
+[(好)从 Electron 架构出发，深究 Electron 跨端原理 | 多图详解](https://juejin.cn/post/7103337772424888356)
+
+### 官方文档
+
+https://www.electronjs.org/zh/docs/latest/tutorial/tutorial-first-app
+
+### electron 开源项目
+
+[推荐12个开源的跨平台桌面项目](https://www.51cto.com/article/719528.html)
+
+lx-music-desktop 是一个基于 Electron 17 + Vue 3 的音乐软件。其支持在Windows、Mac OS、Linux、Android 平台上运行。
+https://github.com/lyswhut/lx-music-desktop
+=> TODO: 尝试编译运行
+
+https://blog.csdn.net/qq_38463737/article/details/121513264
+
+Electron API 演示(中文版)
+感觉是纯electron的项目，没有使用第三方框架: https://github.com/demopark/electron-api-demos-Zh_CN
 
 ## FAQ
 

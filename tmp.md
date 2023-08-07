@@ -1,5 +1,15 @@
 # 临时计划
 
+#### ubuntu livecd win7密码找回
+
+使用chnptpwd修改windows密码
+```
+sudo apt install chntpw 
+cd WINDOWS/system32/config
+sudo chntpw SAM
+要修改非管理员密码，在命令行模式键入以下命令：sudo chntpw -u [用户名] SAM。
+```
+
 https://docs.openstack.org/openstack-helm-images/latest/vbmc.html
 => 有libvirt 镜像编译?
 

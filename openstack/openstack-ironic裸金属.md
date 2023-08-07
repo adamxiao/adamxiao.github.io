@@ -781,6 +781,94 @@ IPMI技术功能点总结：
 
 参考资料： https://en.wikipedia.org/wiki/Intelligent_Platform_Management_Interface
 
+#### ironic-python-agent工作流程分析
+
+https://docs.openstack.org/ironic-python-agent/latest/admin/how_it_works.html
+=> 官方文档将原理?
+
+```
+使用tcpdump抓包 (6385为ironic api, 9999为ipa api)
+tcpdump -v -i any -n tcp port 6385 or tcp port 9999 -s 8000 -w ~/adam.pcap
+使用wireshark分析
+http and ip.addr==10.90.4.179
+```
+
+GET / HTTP/1.1 => 获取api信息?
+回复如下:
+{"name": "OpenStack Ironic API", "description": "Ironic is an OpenStack project which enables the provision and management of baremetal machines.", "default_version": {"id": "v1", "links": [{"href": "http://10.90.2.252:6385/v1/", "rel": "self"}], "status": "CURRENT", "min_version": "1.1", "version": "1.78"}, "versions": [{"id": "v1", "links": [{"href": "http://10.90.2.252:6385/v1/", "rel": "self"}], "status": "CURRENT", "min_version": "1.1", "version": "1.78"}]}
+
+GET /v1/lookup?addresses=52%3A54%3A84%3A00%3A02%3A94 HTTP/1.1 => 根据mac地址获取实例信息?
+回复如下:
+{"node": {"uuid": "e59cdb35-9764-459a-86dc-1fbca886b04e", "properties": {"cpus": 4, "memory_mb": 4096, "local_gb": 10, "cpu_arch": "x86_64", "vendor": "unknown"}, "instance_info": {"image_source": "16dae6a8-b0db-455a-ba7c-46fb71836d5b", "root_gb": "1", "swap_mb": "0", "display_name": "demo2", "vcpus": "1", "nova_host_id": "kolla2-ironic", "memory_mb": "512", "local_gb": "10", "image_type": "whole-disk", "image_disk_format": "raw", "image_checksum": null, "image_os_hash_algo": "sha512", "image_os_hash_value": "7f8188d635264e47e4daddc5aaf560b1e705d1a069a3b7dfa01cb6e6fb2911b6e7c6e1354f052ca192881e043cac0f4407cf500ccb56ffb37cab8697a36aa2f4", "image_url": "******", "image_container_format": "bare", "image_tags": [], "image_properties": {"stores": "file", "os_distro": "debian", "os_admin_user": "debian", "hw_disk_bus": "scsi", "os_hidden": false, "owner_specified.openstack.md5": "", "os_type": "linux", "os_version": "11.9.1", "virtual_size": 2147483648, "hw_scsi_model": "virtio-scsi", "owner_specified.openstack.sha256": "", "owner_specified.openstack.object": "images/debian-11-adam.img"}}, "driver_internal_info": {"content": "** Redacted - Requires baremetal:node:get:driver_internal_info permission. **"}, "links": [{"href": "http://10.90.2.252:6385/v1/nodes/e59cdb35-9764-459a-86dc-1fbca886b04e", "rel": "self"}, {"href": "http://10.90.2.252:6385/nodes/e59cdb35-9764-459a-86dc-1fbca886b04e", "rel": "bookmark"}]}, "config": {"metrics": {"backend": "noop", "prepend_host": false, "prepend_uuid": false, "prepend_host_reverse": true, "global_prefix": null}, "metrics_statsd": {"statsd_host": "localhost", "statsd_port": 8125}, "heartbeat_timeout": 300, "agent_token": "SxuToD6VNzUv4IoO-5mNN8flb6foqsDEeWMkB5XT7Jo", "agent_token_required": true}}
+
+GET /v1/lookup?addresses=52%3A54%3A84%3A00%3A02%3A94&node_uuid=e59cdb35-9764-459a-86dc-1fbca886b04e HTTP/1.1 => 获取实例详细信息?
+回复如下: 基本同上，就是隐藏了agent_token
+{"node": {"uuid": "e59cdb35-9764-459a-86dc-1fbca886b04e", "properties": {"cpus": 4, "memory_mb": 4096, "local_gb": 10, "cpu_arch": "x86_64", "vendor": "unknown"}, "instance_info": {"image_source": "16dae6a8-b0db-455a-ba7c-46fb71836d5b", "root_gb": "1", "swap_mb": "0", "display_name": "demo2", "vcpus": "1", "nova_host_id": "kolla2-ironic", "memory_mb": "512", "local_gb": "10", "image_type": "whole-disk", "image_disk_format": "raw", "image_checksum": null, "image_os_hash_algo": "sha512", "image_os_hash_value": "7f8188d635264e47e4daddc5aaf560b1e705d1a069a3b7dfa01cb6e6fb2911b6e7c6e1354f052ca192881e043cac0f4407cf500ccb56ffb37cab8697a36aa2f4", "image_url": "******", "image_container_format": "bare", "image_tags": [], "image_properties": {"stores": "file", "os_distro": "debian", "os_admin_user": "debian", "hw_disk_bus": "scsi", "os_hidden": false, "owner_specified.openstack.md5": "", "os_type": "linux", "os_version": "11.9.1", "virtual_size": 2147483648, "hw_scsi_model": "virtio-scsi", "owner_specified.openstack.sha256": "", "owner_specified.openstack.object": "images/debian-11-adam.img"}}, "driver_internal_info": {"content": "** Redacted - Requires baremetal:node:get:driver_internal_info permission. **"}, "links": [{"href": "http://10.90.2.252:6385/v1/nodes/e59cdb35-9764-459a-86dc-1fbca886b04e", "rel": "self"}, {"href": "http://10.90.2.252:6385/nodes/e59cdb35-9764-459a-86dc-1fbca886b04e", "rel": "bookmark"}]}, "config": {"metrics": {"backend": "noop", "prepend_host": false, "prepend_uuid": false, "prepend_host_reverse": true, "global_prefix": null}, "metrics_statsd": {"statsd_host": "localhost", "statsd_port": 8125}, "heartbeat_timeout": 300, "agent_token": "******", "agent_token_required": true}}
+
+
+POST /v1/heartbeat/e59cdb35-9764-459a-86dc-1fbca886b04e HTTP/1.1
+Host: 10.90.2.252:6385
+User-Agent: python-requests/2.27.1
+Accept-Encoding: gzip, deflate
+Accept: application/json
+Connection: keep-alive
+X-OpenStack-Ironic-API-Version: 1.68
+Content-Type: application/json
+X-OpenStack-Request-ID: req-22fdbffa-4a12-4cf4-ba40-88425c12f8b0
+
+=> 居然使用https, 还使用了证书...
+```
+{"callback_url": "https://10.90.4.148:9999", "agent_token": "4Cm1DPVW2ecSbOQgUE3GE_lat9WYGhvRoji0PQQL60U",
+"agent_version": "8.5.2.dev5", "agent_verify_ca": "..."}
+```
+
+HTTP/1.1 202 Accepted
+date: Thu, 03 Aug 2023 06:44:42 GMT
+server: Apache/2.4.41 (Ubuntu)
+content-length: 0
+x-openstack-ironic-api-minimum-version: 1.1
+x-openstack-ironic-api-maximum-version: 1.78
+x-openstack-ironic-api-version: 1.68
+openstack-request-id: req-6ec70ded-98d8-47cc-ae39-b015d85f02b3
+
+反向请求如下: (查看ipa的日志得到)
+POST /v1/commands/?wait=true&agent_token=SxuToD6VNzUv4IoO-5mNN8flb6foqsDEeWMkB5XT7Jo HTTP/1.1
+GET /v1/commands/ HTTP/1.1
+ Asynchronous command execute_deploy_step started execution
+POST /v1/commands/?wait=false&agent_token=SxuToD6VNzUv4IoO-5mNN8flb6foqsDEeWMkB5XT7Jo HTTP/1.1
+ Asynchronous command prepare_image started execution
+
+=> 估计就是执行命令, 等待或者不等待，以及查询命令执行状态?
+
+关键字《ironic-python-agent callback_url use http》
+
+打开ironic-conductor来分析?
+
+https://docs.openstack.org/ironic-python-agent/victoria/install/index.html
+=> 改为http的callback-url?
+创建配置文件 /etc/ironic-python-agent.d/ironic_python_agent.conf
+```
+[DEFAULT]
+listen_tls = False
+advertise_protocol = http
+enable_auto_tls = False # 这个参数很重要，否则会覆盖前面的参数。。。
+```
+ipa-advertise-protocol => 也可以通过这个内核参数决定?
+
+=> callback-url的服务代码对应: ironic_python_agent/agent.py : serve_ipa_api
+具体接口实现对应代码: ironic_python_agent/api/app.py : api_run_command
+
+POST /v1/commands/?wait=true&agent_token=RftFPhmBhZDB_pp4NUhEXvgaRKSpYEXFLc6Y0axb8WY HTTP/1.1
+```
+{"name": "deploy.get_deploy_steps", "params": {"node": {"id": 13, "uuid": "735cab8e-e2ba-494f-a300-e4f1b4f24c53", "name": "VM01", "chassis_id": null, "instance_uuid": "08f0a731-6c65-49eb-97a3-8489b6677318", "driver": "ipmi", "driver_info": {"ipmi_port": 6231, "ipmi_username": "admin", "ipmi_password": "******", "ipmi_address": "10.60.5.113", "deploy_kernel": "c7bec1d1-a80e-4107-8ee6-ffb151032f9f", "deploy_ramdisk": "447ea833-36bd-4ca9-9312-bd0f72ab2690"}, "driver_internal_info": {"is_whole_disk_image": true, "deploy_steps": [{"step": "deploy", "priority": 100, "argsinfo": null, "interface": "deploy"}, {"step": "write_image", "priority": 80, "argsinfo": null, "interface": "deploy"}, {"step": "prepare_instance_boot", "priority": 60, "argsinfo": null, "interface": "deploy"}, {"step": "tear_down_agent", "priority": 40, "argsinfo": null, "interface": "deploy"}, {"step": "switch_to_tenant_network", "priority": 30, "argsinfo": null, "interface": "deploy"}, {"step": "boot_instance", "priority": 20, "argsinfo": null, "interface": "deploy"}], "deploy_boot_mode": "uefi", "deploy_step_index": 0, "last_power_state_change": "2023-08-03T09:22:14.772533", "agent_secret_token": "******", "agent_url": "http://10.90.4.135:9999", "agent_version": "8.5.2.dev5", "agent_last_heartbeat": "2023-08-03T09:23:15.426199"}, "clean_step": {}, "deploy_step": {"step": "deploy", "priority": 100, "argsinfo": null, "interface": "deploy"}, "raid_config": {}, "target_raid_config": {}, "properties": {"cpus": 4, "memory_mb": 4096, "local_gb": 10, "cpu_arch": "x86_64", "vendor": "unknown"}, "reservation": "kolla2", "conductor_affinity": 1, "conductor_group": "", "power_state": "power on", "target_power_state": null, "provision_state": "wait call-back", "provision_updated_at": "2023-08-03T09:22:26.000000", "target_provision_state": "active", "maintenance": false, "maintenance_reason": null, "fault": null, "console_enabled": false, "last_error": null, "resource_class": "baremetal-resource-class", "inspection_finished_at": null, "inspection_started_at": null, "extra": {}, "automated_clean": null, "protected": false, "protected_reason": null, "allocation_id": null, "bios_interface": "no-bios", "boot_interface": "ipxe", "console_interface": "no-console", "deploy_interface": "direct", "inspect_interface": "no-inspect", "management_interface": "ipmitool", "network_interface": "flat", "power_interface": "ipmitool", "raid_interface": "no-raid", "rescue_interface": "no-rescue", "storage_interface": "noop", "vendor_interface": "ipmitool", "traits": {"objects": []}, "owner": null, "lessee": null, "description": null, "retired": false, "retired_reason": null, "network_data": {}, "boot_mode": null, "secure_boot": null, "created_at": "2023-08-03T09:17:59.000000", "updated_at": "2023-08-03T09:23:15.431098", "instance_info": {"image_source": "16dae6a8-b0db-455a-ba7c-46fb71836d5b", "root_gb": "1", "swap_mb": "0", "display_name": "demo2", "vcpus": "1", "nova_host_id": "kolla2-ironic", "memory_mb": "512", "local_gb": "10", "image_type": "whole-disk", "image_disk_format": "raw", "image_checksum": null, "image_os_hash_algo": "sha512", "image_os_hash_value": "7f8188d635264e47e4daddc5aaf560b1e705d1a069a3b7dfa01cb6e6fb2911b6e7c6e1354f052ca192881e043cac0f4407cf500ccb56ffb37cab8697a36aa2f4", "image_url": "http://10.90.2.192:8089/agent_images/735cab8e-e2ba-494f-a300-e4f1b4f24c53", "image_container_format": "bare", "image_tags": [], "image_properties": {"virtual_size": 2147483648, "stores": "file", "owner_specified.openstack.sha256": "", "os_distro": "debian", "owner_specified.openstack.md5": "", "owner_specified.openstack.object": "images/debian-11-adam.img", "hw_disk_bus": "scsi", "os_version": "11.9.1", "os_type": "linux", "os_admin_user": "debian", "hw_scsi_model": "virtio-scsi", "os_hidden": false}}}, "ports": [{"id": 17, "uuid": "d4a1cb6a-fa6f-4fa9-a2cf-301098ad95da", "node_id": 13, "address": "52:54:84:00:02:94", "extra": {}, "local_link_connection": {}, "portgroup_id": null, "pxe_enabled": true, "internal_info": {"tenant_vif_port_id": "bc0f2f99-405e-4a9b-9065-e5a277d3ada6"}, "physical_network": "physnet1", "is_smartnic": false, "name": null, "created_at": "2023-08-03T09:18:01.000000", "updated_at": "2023-08-03T09:21:50.000000"}]}}
+```
+
+例如执行关机命令:
+```
+{"id": "8f2cb47f-2837-4010-933f-085ead4e0611", "command_name": "power_off", "command_status": "RUNNING", "command_error": null, "command_result": null}
+```
+
+
 ## FAQ
 
 #### node状态一直卡在wait call-back
