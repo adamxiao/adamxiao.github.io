@@ -1,5 +1,36 @@
 # 临时计划
 
+#### ubuntu配置网口vlan
+
+发现物理pc机器收到h3c交换机的vlan918的arp包, 所以物理pc机器需要配置vlan
+
+关键字《ubuntu命令行设置网卡vlan》
+
+```
+sudo apt-get install vlan
+```
+
+配置netplan配置文件
+```
+# Let NetworkManager manage all devices on this system
+network:
+  version: 2
+  renderer: NetworkManager
+  ethernets:
+      enp2s0f0:
+          dhcp4: no
+  vlans:
+      vlan3:
+          id: 3
+          link: enp2s0f0
+          addresses: [ "172.31.3.103/24" ]
+      vlan30:
+          id: 30
+          link: enp2s0f0
+          addresses: [ "172.31.30.103/24" ]
+```
+
+
 #### ubuntu livecd win7密码找回
 
 使用chnptpwd修改windows密码

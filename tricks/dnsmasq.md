@@ -93,3 +93,28 @@ https://wener.me/notes/service/dns/dnsmasq
 ```
 ptr-record=110.100.168.192.in-addr.arpa,www.xxx-host.com
 ```
+
+#### nat环境下tftp超时
+
+x86主机下加载nf_nat_tftp模块即可
+```
+modprobe nf_nat_tftp
+```
+
+arm主机dmesg报错: 出于安全原因，默认的自动分配助手已关闭，并且未找到基于CT的防火墙规则。请改用iptables CT目标来附加助手。
+通过如下办法使能tftp功能：
+```
+iptables -t raw -I PREROUTING -p udp --dport 69 -j CT --helper tftp
+```
+通过今一步分析，发现arm平台上/proc/sys/net/netfilter/nf_conntrack_helper 为0, 所以tftp不通。
+发现x86平台上/proc/sys/net/netfilter/nf_conntrack_helper 为1, 所以tftp通。
+
+配置 /etc/modprobe.d/nf_conntrack.conf
+```
+options nf_conntrack nf_conntrack_helper=1
+```
+
+自动加载nf_nat_tftp模块, 配置 /etc/modules-load.d/tftp.conf
+```
+nf_nat_tftp
+```

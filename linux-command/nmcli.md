@@ -39,6 +39,22 @@ $ sudo nmcli connection modify example +ipv4.routes "192.0.2.0/24 198.51.100.1"
 $ sudo nmcli connection modify example +ipv4.routes "192.0.2.0/24 198.51.100.1, 203.0.113.0/24 198.51.100.1"
 ```
 
+#### 配置接口unmanaged
+
+关键字《ubuntu desktop network manager unmanaged》
+
+https://access.redhat.com/documentation/zh-tw/red_hat_enterprise_linux/8/html/configuring_and_managing_networking/configuring-networkmanager-to-ignore-certain-devices_configuring-and-managing-networking#temporarily-configuring-a-device-as-unmanaged-in-networkmanager_configuring-networkmanager-to-ignore-certain-devices
+
+15.2. Temporarily configuring a device as unmanaged in NetworkManager
+```
+# nmcli device status
+DEVICE  TYPE      STATE         CONNECTION
+enp1s0  ethernet  disconnected  --
+...
+
+nmcli device set enp1s0 managed no
+```
+
 ## 管理ovs接口
 
 关键字《nmcli config ovs bridge》
