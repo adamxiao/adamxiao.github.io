@@ -21,3 +21,7 @@ strace -o /tmp/adam.strace.log -f -s 8000 -tt -T -p 1234
 only syscall `-e sendto`
 exclude  syscall `-e 'trace=!epoll_wait,select'`
 或者 `-e trace=\!select` (使用反斜杠处理)
+
+## 参考资料
+
+[Linux调试分析诊断利器——strace](https://www.cnblogs.com/clover-toeic/p/3738156.html)

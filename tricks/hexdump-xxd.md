@@ -26,6 +26,15 @@ $ hexdump  -C  test | head
 
 安装hexdump: https://command-not-found.com/hexdump
 
+只解析中间某段二进制内容
+```
+        -n LENGTH       Interpret only LENGTH bytes of input
+        -s OFFSET       Skip OFFSET bytes
+
+hexdump -C -s 0x30 -n 0x400 xxx.bin # => 不行，只能解析数字?
+hexdump -C -s 0x30 -n 1024 xxx.bin
+```
+
 ## xxd使用
 
 https://www.xiebruce.top/1789.html

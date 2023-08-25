@@ -75,6 +75,26 @@ TODO:
 注意：openstack 比较新的官方安装文档把默认的网络组件 openvswitch 改为 Linux bridge 了，原因这里不做深究。有资料显示 dvr只能部署在 ovs 上，这个点需要注意一下。
 => linux bridge不能用？
 
+[redhat - 13.3. DVR 已知问题和注意事项](https://access.redhat.com/documentation/zh-cn/red_hat_openstack_platform/16.1/html/networking_guide/dvr-known-issues_config-dvr)
+
+[Multiple distributed gateway ports with OVN](https://www.youtube.com/watch?v=4iH4ZGp5GSI&ab_channel=OpenvSwitch)
+
+[(好)ovn 通过分布式网关端口连接外部网络](https://www.jianshu.com/p/dc565d6aaebd)
+分布式网关端口是一个逻辑路由器端口，只不过它需要绑定到指定节点上(一个或者多个节点)。注意和网关路由器的区别，网关路由器是绑定到指定节点(只能绑定到一个节点)的逻辑路由器，而分布式网关端口只是正常逻辑路由器上的一个端口，只不过需要绑定到某些节点。
+
+设置分布式网关端口，可参考ovn-nb的Distributed Gateway Ports部分，有两种方式，可通过设置Logical_Router_Port表的如下两个参数实现
+
+[openstack - OVN Routing](https://docs.openstack.org/neutron/latest/admin/ovn/routing.html)
+ovn路由架构
+
+关键字《ovn enable distributed router》
+
+[How to create an Open Virtual Network distributed gateway router](https://developers.redhat.com/blog/2018/11/08/how-to-create-an-open-virtual-network-distributed-gateway-router)
+
+[ovn架构](https://www.cnblogs.com/laolieren/p/ovn-architecture.html)
+
+[OVN实验四：OVN负载均衡](https://l8liliang.github.io/2021/06/01/ovn-balancer.html)
+
 ## 参考文档
 
 * [《深入理解neutron网络实现.pdf》](https://www.lhsz.xyz/read/openstack_understand_Neutron/dvr-config.md)
