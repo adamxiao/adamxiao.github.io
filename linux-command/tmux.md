@@ -24,6 +24,18 @@ Ctrl-Q + |
 -------
 ```
 
+#### pane移动
+
+Ctrl-Q + { 向上移动
+Ctrl-Q + } 向下移动
+
+#### 屏幕移动到其他窗口中
+
+使用`join-pane`命令
+可以Ctrl-Q + m标识一个pane, 然后到其他窗口中, 使用join-pane命令(Ctrl-Q + :)
+
+[How to join two tmux windows into one, as panes?](https://stackoverflow.com/questions/9592969/how-to-join-two-tmux-windows-into-one-as-panes)
+
 #### 创建窗口
 
 

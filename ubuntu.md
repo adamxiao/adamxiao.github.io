@@ -88,12 +88,24 @@ UUID=33e9ae3c-24bb-4fd5-bfb8-f90dc5275379 /adam           ext4    defaults      
 
 #### uniface ubuntu 22.04起不来
 
+修改入口脚本: /opt/ksvd/usr/bin/uniface
+
 export GDK_BACKEND=x11
 ```
 if [ -d "/opt/ksvd/usr/lib/ksvd_client" ];
 then
     export GDK_BACKEND=x11
 fi
+```
+
+以及制作pcap库的链接
+```
+ln -sf /usr/lib/x86_64-linux-gnu/libpcap.so.1.10.1 /usr/lib/x86_64-linux-gnu/libpcap.so.1
+```
+
+其他
+```
+sudo apt install -y virt-viewer libqt5core5a
 ```
 
 #### 配置Desktop等目录位置

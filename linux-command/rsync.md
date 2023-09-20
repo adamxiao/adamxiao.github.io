@@ -43,6 +43,17 @@ rsync -a -e "ssh -p 2322" /opt/media/ remote_user@remote_host_or_ip:/opt/media/
 rsync -a -P remote_user@remote_host_or_ip:/opt/media/ /opt/media/
 ```
 
+## 其他
+
+copy symlinks as symlinks
+```
+--links
+```
+
+delete extraneous files from dest dirs
+```
+--delete
+```
 
 
 ## 参考资料

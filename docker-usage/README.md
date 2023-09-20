@@ -165,6 +165,16 @@ if [[ -f /usr/bin/docker ]]; then alias vi='docker run -ti -e TERM=xterm-256colo
 
 ## FAQ
 
+#### docker信任http仓库
+
+修改配置文件，重启docker服务
+```
+cat /etc/docker/daemon.json 
+{
+"insecure-registries" : ["http://192.5.1.35", "http://192.5.1.33"]
+}
+```
+
 #### Build --privileged
 
 podman build --cap-add待验证ok

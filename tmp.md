@@ -1,5 +1,11 @@
 # 临时计划
 
+#### nfs客户端卡住
+
+关键字《nfs挂载点检测》
+
+[linux 脚本判断挂载,Linux Shell脚本：如何检测NFS挂载点(或服务器)已经死了？](https://blog.csdn.net/weixin_40000999/article/details/116680094)
+
 #### ubuntu配置网口vlan
 
 发现物理pc机器收到h3c交换机的vlan918的arp包, 所以物理pc机器需要配置vlan

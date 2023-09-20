@@ -15,3 +15,24 @@ cd rtl8812au && sudo ./dkms-install.sh
 sudo modprobe 88XXau
 ```
 
+rtl8822be驱动
+
+https://askubuntu.com/questions/1263141/rtl8822be-driver-for-ubuntu-18-04-and-20-04
+=> 未验证成功
+```
+sudo apt install git dkms
+git clone https://github.com/aircrack-ng/rtl8812au.git
+cd rtl8812au
+sudo make dkms_install
+```
+
+https://devicetests.com/install-rtl8822be-wifi-driver-ubuntu-hp-15-da1009ne
+=> 已废弃
+```
+git clone https://github.com/mid-kid/r8822be.git
+cd r8822be
+./make
+sudo rmmod rtwpci rtw88
+sudo ./make install
+sudo modprobe r8822be
+```
