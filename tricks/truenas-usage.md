@@ -204,3 +204,7 @@ https://www.zhihu.com/question/499638319
 https://blog.51cto.com/riverxyz/4572290
 
 - [youtube视频 - 好消息：文件全删！坏消息：还能找回来～](https://www.youtube.com/watch?v=_b83F55c_Yc)
+
+- [Truenas Scale基础入门设置](https://blog.csdn.net/qq_34419607/article/details/123516761)
+
+- [TrueNAS SCALE APP应用安装教程，自定义app安装](https://www.truenasscale.com/2021/12/10/67.html)

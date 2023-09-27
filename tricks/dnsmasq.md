@@ -54,6 +54,45 @@ docker run ... \
     "--config" "/etc/dnsmasq.d/dnsmasq.conf" "--" "dnsmasq" "--no-daemon" "--conf-file=/etc/dnsmasq.d/dnsmasq.conf"
 ```
 
+## dhcp proxy
+
+dhcp relay和dhcp proxy还是不一样的
+
+https://blog.51cto.com/longlei/2065967
+```
+dhcp-range=[tag:<tag>[,tag:<tag>],][set:<tag>,]<start-addr>[,<end-addr>][,<mode>][,<netmask>[,<broadcast>]][,<lease time>]
+```
+
+- 设置 DHCP 地址池，同时启用 DHCP 功能。
+- IPv4 <mode> 可指定为 static|proxy ，当 <mode> 指定为 static 时，
+- 需用 dhcp-host 手动分配地址池中的 IP 地址。
+- 当 <mode> 指定为 proxy 时，为指定的地址池提供 DHCP 代理。
+
+#### 概念
+
+https://zhidao.baidu.com/question/208855417.html
+
+如果DHCP客户机与DHCP服务器在同一个物理网段，则客户机可以正确地获得动态分配的ip地址。如果不在同一个物理网段，则需要DCHP Relay Agent(中继代理)。用DHCP Relay代理可以去掉在每个物理的网段都要有DHCP服务器的必要,它可以传递消息到不在同一个物理子网的DHCP服务器，也可以将服务器的消息传回给不在同一个物理子网的DHCP客户机。
+
+#### 工作原理
+
+https://support.huawei.com/enterprise/zh/doc/EDOC1100198436/be771137
+
+#### 配置示例
+
+https://juejin.cn/s/dnsmasq%20dhcp%20relay%20example
+```
+# 监听所有接口
+interface=
+
+# 指定 DHCP 中继地址
+dhcp-relay=192.168.1.1,192.168.2.1
+
+# 指定 DHCP 服务器的 IP 地址和 DHCP 消息类型
+dhcp-option=option:server-identifier,192.168.1.1,192.168.2.1
+dhcp-option=option:relay,192.168.1.1,192.168.2.1
+```
+
 ## FAQ
 
 1. dns上游请求有问题，导致dnsmasq有问题, 连本地定义的dns都不处理!

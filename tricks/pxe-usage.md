@@ -295,6 +295,22 @@ sudo apt install -y dnsmasq apache2
 sudo apt install -y nfs-kernel-server nfs-common
 ```
 
+## docker部署pxe服务器
+
+[dreamcat4/pxe](https://hub.docker.com/r/dreamcat4/pxe)
+https://github.com/dreamcat4/docker-images/tree/master/pxe
+=> 这个镜像提供了tftp, ipxe, http服务，以及有pxe配置示例
+
+里面没有dhcp，只有dhcp proxy
+```
+docker run --cap-add NET_ADMIN -d dreamcat4/pxe
+```
+
+https://github.com/dreamcat4/docker-images/issues/33
+```
+docker run  -v "/var/pxe:/pxe" -e pxe_nic="eth1" --net host dreamcat4/pxe /bin/sh
+```
+
 ## FAQ
 
 #### PXE-09 I/O buffer allocate failed
