@@ -1,5 +1,46 @@
 # storcli命令处理raid
 
+./storcli64 /c0 show
+
+删除raid0
+```
+[ssh_10.30.11.126] root@node1: Linux$./storcli64 /c0/v4 del
+CLI Version = 007.1705.0000.0000 Mar 31, 2021
+Operating system = Linux 4.19.90-2003.4.0.0036.ky3.kb29.ksvd2.aarch64
+Controller = 0
+Status = Success
+Description = Delete VD succeeded
+```
+
+查看raid硬盘对应的sda硬盘
+```
+./storcli64 /c0/v1 show all
+[ssh_10.30.11.126] root@node1: Linux$./storcli64 /c0/vall show
+CLI Version = 007.1705.0000.0000 Mar 31, 2021
+Operating system = Linux 4.19.90-2003.4.0.0036.ky3.kb29.ksvd2.aarch64
+Controller = 0
+Status = Success
+Description = None
+
+
+Virtual Drives :
+==============
+
+-------------------------------------------------------------
+DG/VD TYPE  State Access Consist Cache Cac sCC     Size Name
+-------------------------------------------------------------
+0/1   RAID0 Optl  RW     Yes     RWTD  -   ON  3.637 TB
+1/4   RAID0 Optl  RW     Yes     RWTD  -   ON  3.637 TB
+-------------------------------------------------------------
+
+VD=Virtual Drive| DG=Drive Group|Rec=Recovery
+Cac=CacheCade|OfLn=OffLine|Pdgd=Partially Degraded|Dgrd=Degraded
+Optl=Optimal|dflt=Default|RO=Read Only|RW=Read Write|HD=Hidden|TRANS=TransportReady
+B=Blocked|Consist=Consistent|R=Read Ahead Always|NR=No Read Ahead|WB=WriteBack
+AWB=Always WriteBack|WT=WriteThrough|C=Cached IO|D=Direct IO|sCC=Scheduled
+Check Consistency
+```
+
 ## 查看阵列卡总体信息：
 
 storcli show

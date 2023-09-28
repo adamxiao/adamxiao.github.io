@@ -1,5 +1,13 @@
 # 临时计划
 
+cloud-init userdata
+```
+#cloud-config
+timezone: Asia/Shanghai
+password: ksvd2020
+ssh_pwauth: True
+```
+
 #### nfs客户端卡住
 
 关键字《nfs挂载点检测》
