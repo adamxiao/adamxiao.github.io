@@ -199,6 +199,26 @@ https://www.zhihu.com/question/499638319
 
 配置rsync服务, 定时拉取待备份的数据!
 
+[高性能家用 NAS 搭建（TrueNAS SCALE）](https://www.zhihu.com/tardis/zm/art/440149283?source_id=1003)
+
+#### 手机照片同步
+
+手机安装一个app即可, 例如pho sync, 支持SMB, NFS, WDAV等协议
+
+#### 电视看电影
+
+关键字《nas电影app》
+
+[我的NAS 篇六：番外篇——用各种设备看NAS里面的电影](https://post.smzdm.com/p/az59vgp0/)
+https://post.smzdm.com/p/aen2z7g4/
+
+安装kodi应用，挂载nfs目录使用?
+
+[家庭影音搭建大碗篇丨软件推荐、NAS、流媒体教程一篇打尽](https://www.zhihu.com/tardis/zm/art/408177850?source_id=1003)
+
+https://www.stephenwxf.com/post/90.html
+Plex是一整套完整的解决方案，采用Server + Client的形式，Server端用于管理各种媒体（电影，电视剧，照片，音乐、有声小说），Client端用于播放（有Mac，PC，iOS，Android，XBox，PS，各种TV，树莓派等）。需要注意的是PLEX的客户端需要付费才能解决多设备限制。
+
 ## 参考资料
 
 https://blog.51cto.com/riverxyz/4572290
