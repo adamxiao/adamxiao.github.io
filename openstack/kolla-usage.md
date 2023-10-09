@@ -331,6 +331,86 @@ https://blog.csdn.net/qq_16942727/article/details/121081515
 
 ## 其他资料
 
+#### 安装ceph
+
+https://developer.aliyun.com/article/514108
+
+1.增加一块硬盘，/dev/sdb，然后分区：
+```
+parted /dev/vdb -s -- mklabel gpt mkpart KOLLA_CEPH_OSD_BOOTSTRAP 1 -1
+```
+
+2.配置ceph：
+
+创建/etc/kolla/config/ceph.conf：
+```
+[global]
+osd pool default size = 2
+osd pool default min size = 1
+```
+上面的配置表示ceph的对象存储副本数是2，最小副本数是1     
+
+3.修改/etc/kolla/global.yml文件：
+```
+enable_cinder: "yes"
+enable_ceph: "yes"
+enable_ceph_rgw: "yes"
+enable_ceph_rgw_keystone: "yes"
+glance_backend_ceph: "yes"
+```
+
+4.修改/root/kolla-ansible-4.0.3.dev36/ansible/inventory/all-in-one文件，将localhost改为control01：
+```
+vim /root/kolla-ansible-4.0.3.dev36/ansible/inventory/all-in-one
+:%s/localhost/control01/g
+```
+注意，多节点实现方法也是一样的。
+=> 为什么配置名称为control01 ???
+
+```
+fatal: [control01]: FAILED! => {"changed": false, "msg": "We are sorry but enable_ceph is no longer supported. Please use external ceph support."}
+```
+
+#### 配置使用external ceph
+
+[openstack kolla - External Ceph](https://docs.openstack.org/kolla-ansible/yoga/reference/storage/external-ceph-guide.html)
+
+enable_cinder: "yes"
+
+配置cinder
+1.配置启用cinder ceph
+```
+cinder_backend_ceph: "yes"
+```
+2.配置ceph auth
+```
+ceph_cinder_keyring (default: ceph.client.cinder.keyring)
+ceph_cinder_user (default: cinder)
+ceph_cinder_pool_name (default: volumes)
+ceph_cinder_backup_keyring (default: ceph.client.cinder-backup.keyring)
+ceph_cinder_backup_user (default: cinder-backup)
+ceph_cinder_backup_pool_name (default: backups)
+```
+3.配置(或拷贝) `/etc/kolla/config/cinder/ceph.conf`
+4.配置(或拷贝) Ceph keyring file(s):
+`/etc/kolla/config/cinder/cinder-volume/<ceph_cinder_keyring>`
+
+配置nova使用外部ceph
+1.启用nova ceph, 配置globals.yml
+```
+nova_backend_ceph: "yes"
+```
+2.配置nova ceph密钥, 配置globals.yml
+```
+ceph_nova_keyring (by default it’s the same as ceph_cinder_keyring)
+ceph_nova_user (by default it’s the same as ceph_cinder_user)
+ceph_nova_pool_name (default: vms)
+```
+3.配置(或拷贝) `/etc/kolla/config/nova/ceph.conf`
+4.配置(或拷贝) Ceph keyring file(s):
+`/etc/kolla/config/nova/<ceph_nova_keyring>`
+
+
 #### 启用cinder-backup
 
 参考配置, 可以使用nfs, swift, ceph等作为后端存储
