@@ -70,3 +70,4 @@ DO NOT EXIT NOW, proceed with the following steps
 * [how-to-mount-qcow2-image](https://unix.stackexchange.com/questions/268460/how-to-mount-qcow2-image)
   https://unix.stackexchange.com/questions/268460/how-to-mount-qcow2-image/506399
 
+* [qemu-nbd技术分析](https://cloud.tencent.com/developer/article/1087439)

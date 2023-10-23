@@ -118,6 +118,18 @@ hardy: 1. 符号快速定位 2. 自动补全 3.文件符号模糊搜索
 2. c++自动非常慢
 	是用快速的YouCompleteMe, 或者不用
 
+## 其他
+
+#### vim urldecode
+
+https://vi.stackexchange.com/questions/24547/decode-url-percent-decoding
+https://gist.github.com/atripes/15372281209daf5678cded1d410e6c16
+
+安装插件: tpope/vim-unimpaired
+```
+{visual}]u
+```
+
 ## FAQ
 
 ### vim自动对一个文件做特别设置

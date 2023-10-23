@@ -1,5 +1,21 @@
 # python编写脚本
 
+#### thread异步调用外部程序
+
+https://juejin.cn/s/python%20异步执行shell命令
+
+```
+import subprocess
+import threading
+
+def run_command(command):
+    subprocess.call(command, shell=True)
+
+command = "ls -l"
+thread = threading.Thread(target=run_command, args=(command,))
+thread.start()
+```
+
 #### subprocess 调用外部程序
 
 ```
@@ -35,6 +51,14 @@ if x < 0:
 ```
 
 https://docs.python.org/3/tutorial/errors.html
+
+```
+try:
+    res = 190 / 0
+except Exception as error:
+    # handle the exception
+    print("An exception occurred:", error) # An exception occurred: division by zero
+```
 
 #### escape shell command
 

@@ -1,5 +1,20 @@
 # 临时计划
 
+#### ubuntu修改分区uuid
+
+https://blog.csdn.net/ChrisNiu1984/article/details/7245711
+
+blkid 命令获取分区uuid
+
+写入的话需要使用tune2fs命令，通常情况下需要生成一个新的uuid，也就是使用uuidgen命令
+```
+uuidgen
+ee73cfb6-b94a-4862-a9e4-fd16eb8c2e15
+sudo tune2fs /dev/vda3 -U ee73cfb6-b94a-4862-a9e4-fd16eb8c2e15
+```
+
+【注意：这个命令不要轻易试，如果忘记修改对应的grub.cfg和fstab等文件，系统会不正常】
+
 cloud-init userdata
 ```
 #cloud-config

@@ -177,5 +177,25 @@ lvchange -ay vg_vrm/lv_root
 lvchange -ay vg_vrm # 激活全部vg
 ```
 
+取消激活lvm卷
+```
+lvchange -an vg_vrm/lv_root
+lvchange -an vg_vrm # 取消激活全部vg
+```
+
+https://access.redhat.com/documentation/zh-cn/red_hat_enterprise_linux/8/html/configuring_and_managing_logical_volumes/managing-lvm-volume-groups_configuring-and-managing-logical-volumes
+vgscan 可以扫描
+pvscan
+
+关键字《lvm过滤san硬盘》《lvm过滤iscsi硬盘》
+https://blog.csdn.net/zhongbeida_xue/article/details/87162700
+如果compute节点的操作系统也安装在lvm上，则需要（在compute节点操作）：
+```
+filter = [ "a/sda/", "a/sdb/", "r/.*/"]
+filter = [ "a/sda/", "r/.*/"]
+```
+
+不按上述操作，可能存在操作系统或租户卷损坏的风险。
+
 原因是qemu-nbd挂载/dev/nbd0, lvm分区识别手动识别一下
 最后就可以`mount /dev/mapper/vg_vrm-root /mnt/tmp`

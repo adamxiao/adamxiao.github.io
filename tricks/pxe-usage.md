@@ -311,6 +311,23 @@ https://github.com/dreamcat4/docker-images/issues/33
 docker run  -v "/var/pxe:/pxe" -e pxe_nic="eth1" --net host dreamcat4/pxe /bin/sh
 ```
 
+## ipxe命令行引导系统
+
+https://ipxe.org/cmd/ifstat
+
+按`Ctrl-B`进入ipxe command line模式
+help 命令, 获取所有命令
+config 命令, 配置变量，ip地址, 掩码, 网关等
+ifopen 命令启用网卡, route命令检查网卡是否open
+
+config命令设置额外几个变量, 以及sanboot命令启动系统
+```
+set initiator-iqn iqn.2022-3.org.freenas.ctl:${mac}
+set root-path iscsi:1.2.3.4::::iqn.2005-10.org.freenas.ctl:ubuntu-desktop
+set keep-san 1
+sanboot ${root-path}
+```
+
 ## FAQ
 
 #### PXE-09 I/O buffer allocate failed
