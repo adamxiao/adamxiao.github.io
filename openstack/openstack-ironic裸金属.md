@@ -363,6 +363,33 @@ boot
 ```
 => 6385是ironic_api监听的端口
 
+boot.ipxe
+```
+#!ipxe
+
+# NOTE(lucasagomes): Loop over all network devices and boot from
+# the first one capable of booting. For more information see:
+# https://bugs.launchpad.net/ironic/+bug/1504482
+set netid:int32 -1
+:loop
+inc netid || chain pxelinux.cfg/${mac:hexhyp} || goto old_rom
+isset ${net${netid}/mac} || goto loop_done
+echo Attempting to boot from MAC ${net${netid}/mac:hexhyp}
+chain pxelinux.cfg/${net${netid}/mac:hexhyp} || goto loop
+
+:loop_done
+echo PXE boot failed! No configuration found for any of the present NICs.
+echo Press any key to reboot...
+prompt --timeout 180
+reboot
+
+:old_rom
+echo PXE boot failed! No configuration found for NIC ${mac:hexhyp}.
+echo Please update your iPXE ROM and retry.
+echo Press any key to reboot...
+prompt --timeout 180
+```
+
 #### ipa安装部署系统流程步骤
 
 查看ipa调试日志, 发现它在下载镜像, 安装到硬盘上, 然后校验?
@@ -625,7 +652,13 @@ deb http://docker.iefcu.cn:5565/repository/bullseye-proxy/ bullseye-updates main
 EOF
 
 export DIB_RELEASE=bullseye
-export DIB_APT_SOURCES="$(pwd)/sources.list.debian"
+#export DIB_APT_SOURCES="$(pwd)/sources.list.debian"
+export DIB_DISTRIBUTION_MIRROR=http://docker.iefcu.cn:5565/repository/bullseye-proxy/
+export DIB_DISTRIBUTION_MIRROR=http://mirrors.aliyun.com/debian/
+
+https://docs.openstack.org/diskimage-builder/1.22.1/developer/caches.html
+--offline
+export DIB_OFFLINE=1
 
 export DIB_DEV_USER_USERNAME=ipa
 export DIB_DEV_USER_PWDLESS_SUDO=yes

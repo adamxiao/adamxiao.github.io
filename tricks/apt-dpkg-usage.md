@@ -12,6 +12,13 @@ dpkg -S ip | grep '/sbin/ip$'
 apt-file search --regexp 'bin/ip$'
 ```
 
+#### apt download deb files
+
+apt download package
+```
+apt install --download-only xxx
+```
+
 #### apt list deb files
 
 https://superuser.com/questions/82923/how-to-list-files-of-a-debian-package-without-install

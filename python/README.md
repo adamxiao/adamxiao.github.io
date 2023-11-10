@@ -1,5 +1,24 @@
 # python编写脚本
 
+#### thread lock使用共享数据
+
+https://www.pythonforthelab.com/blog/handling-and-sharing-data-between-threads/
+
+```
+from threading import Lock
+[...]
+data_lock = Lock()
+def modify_variable(var):
+    while True:
+        for i in range(len(var)):
+            with data_lock:
+                var[i] += 1
+        if event.is_set():
+            break
+        # sleep(.5)
+    print('Stop printing')
+```
+
 #### thread异步调用外部程序
 
 https://juejin.cn/s/python%20异步执行shell命令
