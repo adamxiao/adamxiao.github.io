@@ -79,6 +79,8 @@ docker exec cinder_api \
 
 cinder-manage service remove cinder-volume <UUID>@netapp_std1
 openstack volume service list --service cinder-volume
+
+docker exec cinder_api   cinder-manage service remove cinder-volume node1@mmj
 ```
 
 #### 列举服务

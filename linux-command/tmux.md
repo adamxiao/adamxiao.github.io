@@ -69,3 +69,26 @@ set -g mouse on
 ## 参考资料
 
 * [(好)tmux guide - readthedoc](https://tmuxguide.readthedocs.io/en/latest/tmux/tmux.html)
+
+## FAQ
+
+#### 偶现复制模式复制到多余空格
+
+Text copied from vim inside a tmux session is padded with spaces to the right
+https://stackoverflow.com/questions/28749919/text-copied-from-vim-inside-a-tmux-session-is-padded-with-spaces-to-the-right
+
+待尝试
+```
+TERM=xterm vim
+
+or use below in ~/.tmux.conf
+
+set -g default-terminal "xterm"
+```
+
+Trailing spaces when copying from console
+https://unix.stackexchange.com/questions/218248/trailing-spaces-when-copying-from-console
+
+https://github.com/microsoft/terminal/issues/8976
+Line breaks are ignored inconsistently when copying text in tmux copy mode #8976
+=> 未解决
