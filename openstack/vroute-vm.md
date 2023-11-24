@@ -479,6 +479,34 @@ virsh qemu-agent-command $domain '{"execute":"guest-exec-status","arguments":{"p
 
 ## FAQ
 
+#### vpc路由器下的vm无法访问其他子网的弹性ip
+
+原因是做dnat，只对出口网关网卡做了, 需要修正
+
+https://linuxhint.com/masquerade-with-iptables/
+```
+Specifying a Destination Address Range to Exclude from Masquerading
+$iptables -t mangle -A PREROUTING -d 203.0.113.0/24 -j MARK --set-mark 1
+$iptables -t nat -A POSTROUTING -o eth0 -m mark ! --mark 1 -j MASQUERADE
+
+Specifying the Source IP Address to Masquerade
+$iptables -t nat -A POSTROUTING -o eth0 --to-source 203.0.113.1 -j MASQUERADE
+```
+
+测试用例:
+
+- snat测试用例
+  注意snat的ip地址为虚拟路由器公网ip地址
+  - 子网A，访问子网B的私有ip，没有snat => ok
+  - 子网A，访问外部ip，有snat => ok
+  - 子网A, 访问子网A(或子网B)的弹性ip, 有snat => ok
+  - 外部访问子网A的弹性ip, 没有snat => ok
+- dnat测试用例
+  - 子网A, 访问子网A(或子网B)的弹性ip, 有dnat => 重复(上述snat已测)
+  - 子网A，访问自己的弹性ip, 有dnat => ok
+  - 外部访问子网A的弹性ip, 有dnat => ok
+
+
 #### mac地址错误, 添加网卡失败
 
 libvirt: Domain Config error : XML 错误：意外单播 mac 地址，找到多播 '11:11:22:22:33:00'

@@ -12,8 +12,11 @@ var port = 22345;
 
 http.createServer(function(req, res){
     //console.log(req,res)
-    console.log(req.url)
+    console.log('==> recv req: ' + req.url + '  ===============================================>')
     var body = ""
+
+    console.log('commandpath: ' + req.headers['commandpath'])
+    console.log('taskuuid: ' + req.headers['taskuuid'])
 
     req.on('data', function (chunk) {
         body += chunk;

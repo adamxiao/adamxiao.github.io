@@ -88,6 +88,21 @@ volume_group=cinder-volumes
 volumes_dir=/var/lib/cinder/volumes
 ```
 
+上面有问题，用这个...
+```
+[lvm_1]
+image_volume_cache_enabled = True
+volume_clear = zero
+lvm_type = auto
+target_helper = lioadm
+target_protocol = iscsi
+iscsi_ip_address = 10.90.4.237
+volume_group = lvm_1
+volume_driver = cinder.volume.drivers.lvm.LVMVolumeDriver
+volume_backend_name = lvm_1
+```
+
+ubuntu系列用如下lvm配置
 ```
 [lvm-vol]
 image_volume_cache_enabled = True
