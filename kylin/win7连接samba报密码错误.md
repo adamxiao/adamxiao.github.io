@@ -13,3 +13,10 @@ win10 连接samba 账号密码不正确，win7可以访问
 - 2、运行secpol.msc命令。打开本地安全策略。
 - 3、查看 网络安全:LAN管理器身份验证级别，安全设置已经变为默认“没有定义”
   修改后发现输入账户密码就可以直接访问了。
+
+#### 允许guest访问
+
+gpedit.msc
+打开本地组策略: 计算机配置 -> 管理模板 -> 网络 -> Lanman工作站 -> 启用不安全的来宾登录
+
+https://learn.microsoft.com/zh-cn/troubleshoot/windows-client/networking/cannot-access-shared-folder-file-explorer#you-cant-access-this-shared-folder-because-your-organizations-security-policies-block-unauthenticated-guest-access

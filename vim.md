@@ -132,6 +132,14 @@ https://gist.github.com/atripes/15372281209daf5678cded1d410e6c16
 
 ## FAQ
 
+### 编码问题
+
+主动注明使用utf-8编码(或cp936)解析文件
+```
+:e ++enc=utf-8
+:e ++enc=cp936
+```
+
 ### vim自动对一个文件做特别设置
 ```
 Per-file settings can be done using "modeline magic".

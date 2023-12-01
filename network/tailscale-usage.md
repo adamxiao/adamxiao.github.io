@@ -191,6 +191,40 @@ https://hellodk.cn/post/1130
 - todesk，向日葵等方案
 - other...
 
+#### derp中继服务器
+
+关键字《自建 derp 服务器》
+
+https://blog.aflybird.cn/2023/05/tailscale-derp/
+
+https://icloudnative.io/posts/custom-derp-servers/
+
+[自建DERP服务器](https://lxnchan.cn/ubuntu-derp.html)
+
+/etc/systemd/system/derp.service
+```
+[Unit]
+Description=Tailscale DERP Server
+After=network.target
+
+[Service]
+Restart=always
+RestartSec=5
+ExecStart=/root/go/bin/derper -c=/root/derper.conf -a ":<port>" -hostname "<domain>" --stun
+
+[Install]
+WantedBy=multi-user.target
+```
+
+开启对应防火墙端口（默认）
+
+- STUN：UDP: 3478
+
+- DERP: TCP: 443
+
+http://junyao.tech/posts/18297f50.html
+Tailscale 使用的算法很有趣: __所有客户端之间的连接都是先选择 DERP 模式（中继模式），这意味着连接立即就能建立（优先级最低但 100% 能成功的模式），用户不用任何等待。然后开始并行地进行路径发现，通常几秒钟之后，我们就能发现一条更优路径，然后将现有连接透明升级（upgrade）过去，变成点对点连接（直连）__。
+
 ## 参考资料
 
 - [Tailscale 基础教程：Headscale 的部署方法和使用教程](https://icloudnative.io/posts/how-to-set-up-or-migrate-headscale/)
