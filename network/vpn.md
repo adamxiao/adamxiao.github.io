@@ -124,6 +124,36 @@ type Message struct {
 }
 ```
 
+#### tailscale源码
+
+wgengine/magicsock/magicsock.go
+```
+// Send implements conn.Bind.
+//
+// See https://pkg.go.dev/golang.zx2c4.com/wireguard/conn#Bind.Send
+func (c *Conn) Send(buffs [][]byte, ep conn.Endpoint) error {
+```
+
+wgengine/userspace.go
+=> journalctl日志能看到有这个日志
+```
+e.logf("Creating WireGuard device...")
+e.wgdev = wgcfg.NewDevice(e.tundev, e.magicConn.Bind(), e.wgLogger.DeviceLogger)
+```
+
+收包修改, wgengine/magicsock/magicsock.go
+```
+// mkReceiveFunc creates a ReceiveFunc reading from ruc.
+// The provided healthItem and metric are updated if non-nil.
+func (c *Conn) mkReceiveFunc(ruc *RebindingUDPConn, healthItem *health.ReceiveFuncStats, metric *clientmetric.Metric) conn.ReceiveFunc {
+```
+
+发包修改, wgengine/magicsock/magicsock.go
+```
+// See https://pkg.go.dev/golang.zx2c4.com/wireguard/conn#Bind.Send
+func (c *Conn) Send(buffs [][]byte, ep conn.Endpoint) error {
+```
+
 #### wireguard使用
 
 [Set Up WireGuard VPN on Ubuntu](https://www.linode.com/docs/guides/set-up-wireguard-vpn-on-ubuntu/)
@@ -242,8 +272,6 @@ wg-quick使用如下规则
 iptable -t mangle -I PREROUTING -p udp -j CONNMARK --restore-mark %s
 ```
 
-[彻底理解 WireGuard 的路由策略](https://zhuanlan.zhihu.com/p/559789021)
-
 #### wireguard原理
 
 https://tonybai.com/2020/03/29/hello-wireguard/
@@ -251,6 +279,7 @@ https://tonybai.com/2020/03/29/hello-wireguard/
 1.peer to peer vpn
 点对点wireguard通信图
 
+[(好)彻底理解 WireGuard 的路由策略](https://zhuanlan.zhihu.com/p/559789021)
 
 ## FAQ
 

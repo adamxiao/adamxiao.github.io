@@ -101,3 +101,15 @@ sudo ufw deny 22/tcp
 [电脑如何投屏电视，所有方法汇总-2023](https://www.zhihu.com/tardis/zm/art/360544450?source_id=1003)
 
 https://www.lebo.cn/news/AboutNewsContent?id=858
+
+## 其他
+
+#### 播放 mkv 格式的视频
+ 
+执行下面命令即可。
+```
+sudo apt install ffmpeg
+sudo apt install mplayer
+sudo apt install smplayer # 这个可以生效
+```
+之后将 mkv 文件的打开方式设置为 Smplayer 即可。
