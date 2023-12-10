@@ -46,6 +46,34 @@ https://tailscale.com/kb/1019/subnets/?tab=linux
 ip route show table 52
 ```
 
+#### 修改端口
+
+/etc/default/tailscaled
+```
+PORT="41641"
+TS_DEBUG_MTU=1200
+```
+
+#### 容器使用tailscale
+
+https://my-space.readthedocs.io/zh/latest/gfw_is_shit/index.html
+使用容器运行tailscale服务
+```
+docker run  -d --restart=always \
+    --name=tailscaled \
+    -v /var/lib:/var/lib \
+    -v /dev/net/tun:/dev/net/tun \
+    --network=host \
+    --privileged \
+    tailscale/tailscale:v1.26.0 \
+    tailscaled
+
+docker exec tailscaled tailscale up --advertise-routes=192.168.3.0/24,192.168.2.0/24 --reset # For Server
+
+docker exec tailscaled tailscale up                  # For Windows , macOS client
+docker exec tailscaled tailscale up --accept-routes  # For linux client
+```
+
 ## headscale使用
 
 容器镜像使用, 关键字《headscale 容器镜像使用》
@@ -227,12 +255,24 @@ Tailscale 使用的算法很有趣: __所有客户端之间的连接都是先选
 
 ## 参考资料
 
+- [(译) NAT 穿透是如何工作的：技术原理及企业级实践（Tailscale, 2020）](https://arthurchiao.art/blog/how-nat-traversal-works-zh/)
+
 - [Tailscale 基础教程：Headscale 的部署方法和使用教程](https://icloudnative.io/posts/how-to-set-up-or-migrate-headscale/)
 
 - [一文带你理解 WireGuard 路由策略](https://blog.csdn.net/easylife206/article/details/127699058)
   它不会扰乱你的主路由表，而是通过规则匹配新创建的路由表。断开连接时只需删除这两条路由规则，默认路由就会被重新激活
 
 - https://cshihong.github.io/2020/10/11/WireGuard基本原理/
+
+- https://blog.51cto.com/ewhisper/5847910
+  在 K8s 集群中创建 DERP 服务器
+
+- https://lala.im/5273.html
+  WireGuard+UDPspeeder+Udp2raw-tunnel
+  WireGuard是UDP数据包，ISP有QoS，所以用Udp2raw-tunnel把UDP伪装成TCP，绕过ISP的限制，接着因为线路质量的问题，再套上UDPspeeder实现多倍发包加速。大致上就是这样。。。
+
+- https://blog.laisky.com/p/tailscale/
+  2、容器安装 derper
 
 ## FAQ
 

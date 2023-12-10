@@ -279,7 +279,13 @@ openssl x509 -in cert.crt -outform der-out cert.der
 openssl x509 -in cert.crt -inform der -outform pem -out cert.pem
 ```
 
+#### 签名
 
+```
+openssl list --digest-commands
+openssl dgst -sha512 xxx.file
+openssl dgst -md5 xxx.file
+```
 
 ## 问题记录
 

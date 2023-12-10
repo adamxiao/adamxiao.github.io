@@ -102,7 +102,29 @@ sudo ufw deny 22/tcp
 
 https://www.lebo.cn/news/AboutNewsContent?id=858
 
+https://www.599cn.com/post/8119.html 
+
 ## 其他
+
+#### 生成二维码图片
+
+https://www.omgubuntu.co.uk/2011/03/how-to-create-qr-codes-in-ubuntu
+
+```
+apt install -y qrencode
+qrencode -o google.png 'http://google.com'
+=> 控制二维码图片大小
+qrencode -o ~/Desktop/google.png -s 6 'http://google.com'
+```
+
+[Software to read a QR code?](https://askubuntu.com/questions/22871/software-to-read-a-qr-code)
+
+https://blog.csdn.net/wangweiqiang1325/article/details/72832531
+二维码解析
+```
+apt install zbar-tools
+zbarimg xxx.png
+```
 
 #### 播放 mkv 格式的视频
  

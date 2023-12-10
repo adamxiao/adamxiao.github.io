@@ -1,5 +1,27 @@
 # 临时计划
 
+[内网穿透相关知识](https://juejin.cn/post/7227012113574232121)
+
+- FRP
+- NPS
+- ZeroTier + ZeroTier moon
+- Headscale + Tailscale
+- CloudFlare Tunnel 非常好用的内网穿透工具CloudFlare Tunnel
+
+headscale配置
+```
+# Headscale Config
+server_url: http://test.domain.com:8080 # *客户端连接地址 替换为自己域名
+listen_addr: 0.0.0.0:8080               # 监听地址
+metrics_listen_addr: 127.0.0.1:9090     # 监听 /metrics 的地址，希望将此端点保密到内部网络
+grpc_listen_addr: 0.0.0.0:50443         # 监听 gRPC 地址 gRPC 用于 远程控制 headscale
+grpc_allow_insecure: false              # 允许在 INSECURE 模式下使用 gRPC 后台 不建议开启
+private_key_path: /var/lib/headscale/private.key # 加密流量的私钥文件，会自动生成
+ip_prefixes:                            # 用来分配 IP 地址的前缀
+  - fd7a:115c:a1e0::/48
+  - 100.64.0.0/10
+```
+
 #### ubuntu修改分区uuid
 
 https://blog.csdn.net/ChrisNiu1984/article/details/7245711
