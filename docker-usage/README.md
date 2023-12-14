@@ -249,3 +249,7 @@ The engine will restart in a completely empty state, which means you will lose a
 * named volumes
 * user created networks
 * swarm state
+
+## 参考资料
+
+- [How to Improve Docker Image Size With Layers](https://betterprogramming.pub/how-to-improve-docker-image-size-with-layers-3ad62be0da9b)

@@ -9,6 +9,21 @@ go build .
 
 #### go mod使用
 
+```
+export GOPROXY=https://mirrors.aliyun.com/goproxy
+export GOPROXY=https://goproxy.cn,direct
+```
+
+初始化创建go.mod文件
+```
+go mod init xxx
+```
+
+增加依赖库
+```
+go get github.com/gin-gonic/gin
+```
+
 会在本地构建一个vendor目录, 放置依赖库
 ```
 go mod vendor

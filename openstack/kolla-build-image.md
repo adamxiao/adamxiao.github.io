@@ -4,7 +4,8 @@
 
 使用pip直接安装
 ```
-apt install -y python3-pip                                                                                                                     pip install kolla 
+apt install -y python3-pip
+pip install kolla 
 ```
 
 ## 构建cinder镜像

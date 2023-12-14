@@ -136,6 +136,61 @@ imageContentSources:
   source: quay.iefcu.cn:9443/xiaoyun/openshift4-aarch64
 ```
 
+## 同步多个镜像
+
+https://blog.csdn.net/chenhongloves/article/details/121019921
+使用`v2/_catalog`接口获取项目下所有的镜像列表
+
+```
+# 重新拼接 url
+$ url="http://172.30.3.149/service/token?service=harbor-registry&scope=registry:catalog:*"
+# 获取 token
+$ curl  -s --user "$U" $url
+{
+  "token": "xxx",
+  "expires_in": 1800,
+  "issued_at": "2021-10-28T10:11:37Z"
+}
+$ curl  -s --user "$U" $url | jq -r .token
+xxx
+$ T=$(curl  -s --user "$U" $url | jq -r .token)
+$ echo $T
+xxx 
+```
+
+访问harbor镜像仓库的示例:
+```
+url='/service/token?account=username&scope=repository%3Apublic%2Fbusybox%3Apull%2Cpush&service=harbor-registry'
+url='/service/token?service=harbor-registry&scope=registry:catalog:*service=harbor-registry'
+U=adam
+curl -s --user "$U" "http://192.168.120.44$url"
+```
+
+无法访问。。。
+```
+{"errors":[{"code":"UNAUTHORIZED","message":"unauthorized to list catalog: unauthorized to list catalog"}]}
+```
+
+https://github.com/goharbor/harbor/issues/13573
+
+```
+adam@adam-pc:/mnt/data/registry$ curl --silent --basic -u username http://192.168.120.44/v2/_catalog
+Enter host password for user 'username':
+{"errors":[{"code":"UNAUTHORIZED","message":"unauthorized to list catalog: unauthorized to list catalog"}]}
+```
+
+https://stackoverflow.com/questions/64998926/for-harbor-registry-catalog-listing-is-not-working-with-bearer-token-receiving
+=> 换成使用下面那个harbor的api接口就可以了。。。
+```
+root@harbor:~/bin# TOKEN=$(echo -n 'phanx:<phanx's password>' | base64)
+root@harbor:~/bin# curl -ikL -X GET -H "Content-Type: application/json" -H "Authorization: Basic ${TOKEN}" https://<my harbor registry server>/v2/_catalog
+```
+
+验证发现使用这个接口可以
+```
+http://<my harbor registry server>/api/v2.0/projects/public/repositories?page_size=15&page=1
+```
+
 ## 目前kcp平台用到的镜像列表
 
 #### 0. 堡垒机dns+haproxy等镜像
