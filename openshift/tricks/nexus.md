@@ -121,6 +121,14 @@ You can get the <repository URL> from the table in Browsing Repositories and Rep
 
 [nexus apt repositories](https://help.sonatype.com/repomanager3/nexus-repository-administration/formats/apt-repositories)
 
+## 作为yum软件源镜像仓库
+
+参考npm的配置，填几个参数即可:
+- name
+- url
+
+其他缓存时间可选参数, 缓存时间等
+
 ## 作为pip软件源镜像仓库
 
 nexus3创建PyPI代理仓库, 最少要配置如下字段:

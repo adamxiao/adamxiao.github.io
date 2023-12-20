@@ -31,6 +31,13 @@ netstat -ap --unix
 
 ## xx
 
+#### netcat tcp forward
+
+https://unix.stackexchange.com/questions/293304/using-netcat-for-port-forwarding
+```
+socat tcp-l:2022,fork,reuseaddr tcp:127.0.0.1:22
+```
+
 ## 参考文档
 
 [socat by example](https://www.bitkistl.com/2016/03/socat-by-example.html)

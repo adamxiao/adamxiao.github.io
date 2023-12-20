@@ -287,6 +287,15 @@ virsh qemu-agent-command $domain '{"execute":"guest-exec-status","arguments":{"p
 # /etc/sysctl.conf
 ```
 
+## 常用设备
+
+#### vnc连接
+
+```
+<graphics type='vnc' port='-1' autoport='yes' listen='0.0.0.0' />
+<graphics type='vnc' port='-1' autoport='yes' passwd='password' listen='0.0.0.0' keymap='en-us'/>
+```
+
 ## 其他
 
 #### libvirt开启调试日志

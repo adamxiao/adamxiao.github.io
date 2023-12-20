@@ -1,5 +1,33 @@
 # python编写脚本
 
+#### python tcp socket server
+
+https://realpython.com/python-sockets/#echo-server
+
+```
+# echo-server.py
+
+import socket
+
+HOST = "127.0.0.1"  # Standard loopback interface address (localhost)
+PORT = 65432  # Port to listen on (non-privileged ports are > 1023)
+
+with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+    s.bind((HOST, PORT))
+    s.listen()
+    conn, addr = s.accept()
+    with conn:
+        print(f"Connected by {addr}")
+        while True:
+            data = conn.recv(1024)
+            if not data:
+                break
+            conn.sendall(data)
+```
+
+https://docs.python.org/3/library/socketserver.html
+python3 标准模块 socketserver
+
 #### 递归扫描文件
 
 关键字《python scan files recursively》

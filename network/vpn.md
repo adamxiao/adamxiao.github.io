@@ -191,6 +191,12 @@ https://www.sklinux.com/posts/devops/下一代vpn/
 
 #### wg配置示例
 
+生成密钥
+```
+umask 077
+wg genkey | tee privatekey | wg pubkey > publickey
+```
+
 wg-quick up wg0
 
 服务端配置 wg0.conf
@@ -323,3 +329,5 @@ https://gist.github.com/sidmulajkar/472cc9dd475ef14a598db0c64f025491
 sudo apt install openresolv
 sudo apt install resolvconf
 ```
+
+或者去除DNS配置也可

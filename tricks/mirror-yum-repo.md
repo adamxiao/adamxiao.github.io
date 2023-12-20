@@ -41,13 +41,13 @@ reposync -l --repoid=base --download_path=/data  # Sync RPMS
 
 启动http服务, 提供镜像源服务
 ```
-docker run -d --name repo -v xxx:/var/www/html hub.iefcu.cn/public/nginx:stable
+docker run -d --name repo -v xxx:/usr/share/nginx/html hub.iefcu.cn/public/nginx:stable
 ```
 
 提供https服务的repo
 ```
 docker run -d --name repo \
-  -v xxx:/var/www/html \
+  -v xxx:/usr/share/nginx/html \
   -v xxx:/etc/nginx/cert \
   hub.iefcu.cn/public/nginx:stable
 ```

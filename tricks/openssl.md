@@ -287,6 +287,21 @@ openssl dgst -sha512 xxx.file
 openssl dgst -md5 xxx.file
 ```
 
+## 其他资料
+
+[如何安装和信任自签名证书](https://kompost.cn/posts/install-and-trust-self-signed-cert/)
+根证书存储的位置
+
+- Debian/Ubuntu/Gentoo	/etc/ssl/certs/ca-certificates.crt
+- Fedora/CentOS/RHEL 7.x	/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem
+- Fedora/CentOS/RHEL 6.x	/etc/pki/tls/certs/ca-bundle.crt
+- Alpine Linux <=3.11	/etc/ssl/cert.pem
+- Alpine Linux >=3.12	/etc/ssl/certs/ca-certificates.crt (/etc/ssl/cert.pem 是符号链接)
+- OpenSUSE/SLES	/var/lib/ca-certificates/ca-bundle.pem /etc/ssl/ca-bundle.pem
+- Java 环境有特定的可信根证书存储，不同版本也存在一些区别。但都通过 keytool 来管理。
+- NodeJS 官方建议使用环境变量 NODE_EXTRA_CA_CERTS 来指定额外的根证书。
+- Firefox 浏览器有自己的可信根证书列表
+
 ## 问题记录
 
 ### 1. SAN证书问题
