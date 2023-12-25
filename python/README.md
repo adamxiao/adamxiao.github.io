@@ -1,5 +1,26 @@
 # python编写脚本
 
+#### logging使用
+
+```
+import logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
+exception = logger.exception
+error = logger.error
+info = logger.info
+warning = logger.warning
+debug = logger.debug
+
+logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
+logger.setLevel(logging.WARNING)
+logger.setLevel(logging.ERROR)
+logger.setLevel(logging.FATAL)
+```
+
+
 #### python tcp socket server
 
 https://realpython.com/python-sockets/#echo-server

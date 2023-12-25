@@ -66,6 +66,8 @@ int main(int argc, char** argv)
 
 ## python 监听gtk 剪切板
 
+https://hicham.fedorapeople.org/gi/python/Gtk-3.0.html#Gtk.Clipboard
+
 ```
 #!/usr/bin/python3 -t
 # -*- coding:utf-8 -*-
@@ -89,6 +91,30 @@ if __name__ == '__main__':
   main()
 ```
 
+关键字《python gtk clipboard owner-change》
+
+https://unix.stackexchange.com/questions/399914/dump-clipboard-to-stdout-in-follow-mode-for-piping
+```
+#!/usr/bin/env python
+import sys 
+import signal
+import gi
+gi.require_version("Gtk", "3.0")
+from   gi.repository import Gtk, Gdk 
+
+def pcallBack(*args):
+	print pclip.wait_for_text() 
+
+if __name__ == '__main__':    
+	import signal    
+	signal.signal(signal.SIGINT, signal.SIG_DFL)    
+	pclip = Gtk.Clipboard.get(Gdk.SELECTION_PRIMARY)
+	pclip.connect('owner-change',pcallBack)
+	Gtk.main()
+```
+
+https://fedorapeople.org/~elmarco/clipsync.py
+
 ## python Gtk add socket server
 
 https://stackoverflow.com/questions/47265105/how-to-listen-socket-when-app-is-running-in-gtk-main
@@ -108,6 +134,78 @@ Gtk.Socket ??
 https://stackoverflow.com/questions/45187406/how-to-implement-a-tcp-server-in-gtk-based-application-using-giochannel
 
 ## 其他
+
+https://blog.csdn.net/Sakuya__/article/details/89874642
+剪贴板(Clipboard)是由操作系统维护的一块内存区域，这块内存区域不属于任何单独的进程，但是每一个进程又都可以访问这块内存区域，而实质上当在一个进程中复制数据时，就是将数据放到该内存区域中，而当在另一个进程中粘贴数据时，则是从该块内存区域中取出数据。
+
+从剪切板的定义中我们可以看出，剪切板和共享内存差不多，都是在系统中使用一块公共的内存，只是共享内存的公共内存是我们自己申请创建的，剪切板是由操作系统维护的。剪切板可以用来实现进程间通信，只是通常我们只在广义上把它认为是进程间通信的一种。因为剪切板是一种非常松散的交换媒介，不像共享内存中，我们在一个进程访问共享内存时会设置锁防止其他程序在此时访问该内存，而在剪切板中是没有这种机制的。
+
+https://developer.aliyun.com/article/484980
+1、监视剪贴板
+
+原理：
+
+(1) WM_DRAWCLIPBOA
+
+系统提供了WM_DRAWCLIPBOARD消息用于监视剪贴板的变。如果调用
+
+SetClipboardViewer函数设置了窗口为剪贴板查看器，那么当剪贴板中的内容变化时，所注册的查看器窗口会收到WM_CHANGECBCHAIN消息和WM_DRAWCLIPBOARD消息。
+
+    当剪贴板中的内容变化时，窗口会收到WM DRAWCLIPBOARD消息。当查看器链新的节点加入或有节点退出窗口会收到WM_CHANGECBCHAIN消息。
+
+(2) SetClipboardViewer函数
+2、剪贴板数据格式
+
+    剪贴板中可能会存在各种各样的数据。因此剪贴板中在保存数据的同时还需要保存数据的格式信息。
+
+    系统使用一个UINT类型的数据来表示剪贴板中的数据格式。在这些格式信息中，有很多是各种应用程序之间通用的，比如文本、位图等。这些数据格式已经由系统预先定义，称为标准格式。
+
+    还有一些应用程序也希望自行定义剪贴板的数据格式，这样可以方便地在同一个应用程序的不同实例间进行数据传递而不需要对数据的格式进行过多的处理(典型的就包括Word)。
+
+https://www.cnblogs.com/yifi/p/6596558.html
+在数据提供进程创建了剪贴板数据后，一直到有其他进程获取剪贴板数据前，
+这些数据都要占据内存空间。如在剪贴板放置的数据量过大，就会浪费内存空间，
+降低对资源的利用率。
+为避免这种浪费，可以采取延迟提交（Delayed rendering）技术，
+即由数据提供进程先创建一个指定数据格式的空（NULL）剪贴板数据块，
+直到有其他进程需要数据或自身进程要终止运行时才真正提交数据。
+
+[(好)GTK+学习笔记（二）](https://www.cnblogs.com/silvermagic/p/9087648.html)
+为了能让剪切板能同时处理多种格式的数据，剪切板提供了回调函数的机制来处理实际数据。当你设置剪切板数据的时候，你可以使用gtk_clipboard_set_text()直接设置数据，或者使用gtk_clipboard_set_with_data()和gtk_clipboard_set_with_owner()提供一个当剪切板的数据被使用时，才设置剪切板数据的回调函数。如果是构件提供剪切板内容，就用gtk_clipboard_set_with_owner()，如果拷贝的是基础类型数据，比如字符串，就用gtk_clipboard_set_with_data()。
+
+[(好)spice agent 剪贴板共享机制分析](https://blog.csdn.net/weixin_34278190/article/details/91580927)
+spice 协议定义了一组用于spice客户端和spice agent之间通信的双向通信通道。spice只提供了一个通信通道，具体的传输数据内容对协议而言是不透明的。此通道可用于各种用途，如客户端和客户机之间剪贴板共享，分辨率设置等。
+
+https://github.com/239144498/ClipSync
+ClipSync是一个全平台剪贴板同步服务，可以很好做到多设备连接并且同步剪贴板内容。该服务主打无感同步，不需要用户手动操作，操作配置界面在Web端进行。
+
+https://blog.csdn.net/u011720508/article/details/115509260
+qt-wayland平台下复制粘贴原理
+setImageData()
+
+https://blog.51cto.com/u_15314083/3193103
+如要使用自定义的数据类型，就有点麻烦了。
+
+[spice协议——vdagent](https://www.jianshu.com/p/cc0e4002ffb8)
+剪切板相关消息
+spice剪切板用于在guest和client之间拷贝数据，前提是guest和client都需要实现VD_AGENT_CAP_CLIPBOARD_SELECTION功能，guest和client都能对剪切板进行如下操作，这些操作通过后面括号中的消息触发。
+- 申明所有权(VD_AGENT_CLIPBOARD_GRAB)
+- 释放所有权(VD_AGENT_CLIPBOARD_RELEASE)
+- 请求数据(VD_AGENT_CLIPBOARD_REQUEST)
+- 发送数据（VD_AGENT_CLIPBOARD）
+
+接下来以guest->client拷贝文本为例，反向的逻辑是相同的：
+
+虚拟机中agent会监听系统事件，当监听到复制事件时，会触发回调向client端发送VD_AGENT_CLIPBOARD_GRAB消息，获取剪切板的所有权。
+client端接收到GRAB消息之后，会发送通过信号触发clipboard_grab回调，回调中会调用gtk的gtk_clipboard_set_with_owner接口注册剪切板的clipboard_get和clipboard_clear操作，并设置owner用于监听粘贴操作。
+当客户端有粘贴操作时，会触发clipboard_get回调，回调中先连接VD_AGENT_CLIPBOARD消息的回调clipboard_got_from_guest，然后向guest发送VD_AGENT_CLIPBOARD_RELEASE消息，请求剪切板数据，然后会启动一个mainloop等待数据到来。
+guest收到VD_AGENT_CLIPBOARD_RELEASE消息时，就会通过VD_AGENT_CLIPBOARD消息将剪切板数据发送给client。
+client接收到消息，会调到clipboard_got_from_guest，将数据拷贝到系统剪切板。
+然后在系统事件循环中会将系统剪切板的数据拷贝到目标组件。
+至此完成一次粘贴操作。
+
+https://cloud.tencent.com/developer/article/2168913
+Spice 架构
 
 #### python gtk tcp服务
 
@@ -142,6 +240,12 @@ Vim has two special registers corresponding to these clipboards:
 
 - `*` uses PRIMARY; mnemonic: Star is Select (for copy-on-select)
 - `+` uses CLIPBOARD; mnemonic: CTRL PLUS C (for the common keybind)
+
+https://www.elecfans.com/d/1233855.html
+ubuntu默认没有开启vim支持系统clipboard, 需要安装
+```
+apt install vim-gtk
+```
 
 ## 参考资料
 

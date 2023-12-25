@@ -334,6 +334,23 @@ update-initramfs -u
 - 7.Shutdown the VM and convert it to a raw format image
 - 8.Copy the image to your base logical volume
 
+### 使用ipxe手动配置启动iscsi ubuntu系统
+
+https://ipxe.org/cmd/ifstat
+
+按`Ctrl-B`进入ipxe command line模式
+help 命令, 获取所有命令
+config 命令, 配置变量，ip地址, 掩码, 网关等
+ifopen 命令启用网卡, route命令检查网卡是否open
+
+config命令设置额外几个变量, 以及sanboot命令启动系统
+```
+set initiator-iqn iqn.2022-3.org.freenas.ctl:${mac}
+set root-path iscsi:1.2.3.4::::iqn.2005-10.org.freenas.ctl:ubuntu-desktop
+set keep-san 1
+sanboot ${root-path}
+```
+
 ### ubuntu UEFI和BIOS双启动
 
 关键字《配置uefi安装的ubuntu能够bios启动》
