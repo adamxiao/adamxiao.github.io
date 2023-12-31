@@ -247,6 +247,57 @@ ubuntu默认没有开启vim支持系统clipboard, 需要安装
 apt install vim-gtk
 ```
 
+## 旧的资料
+
+2019-11-10
+
+TODO:
+spice_copy项目
+
+思路：搜索关键字“ubuntu 监控剪切板变化”
+python监控gtk剪切板变化
+
+http://cn.voidcc.com/question/p-dhnjcmij-bbq.html
+在ubuntu 18.04上测试生效
+```
+from gi.repository import Gtk, Gdk
+
+def test(*args):
+    print "Clipboard changed"
+
+clip = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
+clip.connect('owner-change',test)
+Gtk.main()
+```
+
+python操作系统剪切板
+python gtk+库
+https://thebigdoc.readthedocs.io/en/latest/PyGObject-Tutorial/clipboard.html
+
+```
+clip = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD) 
+data = clip.wait_for_text()
+clip.set_text(data, len(data))
+```
+
+
+三种方法:
+https://www.jb51.net/article/169771.htm
+使用第三方库pyperclip
+```
+import pyperclip
+data = pyperclip.paste()
+data = data[7:12]
+pyperclip.copy(data)
+pyperclip.paste()
+```
+
+优点： 跨平台，接口调用方便简洁
+缺点： 剪切板的数据格式只支持utf-8文本，频繁读写速度较慢
+PyGTK - Clipboard Class
+https://www.tutorialspoint.com/pygtk/pygtk_clipboard_class.htm
+
+
 ## 参考资料
 
 https://lazka.github.io/pgi-docs/Gtk-3.0/classes/Clipboard.html

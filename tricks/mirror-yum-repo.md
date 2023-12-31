@@ -51,3 +51,34 @@ docker run -d --name repo \
   -v xxx:/etc/nginx/cert \
   hub.iefcu.cn/public/nginx:stable
 ```
+
+## 构建本地apt源
+
+https://pendrivelinux.com/how-to-set-up-your-own-debian-linux-mirror/
+```
+apt-get install apt-mirror apache2
+```
+
+编辑mirror配置: /etc/apt/mirror.list
+示例配置, 这里使用nexus代理镜像 docker.iefcu.cn 作为上游镜像，只镜像 debian bullseye amd64 架构，不镜像源代码包。
+```
+set base_path    /data/debian11
+set defaultarch  # 默认架构与镜像主机的架构一致,这里是amd64
+deb http://docker.iefcu.cn:5565/repository/bullseye-proxy/ bullseye main
+```
+
+然后就可以同步apt源了
+```
+apt-mirror
+apt-mirror /etc/apt/mirror.list
+```
+
+最后同步的内容在这里
+```
+ln -sf /var/spool/apt-mirror/mirror/ftp.cn.debian.org/ mirror
+```
+
+https://blog.fleeto.us/post/build-ubuntu-repository-with-apt-mirror-and-apt-cacher/
+- 存储位置（base_path）
+- 下载的线程数（nthreads）
+- 需要下载的版本和架构

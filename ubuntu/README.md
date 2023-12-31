@@ -106,6 +106,42 @@ https://www.599cn.com/post/8119.html
 
 ## 其他
 
+#### 录屏
+
+关键字《linux 录屏》
+
+https://access.redhat.com/documentation/zh-cn/red_hat_enterprise_linux/7/html/desktop_migration_and_administration_guide/screencast-recording
+GNOME Shell 具有内置录屏功能，允许用户记录会话期间的桌面或应用程序活动，并以 webm 格式将录制的内容作为高分辨率视频文件分发。
+Ctrl+Alt+Shift+R => 开始和停止都按这个
+
+https://blog.csdn.net/sazass/article/details/124111191
+- 录屏默认的时长30秒，超时会自动结束！ => 可以调整
+- 录屏后文件默认存放在主目录内的视频目录中
+- 录屏是直接录制
+- 不能录制声音
+
+gsettings set org.gnome.settings-daemon.plugins.media-keys max-screencast-length 300
+
+
+https://www.zhihu.com/question/51920876
+SimpleScreenRecorder
+
+录屏配置需要在音频输入选择
+后端： PulseAudio
+源：Family 17th
+
+```
+sudo add-apt-repository ppa:maarten-baert/simplescreenrecorder
+sudo apt update
+sudo apt install simplescreenrecorder
+```
+
+#### 刻录DVD
+
+```
+sudo apt install brasero
+```
+
 #### 生成二维码图片
 
 https://www.omgubuntu.co.uk/2011/03/how-to-create-qr-codes-in-ubuntu
