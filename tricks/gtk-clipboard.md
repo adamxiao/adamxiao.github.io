@@ -247,6 +247,71 @@ ubuntu默认没有开启vim支持系统clipboard, 需要安装
 apt install vim-gtk
 ```
 
+#### 剪切板设置二进制数据
+
+关键字《python3 gtk clipboard set binary data》
+
+```
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk, Gdk
+
+def set_clipboard_data(binary_data):
+    # Create a new clipboard
+    clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
+
+    # Specify the type of data you are setting (binary data)
+    target = Gdk.Atom.intern('application/octet-stream', True)
+
+    # Specify the data and its length
+    data = Gtk.SelectionData.new_for_target(target)
+    data.set(data.get_target(), 8, binary_data)
+
+    # Set the data on the clipboard
+    clipboard.set_with_data([target], lambda clipboard, selection_data, info: on_clipboard_set(selection_data), data)
+
+def on_clipboard_set(selection_data):
+    print("Data set in the clipboard successfully!")
+
+# Example binary data (replace this with your actual binary data)
+binary_data = b'\x01\x02\x03\x04\x05'
+
+# Call the function to set binary data in the clipboard
+set_clipboard_data(binary_data)
+
+# Start the GTK main loop (if not already started)
+Gtk.main()
+```
+
+获取二进制数据
+```
+import gi
+gi.require_version('Gtk', '3.0')
+from gi.repository import Gtk, Gdk
+
+def on_clipboard_received(clipboard, selection_data, user_data):
+    # Check if the data was received successfully
+    if selection_data.get_format() == 8:
+        binary_data = selection_data.get_data()
+        print("Binary data received from clipboard:", binary_data)
+    else:
+        print("Failed to retrieve binary data from the clipboard.")
+
+def get_clipboard_data():
+    # Create a new clipboard
+    clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
+
+    # Request contents asynchronously and connect the callback
+    clipboard.request_contents('application/octet-stream', on_clipboard_received, None)
+
+# Call the function to get binary data from the clipboard
+get_clipboard_data()
+
+# Start the GTK main loop (if not already started)
+Gtk.main()
+```
+
+
 ## 旧的资料
 
 2019-11-10

@@ -124,6 +124,33 @@ sudo zfs set mountpoint=/myspecialfolder mypool
 
 开机自动挂载ZFS分区
 
+chatgpt: zfs命令行创建加密文件系统
+
+```
+sudo zfs create -o encryption=aes-256-gcm -o keyformat=passphrase data1/enc1
+=> 然后输入密码, 居然自动创建，并且挂载了。。。
+sudo zfs list
+下次开机可以再导入存储池, 挂载这个文件系统
+sudo zpool import -N -f 'data1'
+sudo zfs load-key data1/enc1 # 解密
+sudo zfs mount data1/enc1
+```
+
+#### 用loopback虚拟硬盘测试 zfs
+
+关键字《使用loop文件制作zfs分区》
+
+https://wuli.wiki/online/ZFS.html
+
+```
+创建一个 500MB 虚拟硬盘文件
+dd if=/dev/zero of=adam.bin bs=1M count=500
+制作 loopback 设备
+sudo losetup -fP --show adam.bin # 会返回设备路径如 /dev/loop0
+创建zfs数据池
+sudo zpool create data1 /dev/loop0
+```
+
 #### ZFS优缺点
 
 [zfs文件系统优缺点](https://juejin.cn/s/zfs%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E4%BC%98%E7%BC%BA%E7%82%B9)

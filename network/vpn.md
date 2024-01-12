@@ -17,6 +17,22 @@ wireguard混淆
 
 使用伪装协议
 
+#### wg工具安装
+
+参考: https://www.cnblogs.com/milton/p/14178344.html
+
+```
+apt install wireguard-tools
+=> 这个版本略低，配合我下面编译的wireguard-go有问题
+```
+
+编译安装wireguard-tools
+```
+git clone https://github.com/WireGuard/wireguard-tools.git
+cd wireguard-tools/src
+make install
+```
+
 #### wireguard-go使用
 
 https://github.com/tailscale/wireguard-go
@@ -199,20 +215,21 @@ wg genkey | tee privatekey | wg pubkey > publickey
 
 wg-quick up wg0
 
-服务端配置 wg0.conf
+服务端配置 wg0.conf (其中客户端peer有多个就需要配置多个)
 ```
 [Interface]
 PrivateKey = xxx
-Address = 10.0.0.1/24
-PostUp   = iptables -A FORWARD -i wg0 -o eth0 -j ACCEPT; iptables -A FORWARD -i eth0 -o wg0 -j ACCEPT; iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
-PostDown = iptables -D FORWARD -i wg0 -o eth0 -j ACCEPT; iptables -D FORWARD -i eth0 -o wg0 -j ACCEPT; iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE
-ListenPort = 1194
+Address = 172.99.0.1/32
+PostUp   = iptables -I FORWARD -i wg0 -o eth+ -j ACCEPT; iptables -I FORWARD -i eth+ -o wg0 -j ACCEPT; iptables -t nat -I POSTROUTING -o eth+ -j MASQUERADE
+PostDown = iptables -D FORWARD -i wg0 -o eth+ -j ACCEPT; iptables -D FORWARD -i eth+ -o wg0 -j ACCEPT; iptables -t nat -D POSTROUTING -o eth+ -j MASQUERADE
+ListenPort = 41642
 MTU = 1420
+FwMark = 0x7500
 
 [Peer]
 PublicKey = xxx
 #PresharedKey = xxxx
-AllowedIPs = 0.0.0.0/0
+AllowedIPs = 172.99.0.2/32
 PersistentKeepalive = 30
 ```
 
@@ -220,13 +237,17 @@ PersistentKeepalive = 30
 ```
 [Interface]
 PrivateKey = xxx
-Address = 10.0.0.2/24
+Address = 172.99.0.2/32
 DNS = 8.8.8.8
 MTU = 1420
+FwMark = 0x7500
+
+PostUp   = ip route add 192.0.0.0/8 via x.x.x.x; ip route add 192.168.101.0/24 dev client-wg0
+PostDown = ip route del 192.0.0.0/8 via x.x.x.x; ip route del 192.168.101.0/24 dev client-wg0
 
 [Peer]
 PublicKey = xxx
-Endpoint = 192.168.101.6:1194
+Endpoint = x.x.x.x:41642
 AllowedIPs = 0.0.0.0/0
 PersistentKeepalive = 30
 ```

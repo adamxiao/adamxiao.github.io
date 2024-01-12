@@ -24,6 +24,20 @@ https://www.cnblogs.com/qinlulu/p/14671435.html
 技术选型
 有了以上想法以后，就开始调研，发现业界在从openstack转型k8s的过程中涌现了这么一部分比较好的项目，例如，kubevirt，virtlet，rancher/vm等，但是社区活跃度最高，设计最好的还是kubevirt。
 
+## 分享点
+
+- ypj问了一下磁盘, 架构, 提了一句不研究那么深
+
+### 架构
+
+- 每一个虚拟机一个pod, 里面有一个libvirtd
+
+[官网架构](https://kubevirt.io/user-guide/architecture/)
+![](https://kubevirt.io/user-guide/assets/architecture.png)
+
+简化版架构
+![](https://kubevirt.io/user-guide/assets/architecture-simple.png)
+
 ## 问题
 
 - 需要在宿主机上安装libvirt,qemu等, 容器里没有libvirt, 跟kolla不一样! 这样都行...
