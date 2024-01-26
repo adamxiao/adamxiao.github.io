@@ -104,6 +104,32 @@ https://www.lebo.cn/news/AboutNewsContent?id=858
 
 https://www.599cn.com/post/8119.html 
 
+## 加密home目录
+
+- 可以使用lvm全盘加密
+- 还有文件级别的加密
+  => 不考虑这种，不好用
+  mount -t encryptfs xxx xxx
+- 加密分区?
+  https://www.tecmint.com/encrypt-disk-installing-ubuntu/
+- 使用zfs
+
+关键字《ubuntu install with encryption home》
+
+[The easiest way to install Ubuntu on an encrypted partition](https://maciej-sady.medium.com/the-easiest-way-to-install-ubuntu-on-an-encrypted-partition-a882320dd6bb)
+=> 创建一个lvm加密卷作为home分区, 开机时提示解密!
+
+https://gist.github.com/superjamie/d56d8bc3c9261ad603194726e3fef50f
+How to install Ubuntu with LUKS Encryption on LVM
+
+https://blog.wtm.moe/articles/btrfs-on-luks/
+LUKS on Partition
+- 优点是配置方便，可以自由添加和更换加密密钥。
+- 缺点是不灵活，必须预先分配要加密的磁盘空间。 可以但很麻烦，而且需求很少。
+
+https://www.eallion.com/ubuntu-zfs-encryption/
+https://gist.github.com/superjamie/d56d8bc3c9261ad603194726e3fef50f
+
 ## 其他
 
 #### 录屏

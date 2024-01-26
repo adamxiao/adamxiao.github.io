@@ -153,6 +153,41 @@ pvremove /dev/sdb2 --force --force
 wipefs -a /dev/sdb2
 ```
 
+### 加密lvm卷
+
+[How To Encrypt Linux Hard Disks Using LUKS](https://oak-tree.tech/blog/lvm-luks)
+
+创建lvm卷
+```
+pvcreate /dev/sda4
+vgcreate adam /dev/sda4
+lvcreate -l 100%FREE adam -n home
+```
+
+设置加密
+```
+apt install cryptsetup
+cryptsetup luksFormat /dev/adam/home # 设置LUKS
+cryptsetup open /dev/adam/home open # 解密卷
+mkfs.ext4 -m 1 /dev/mapper/open # 格式化, 注意是格式化open这个解密卷
+```
+
+设置开机自动挂载
+/etc/crypttab
+```
+sda4_crypt UUID=7cb1b762-59c9-495d-b6b3-18e5b458ab70 none luks,discard
+```
+
+获取加密的uuid
+```
+cryptsetup luksUUID /dev/adam/home
+```
+
+最后配置到/etc/fstab就可以自动挂载了
+```
+/dev/mapper/open /mnt ext4 errors=remount-ro 0 1
+```
+
 ## FAQ
 
 * 1. Cannot use /dev/sda: device is partitioned

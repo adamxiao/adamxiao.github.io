@@ -118,6 +118,17 @@ zfs send data_ar@v01 | gzip > /mnt/d/backupfile.gz
 sudo zfs set mountpoint=/myspecialfolder mypool
 ```
 
+获取挂载点
+```
+zfs get mounted data1/nfs
+```
+
+覆盖挂载
+```
+zfs cannot mount 'xxx': directory is not empty
+sudo zfs set overlay=on data1/adam-backup
+```
+
 #### 加密存储数据
 
 [在Ubuntu Server上使用ZFS加密存储数据](https://im.salty.fish/index.php/archives/using-zfs.html)
