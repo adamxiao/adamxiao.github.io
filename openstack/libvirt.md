@@ -289,6 +289,17 @@ virsh qemu-agent-command $domain '{"execute":"guest-exec-status","arguments":{"p
 
 ## 常用设备
 
+#### cdrom
+
+```
+<disk type='file' device='cdrom'>
+  <driver name='qemu' type='raw'/>
+  <source file='xxx.iso'/>
+  <target dev='hda' bus='ide'/>
+  <readonly/>
+</disk>
+```
+
 #### vnc连接
 
 ```

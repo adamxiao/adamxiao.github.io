@@ -1,5 +1,13 @@
 # python编写脚本
 
+#### 调试python脚本
+
+调试python脚本的方法, 类似gdb的单步调试命令
+```
+import pdb
+pdb.set_trace() # 在想要断点的地方加一行命令
+```
+
 #### logging使用
 
 ```

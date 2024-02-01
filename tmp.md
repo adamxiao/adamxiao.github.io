@@ -1,5 +1,7 @@
 # 临时计划
 
+arp-scan -I enp4s0 10.90.4.0/24
+
 #### shadow密码
 
 [/etc/shadow可以获取原密码吗](https://www.jianshu.com/p/b18f545fe451)

@@ -96,6 +96,21 @@ sudo ufw allow 22/tcp
 sudo ufw deny 22/tcp
 ```
 
+ufw status inactive
+=> 需要先安装?
+```
+sudo apt install ufw
+sudo ufw enable
+```
+
+https://serverspace.io/support/help/basic-commands-ufw/
+```
+sudo ufw app list # 只是查看应用列表?
+sudo ufw allow OpenSSH # 放行ssh服务
+sudo ufw allow from 91.198.174.0/24 proto tcp to any port 22 # 放行特定ip访问特定端口
+sudo ufw delete allow OpenSSH # 删除规则
+```
+
 ## 投屏到电视
 
 [电脑如何投屏电视，所有方法汇总-2023](https://www.zhihu.com/tardis/zm/art/360544450?source_id=1003)

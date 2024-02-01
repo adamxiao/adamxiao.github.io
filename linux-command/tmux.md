@@ -66,6 +66,12 @@ set -g mouse on
 
 永久开启配置, 则写入配置文件
 
+#### 配置窗口从1开始
+
+```
+set-option -g base-index 1
+```
+
 ## 参考资料
 
 * [(好)tmux guide - readthedoc](https://tmuxguide.readthedocs.io/en/latest/tmux/tmux.html)
