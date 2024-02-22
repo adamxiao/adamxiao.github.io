@@ -17,7 +17,7 @@ https://segmentfault.com/a/1190000041741403
 在了解了 Kubevirt 是什么，它的主要架构以及比较关键的资源对象后，我们来看看如何使用 Kubevirt 进行虚拟机管理。这里主要分为**虚拟机创建、存储和网络三个部分**。
 
 https://moelove.info/2023/09/03/KubeVirt-探秘一些核心问题解答/#kubevirt-有哪些用例
-OKD用了KubeVirt?
+OKD用了KubeVirt? => 本来kubevirt就是RedHat开源的!
 
 kubevirt在360的探索之路（k8s接管虚拟化）
 https://www.cnblogs.com/qinlulu/p/14671435.html
@@ -37,6 +37,44 @@ https://www.cnblogs.com/qinlulu/p/14671435.html
 
 简化版架构
 ![](https://kubevirt.io/user-guide/assets/architecture-simple.png)
+
+### 快速体验
+
+- 创建虚拟机
+```
+kubectl apply -f vm.yaml
+```
+- 开启虚拟机
+```
+virtctl start testvm
+```
+- 连接虚拟机
+```
+virtctl console testvm
+```
+- 关闭虚拟机
+```
+virtctl stop testvm
+```
+- 磁盘处理
+  - 上传iso作为pvc cdrom
+
+### 虚拟机镜像，磁盘，卷
+
+[KubeVirt（Kubernetes接管虚拟化）](https://juejin.cn/post/7128038442277011493)
+
+创建虚拟机镜像肯定是必须的，那既然需要镜像，就需要由存储来存放镜像。
+在KubeVirt中有个子项目：CDI。
+CDI是Kubernetes持久化存储管理的插件，CDI项目提供了用于使PVC作为KubeVirt VM磁盘的功能。
+在spec.volumes下可以指定多种类型的卷：
+
+- cloudInitNoCloud: Cloud-init相关的配置， 用于修改或者初始化虚拟机中的配置信息
+- containerDisk:指定一个包含 qcow2或raw格式的docker镜像，重启vm数据会丢失
+- dataVolume:动态创建一个PVC,并用指定的磁盘映像填充该PVC,重启vm数据不会丢失
+- emptyDisk:从宿主机上分配固定容量的空间，映射到vm中的一块磁盘，emptyDisk 的生命周期与vm等同，重启mv数据会丢失
+- ephemeral:在虚机启动时创建一一个临时卷，虚机关闭后自动销毁，临时卷在不需要磁盘持久性的任何情况下都很有用。
+- hostDisk:在宿主机上创建一一个img镜像文件，挂给虚拟机使用。重启vm数据不会丢失。
+- persistentVolumeClaim:指定一个PVC创建一个块设备。 重启vm数据不会丢失。
 
 ## 问题
 
@@ -324,13 +362,26 @@ virtctl migrate testvm
 
 ## 部署KubeVirt
 
+参考文档: [KubeVirt（Kubernetes接管虚拟化）](https://juejin.cn/post/7128038442277011493)
+
 ### 准备工作
 
+=> 实际验证发现不需要?
 ```
 yum install -y qemu-kvm libvirt virt-install bridge-utils
 ```
 
 ### 安装KubeVirt
+
+然后部署yaml
+```
+export VERSION=v0.48.1
+kubectl apply -f https://github.com/kubevirt/kubevirt/releases/download/${VERSION}/kubevirt-operator.yaml
+kubectl apply -f https://github.com/kubevirt/kubevirt/releases/download/${VERSION}/kubevirt-cr.yaml
+
+kubectl apply -f kubevirt-operator.yaml
+kubectl apply -f kubevirt-cr.yaml
+```
 
 https://github.com/kubevirt/kubevirt/releases/tag/v1.1.0
 下载所有的yaml文件
@@ -343,11 +394,6 @@ https://github.com/kubevirt/kubevirt/releases/tag/v1.1.0
 - rbac-for-testing.yaml
 - uploadproxy-nodeport.yaml
 
-然后部署yaml
-```
-kubectl apply -f kubevirt-operator.yaml
-kubectl apply -f kubevirt-cr.yaml
-```
 
 私有环境下部署，没有网络的话，先同步镜像
 - quay.io/kubevirt/virt-operator:v1.1.0
@@ -364,12 +410,37 @@ kubectl apply -f kubevirt-cr.yaml
 检查结果
 ```
 kubectl get pods -n kubevirt
+NAME                               READY   STATUS    RESTARTS   AGE
+virt-api-79c76787cb-54bd4          1/1     Running   0          6m30s
+virt-api-79c76787cb-dbg5b          1/1     Running   0          6m30s
+virt-controller-8486c8d5cb-2rmfp   1/1     Running   0          5m45s
+virt-controller-8486c8d5cb-n86w6   1/1     Running   0          5m45s
+virt-handler-m4bc9                 1/1     Running   0          5m45s
+virt-operator-7d787566d5-qcfxh     1/1     Running   0          7m32s
+virt-operator-7d787566d5-z4pbl     1/1     Running   0          7m32s
 ```
 
 ### 部署CDI（v1.47.1）
 
 Containerized Data Importer（CDI）项目提供了用于使 PVC 作为 KubeVirt VM 磁盘的功能。建议同时部署 CDI：
 
+FIXME: => 这个版本没有了，换一个吧!
+```
+#export VERSION=v1.47.1  => 这个版本没有了，换一个吧!
+export VERSION=v1.58.0
+kubectl create -f https://github.com/kubevirt/containerized-data-importer/releases/download/$VERSION/cdi-operator.yaml
+kubectl create -f https://github.com/kubevirt/containerized-data-importer/releases/download/$VERSION/cdi-cr.yaml
+```
+
+查看pods
+```
+kubectl get pods -n cdi
+NAME                               READY   STATUS    RESTARTS   AGE
+cdi-apiserver-67944db5c9-6bmpz     1/1     Running   0          2m53s
+cdi-deployment-6fcc76f596-pfjqq    1/1     Running   0          2m45s
+cdi-operator-5f57676b77-vq6rj      1/1     Running   0          5m39s
+cdi-uploadproxy-66bd867c6f-5fl2r   1/1     Running   0          2m41s
+```
 
 ### 安装virtctl客户端工具
 
@@ -469,27 +540,25 @@ virtctl console testvm
     </disk>
 ```
 
-### 部署CDI（v1.47.1）
+## 磁盘相关
 
-Containerized Data Importer（CDI）项目提供了用于使 PVC 作为 KubeVirt VM 磁盘的功能。建议同时部署 CDI：
+### 上传镜像
 
-FIXME: => 这个版本没有了，换一个吧!
+KubeVirt 可以使用 PVC 作为后端磁盘，使用 filesystem 类型的 PVC 时，默认使用的时 /disk.img 这个镜像，用户可以将镜像上传到 PVC，在创建 VMI 时使用此 PVC。
+
+上传iso作为pvc
 ```
-#export VERSION=v1.47.1  => 这个版本没有了，换一个吧!
-export VERSION=v1.58.0
-kubectl create -f https://github.com/kubevirt/containerized-data-importer/releases/download/$VERSION/cdi-operator.yaml
-kubectl create -f https://github.com/kubevirt/containerized-data-importer/releases/download/$VERSION/cdi-cr.yaml
+virtctl image-upload  \
+ --image-path='CentOS-7-x86_64-Minimal-1804.iso' \
+ --pvc-name=iso-centos7 \
+ --pvc-size=2G \
+ --uploadproxy-url=https://10.101.252.73 \
+ --insecure --wait-secs=240
 ```
 
-查看pods
-```
-kubectl get pods -n cdi
-NAME                               READY   STATUS    RESTARTS   AGE
-cdi-apiserver-67944db5c9-6bmpz     1/1     Running   0          2m53s
-cdi-deployment-6fcc76f596-pfjqq    1/1     Running   0          2m45s
-cdi-operator-5f57676b77-vq6rj      1/1     Running   0          5m39s
-cdi-uploadproxy-66bd867c6f-5fl2r   1/1     Running   0          2m41s
-```
+参数说明:
+- cdi-uploadproxy 的 Service IP，可以通过命令 kubectl -n cdi get svc -l cdi.kubevirt.io=cdi-uploadproxy 来查看。
+
 
 ## 部署multus-cni
 
@@ -549,4 +618,4 @@ https://medium.com/@tejasmane485/how-to-get-started-with-kubevirt-easy-explained
 [Labs - KubeVirt quickstart with Minikube](https://kubevirt.io//quickstart_minikube/)
 => 用minikube测试?
 
-[redhat openshift 虚拟化支持](https://access.redhat.com/documentation/zh-cn/openshift_container_platform/4.14/html/virtualization/index
+[redhat openshift 虚拟化支持](https://access.redhat.com/documentation/zh-cn/openshift_container_platform/4.14/html/virtualization/index)

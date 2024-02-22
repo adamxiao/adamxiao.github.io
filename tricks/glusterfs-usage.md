@@ -18,6 +18,20 @@ gluster volume reblance test status
 
 ## FAQ
 
+#### ls卡住
+
+可能由于heal进程在修复目录下的文件
+
+单号: 10793
+```
+strace ls -al /home/kylin-ksvd/logs可以看到卡住的文件
+```
+
+然后用下面命令解锁
+```
+gluster volume clear-locks 卷名 /logs/xxx-VIA.log  kind granted inode
+```
+
 #### 宿主机宕机导致glusterfs锁丢失
 
 宿主机上的qemu锁定的guest.img的锁，没有释放导致, 可以主动解锁

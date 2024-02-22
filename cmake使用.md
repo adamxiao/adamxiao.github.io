@@ -28,5 +28,51 @@
 2. 使用`export MAKEFLAGS='-j4'`默认开启并行编译
 3. 使用`make VERBOSE=1`查看编译命令细节
 
+## 入门使用
+
+```
+# CMake 最低版本号要求
+cmake_minimum_required (VERSION 2.8)
+
+# 项目信息
+project (Demo1)
+
+# 指定生成目标
+add_executable(Demo main.cc)
+```
+
+https://www.hahack.com/codes/cmake/
+
+指定多个源文件
+```
+# 查找当前目录下的所有源文件
+# 并将名称保存到 DIR_SRCS 变量
+aux_source_directory(. DIR_SRCS)
+```
+
+或者手动指定源文件
+```
+set(SOURCE_FILES
+    main.cpp
+    utils.cpp
+    )
+```
+
+```
+include_directories ("${PROJECT_SOURCE_DIR}/math")
+```
+
+设置目标编译宏
+```
+target_compile_definitions(your_target PRIVATE DEBUG=1)
+```
+
+https://stackoverflow.com/questions/7990844/creating-symbol-table-for-gdb-using-cmake
+生成sym文件?
+set(CMAKE_BUILD_TYPE Debug)
+
+https://gitlab.kitware.com/cmake/community/-/wikis/FAQ#how-can-i-generate-a-source-file-during-the-build
+生成中间源文件?
+
 ## 参考资料
 1. https://samthursfield.wordpress.com/2015/11/21/cmake-dependencies-between-targets-and-files-and-custom-commands/
