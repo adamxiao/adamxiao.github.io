@@ -139,6 +139,7 @@ xmake f -c   清缓存
 xmake clean  
 xmake project -k vsxmake -m "debug,release"   生成vs工程
 xmake -j2
+xmake f --ccache=n --cxx="ccache gcc" --cc="ccache gcc"
 ```
 
 https://xmake.io/mirror/guide/configuration.html

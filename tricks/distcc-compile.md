@@ -47,3 +47,98 @@ https://my.oschina.net/u/4526289/blog/7820582
 https://www.incredibuild.cn/
 加速开发周期和上市时间，以更低的成本，
 获得更多的本地和云上计算能力。
+
+## 其他加速
+
+[如何分析和提高大型项目（C/C++）的编译速度？](https://www.zhihu.com/question/31925195)
+
+- 1. Precompile header
+- 2. 多线程编译
+- 3. 分布式编译
+- 4. 改code，减少依赖性
+
+## 其他资料
+
+https://ivanzz1001.github.io/records/post/cplusplus/2018/08/03/cpluscplus-gcc-compile
+下面我们来看一下gcc编译的一些常用选项：
+
+- -o <file>: 指定将输出写入到file文件
+- -E: 只进行预处理，不会进行编译、汇编和链接
+- -S: 只进行编译，不进行汇编和链接
+- -c: 只进行编译和汇编，不进行链接
+- 一个C/C++文件要经过预处理(preprocessing)、编译(compilation)、汇编（assembly)、和链接(link)才能变成可执行文件。
+
+## yadcc安装使用
+
+[Yadcc 分布式 C++ 编译器](https://github.com/Tencent/yadcc)
+取决于代码逻辑及本地机器配置，yadcc可以利用几百乃至1000+核同时编译（内部而言我们使用512并发编译），大大加快构建速度。
+
+#### 编译yadcc
+
+依赖包(debian 11)
+```
+sudo apt install git-lfs dh-autoreconf libnghttp2-dev
+```
+
+下载源码，构建
+```
+git clone https://github.com/Tencent/yadcc.git
+cd yadcc && git submodule update --init
+
+./blade build yadcc/daemon
+./blade build yadcc/...
+```
+
+构建好文件在这里:
+./build64_release/yadcc/daemon/yadcc-daemon
+
+#### 搭建环境以及使用
+
+- 调度节点
+- 用户节点
+- 编译节点
+- 缓存节点
+
+启动调度服务
+```
+./yadcc-scheduler --acceptable_user_tokens=some_fancy_token \
+  --acceptable_servant_tokens=some_fancy_token
+```
+
+启动守护进程
+```
+./yadcc-daemon --scheduler_uri=flare://ip-port-of-scheduler \
+  --cache_server_uri=flare://ip-port-of-cache-server \
+  --token=some_fancy_token
+```
+需要注意的是，低配机器（CPU核心数小于等于--poor_machine_threshold_processors，默认16）默认不接受任务，其余机器默认贡献40%的CPU至集群。
+
+对于专有编译机，可以通过增加--servant_priority=dedicated，这样这台机器始终会将95%的CPU贡献至编译集群。
+
+如果不使用缓存服务器，则--cache_server_uri参数不需要。
+
+启动缓存服务
+```
+./yadcc-cache --acceptable_user_tokens=some_fancy_token --acceptable_servant_tokens=some_fancy_token
+```
+
+### FAQ
+
+#### yadcc capacity_unavailable
+
+task cannot be started
+https://github.com/Tencent/yadcc/issues/10
+https://github.com/Tencent/yadcc/blob/master/yadcc/scheduler/task_dispatcher.cc
+
+最后scheduler添加`--servant_min_memory_for_accepting_new_task=2G`参数解决
+
+```
+curl -s http://user:pass@10.90.3.31:8336/inspect/vars/yadcc
+[ssh_10.90.3.32] root@node1: ~$curl -s http://adam:xiao@10.90.3.31:8336/inspect/vars/yadcc
+{
+   "task_dispatcher" : {
+      "capacity" : 30,
+      "capacity_available" : 30,
+      "capacity_unavailable" : 0,
+      "running_tasks" : 0,
+```

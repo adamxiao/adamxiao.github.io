@@ -91,6 +91,22 @@ sudo systemctl enable x11vnc.service
 关键字《ubuntu 启动vnc服务》
 https://www.yisu.com/zixun/7577.html
 
+解决方案1：自启另一个 x11vnc 服务
+点击 Activities 搜索 Startup Applications，添加一个自启脚本
+```
+x11vnc -auth guess -rfbport 5901 -rfbauth /home/USERNAME/.vnc/passwd
+x11vnc -auth guess -forever -loop -noxdamage -repeat -rfbauth /home/adam/.vnc/passwd -rfbport 5900 -shared
+```
+
+解决方案2：使用 vino 作为另一个 vnc 服务
+vino 的安装使用参考 [Ubuntu20.4 使用 vino VNC](https://blog.ws.lu/posts/linux/ubuntu/ubuntu20.4-x11vnc/ubuntu20.4-vino-vnc.md)。
+
+为不同用户修改 vino server 的监听端口
+```
+$ gsettings set org.gnome.Vino alternative-port 5901
+$ gsettings set org.gnome.Vino use-alternative-port true
+```
+
 #### 参考文档
 
 - [ubuntu 18.04配置x11vnc systemctl 服务](https://blupa.info/books/short-linux-guides/page/x11vnc-systemd-service-xubuntu-1804-%28lightdm%29)
