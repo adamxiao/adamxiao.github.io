@@ -142,3 +142,39 @@ curl -s http://user:pass@10.90.3.31:8336/inspect/vars/yadcc
       "capacity_unavailable" : 0,
       "running_tasks" : 0,
 ```
+
+## goma部署使用
+
+[让工程师拥有一台“超级”计算机——字节跳动客户端编译加速方案](https://juejin.cn/post/7065533288995094541)
+Google的 goma 采用了自研的依赖分析模块，并且在Chromium和Android这两个大型项目上取得了非常好的结果。它在实现依赖分析的时候，借助常驻进程的架构优势，运用了大量缓存，索引等技巧，提高了中间数据的复用率。
+
+[分布式编译发展历程](https://juejin.cn/post/7283710975345115199)
+goma选择了一条复杂的道路，它自研了一套依赖分析引擎，通过读文件的方式，直接分析代码中的 #include预处理指令，实现了更快速的依赖分析能力。为了提高对操作系统的复用度，goma还把依赖分析做成了常驻进程compiler_proxy，性能得到了极大的提升，使用goma甚至可以达到**几百的编译并行度**。
+
+#### 探索
+
+https://www.electronjs.org/zh/docs/latest/development/goma
+ninja -C out/Testing electron -j 200
+
+https://chromium.googlesource.com/infra/goma/client/+/refs/heads/main/README.md
+goma客户端配置使用
+```
+$ mkdir goma && cd goma
+$ gclient config https://chromium.googlesource.com/infra/goma/client
+$ gclient sync
+$ cd client
+```
+
+```
+$ cd "${GOMA_SRC}/client"
+$ gclient sync
+$ gn gen --args="is_debug=false" out/Release
+$ ninja -C out/Release
+```
+
+https://kubala.github.io/docs/building-chromium-with-goma
+
+https://chromium.googlesource.com/infra/goma/client/
+
+关键字《google goma 集群搭建》
+https://chromium.googlesource.com/infra/goma/server/

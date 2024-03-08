@@ -1,5 +1,11 @@
 # 临时计划
 
+关键字《jenkins 脚本获取agent ip地址》
+http://192.168.120.30:8080/computer/inner_docker_builder1/script
+```
+println "/usr/sbin/ip route".execute().text
+```
+
 arp-scan -I enp4s0 10.90.4.0/24
 
 #### shadow密码

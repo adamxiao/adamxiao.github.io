@@ -147,6 +147,13 @@ https://gist.github.com/superjamie/d56d8bc3c9261ad603194726e3fef50f
 
 ## 其他
 
+#### 绑定本地目录
+
+编辑fstab配置文件
+```
+/data/local /usr/local     ext4   default,bind  0 0
+```
+
 #### 录屏
 
 关键字《linux 录屏》
