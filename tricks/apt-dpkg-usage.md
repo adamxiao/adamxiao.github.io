@@ -26,6 +26,7 @@ https://superuser.com/questions/82923/how-to-list-files-of-a-debian-package-with
 列举已经安装的deb包的文件列表
 ```
 dpkg -L PACKAGENAME
+dpkg-query -L v2raya
 # 或者列举deb包
 dpkg -c xxx.deb
 ```

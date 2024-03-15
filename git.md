@@ -39,6 +39,13 @@ Remote repository->Local repository: git pull
     di = !git difftool -t vimdiff
 ```
 
+https://www.npmjs.com/package/git-alias
+有更多的alias可以参考使用
+```
+lg                      log --stat --color
+lgg                     log --graph --color
+```
+
 ### other
 代理地址，推送远端仓库规则等
 ```ini

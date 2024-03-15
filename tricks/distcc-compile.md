@@ -178,3 +178,22 @@ https://chromium.googlesource.com/infra/goma/client/
 
 关键字《google goma 集群搭建》
 https://chromium.googlesource.com/infra/goma/server/
+
+https://grpc.io/docs/languages/go/quickstart/
+=> grpc gen proto官方文档
+```
+cd proto # 安装protoc
+./gen_protoc-gen-go # 安装protoc-gen-go
+protoc --go_out=. --go_opt=paths=source_relative     --go-grpc_out=. --go-grpc_opt=paths=source_relative */*.proto
+cp -r go.chromium.org/goma/server/proto/* ./
+```
+
+## buildbarn部署使用
+
+https://nluug.nl/bestanden/presentaties/2023-05-11-ed-schouten-buildbarn-a-distributed-build-cluster.pdf
+=> 另外一个remote execute框架?
+
+《buildbarn 部署》
+https://zhuanlan.zhihu.com/p/653240346
+
+关键字《buildbarn 集群部署》

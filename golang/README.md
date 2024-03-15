@@ -46,6 +46,14 @@ replace golang.zx2c4.com/wireguard => /home/adam/workspaces/tmp/wireguard-go.new
 
 [Go Module 工程化实践（二）：go get 取包原理篇](https://studygolang.com/articles/18726)
 
+#### go get use proxy
+
+https://stackoverflow.com/questions/10383299/how-do-i-configure-go-command-to-use-a-proxy
+```
+http_proxy=127.0.0.1:8080 go get code.google.com/p/go.crypto/bcrypt
+alias go='http_proxy=127.0.0.1:8080 go'
+```
+
 ## 其他
 
 [Go socket编程](https://www.cnblogs.com/Yunya-Cnblogs/p/13815864.html)
