@@ -1,5 +1,17 @@
 # 临时计划
 
+#### 复制插件
+
+chrome使用super copy
+
+[Firefox中强制复制粘贴的插件](https://blog.csdn.net/qq_43575703/article/details/85646764)
+Copy PlainText 和 Don’t Fuck With Paste
+两个插件可以在付费的百度文库文章上强制复制文章内容
+
+关键字《super copy for firefox》
+
+#### xxx
+
 关键字《jenkins 脚本获取agent ip地址》
 http://192.168.120.30:8080/computer/inner_docker_builder1/script
 ```

@@ -7,6 +7,35 @@ https://xiazemin.github.io/MyBlog/docker/2020/10/31/image.html
 
 [创建自己的Docker基础镜像(rhel、centos)](https://blog.csdn.net/bjywxc/article/details/103976310)
 
+## iso制作基础容器镜像
+
+将ISO镜像转换为docker镜像
+https://hlyani.github.io/notes/docker/convert_iso_to_docker_img.html
+
+```
+6、使用 unsquashfs 解压 filesystem.squashfs 到 unsquashfs 文件夹
+unsquashfs -f -d unsquashfs/ rootfs/casper/filesystem.squashfs
+7、压缩并导入到 docker
+tar -C unsquashfs -c . | docker import - ubuntu/myimg
+```
+
+关键字《iso转换为容器镜像》
+
+http://www.liangxiaolei.fun/2021/05/10/docker-把iso镜像转换成docker镜像/
+```
+mkdir hello
+tar -cvpf /hello/system.tar --directory=/ --exclude=proc  --exclude=hello --exclude=sys --exclude=dev --exclude=run --exclude=boot .
+```
+
+3.使用mkimage脚本来制作docker镜像
+脚本地址：https://github.com/moby/moby/tree/master/contrib
+
+编译程序发现还少依赖，则继续构建镜像
+```
+FROM hub.iefcu.cn/xiaoyun/zy-dev
+RUN mkdir /var/lib/dpkg/updates/ && apt update || true && apt install -y libgtk2.0-dev
+```
+
 ## 使用mkimage-yum.sh制作基础镜像
 
 参考http://ask.loongnix.org/?/article/81
