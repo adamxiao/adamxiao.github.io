@@ -217,6 +217,27 @@ disk-image-create -o ironic-python-agent \
     ironic-python-agent-ramdisk debian devuser
 ```
 
+#### 禁用cloudinit
+
+https://www.jianshu.com/p/2fcfee762877
+
+非云环境，可以选择关闭它，或者彻底删除，方法如下：
+
+方法 1: 通过创建文件禁用 cloud-init
+这是最简单最安全的方法，在 /etc/cloud 目录下创建 cloud-init.disabled 文件重启后生效。删除该文件就可以恢复
+```
+sudo touch /etc/cloud/cloud-init.disabled
+```
+重启
+
+方法 2: 移除 cloud-init 软件包及文件夹
+该方法彻底移除 cloud-init
+```
+sudo apt purge cloud-init -y
+sudo rm -rf /etc/cloud && sudo rm -rf /var/lib/cloud/
+```
+重启
+
 #### 其他资料
 
 - [HowTo Create OpenStack Cloud Image with NVIDIA GPU and Network Drivers](https://docs.nvidia.com/networking/display/public/SOL/HowTo+Create+OpenStack+Cloud+Image+with+NVIDIA+GPU+and+Network+Drivers)

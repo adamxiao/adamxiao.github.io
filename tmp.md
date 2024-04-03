@@ -1,5 +1,8 @@
 # 临时计划
 
+https://linux.cn/article-7961-1.html
+sudo badblocks -v /dev/sda > badsectors.txt
+
 #### 复制插件
 
 chrome使用super copy
