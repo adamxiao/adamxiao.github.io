@@ -369,6 +369,36 @@ arm64下需要占用pci插槽的设备列表
 
 libvirt: Domain Config error : XML 错误：意外单播 mac 地址，找到多播 '11:11:22:22:33:00'
 
+#### 虚拟机关机qemu一直不退出?
+
+原来是我的libvirt虚拟机配置没有加电源管理, 加上即可
+```
+  <features>
+    <acpi/>
+    <apic/>
+    <pae/>
+  </features>
+
+acpi
+ACPI is useful for power management, for example, with KVM or HVF guests it is required for graceful shutdown to work.
+```
+
+虚拟机内部日志, 关机变为挂起了
+```
+systemd-shutdown[1]: Syncing filesystems and block devices.
+systemd-shutdown[1]: Powering off.
+System halted.
+```
+
+关机成功的虚拟机内部日志
+```
+systemd-shutdown[1]: Syncing filesystems and block devices.
+systemd-shutdown[1]: Powering off.
+ACPI: Preparing to enter system sleep state S5
+Power down.
+```
+
+
 ## 其他资料
 
 [Installation of a libvirt VM over a serial console](https://p5r.uk/blog/2020/libvirt-vm-installation-over-serial-console.html)

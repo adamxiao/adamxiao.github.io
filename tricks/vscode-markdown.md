@@ -41,3 +41,9 @@ ${projectRoot}/imgs
 ![](2022-03-30-14-37-22.png)
 
 最后生成的pdf文件会保存到当前文件的同一级目录下
+
+#### 安装使用plantuml
+
+- 安装扩展: Markdown Preview Enhanced
+- 然后安装: plantuml.jar
+- 然后安装jre: `apt install openjdk-11-jre`, 否则会报错 ENOENT

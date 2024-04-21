@@ -136,6 +136,54 @@ else
 fi
 ```
 
+## keepalived原理
+
+https://blog.csdn.net/jiajiren11/article/details/81563091
+看到这里我们可以知道keepalived是怎么工作的，通过vrrp协议做主备之间的心跳，当发生切换备获得浮动IP时，发送ARP包告诉其他机器现在VIP对应的mac地址已经变成了备机的网卡的mac地址。这时如果有新的机器要和VIP通信时，找到的就是备机，从而实现的高可用。
+
+tcpdump -i ethx0 -n vrrp
+
+Receive advertisement timeout
+=> 这个时间是多少?
+
+[Keepalived的高可用基石 - VRRP协议](https://bugwz.com/2020/06/20/keepalived-vrrp)
+备份状态(Backup)：处于该状态下的设备接收Master发送的VRRP通告报文，判断Master是否正常。
+如果一定时间间隔没有收到VRRP通告报文，即Master_Down_Interval（Master_Down_Interval = 3 * Advertisement_Interval + Skew_time 超时，则判断为Master故障。
+
+2.4.1、状态机
+初始状态(Initialize)：该状态下VRRP处于不可用的状态，在此状态下设备不会对VRRP报文做任何处理，通常刚配置VRRP时或设备检测到故障时会进入该状态。收到接口startup（启动）的状态，如果设备的优先级为255（表示该设备为虚拟路由器IP地址拥有者），则直接成为Master设备。如果设备的优先级小于255，则会先切换到Backup状态。
+
+活动状态(Master)：处于该状态下的设备为Master设备，Master设备会做如下工作：
+- 定时发送VRRP通告报文，时间间隔为Advertisement_Interval；
+- 以虚拟MAC地址相应对虚拟IP地址的ARP请求；
+- 转发目的MAC地址为虚拟MAC地址的IP报文；
+- 抢占模式下，如果收到比自己优先级大的VRRP报文，或者跟自己优先级相等，且本地接口IP地址小于源端接口IP地址时，则转变为Backup状态；
+- 收到Shutdown(关闭)消息后，则立即转变为初始状态(Initialize)；
+
+备份状态(Backup)：处于该状态下的设备接收Master发送的VRRP通告报文，判断Master是否正常。如果一定时间间隔没有收到VRRP通告报文，即Master_Down_Interval（Master_Down_Interval = 3 * Advertisement_Interval + Skew_time 超时，则判断为Master故障。
+- 接收Master发送的VRRP通告报文，判断Master是否正常；
+- 对虚拟IP的ARP请求不做响应；
+- 丢弃目的MAC地址为虚拟路由器MAC地址的IP报文；
+- 丢弃目的IP地址为虚拟路由器IP地址的IP报文；
+- 如果收到优先级比自己高，或与自己相等的VRRP报文，则重置Master_Down_Interval定时器（不进一步比较IP地址）；
+- 如果收到优先级比自己小的VPPR报文，且优先级为0时，（表示原Master设备声明不参与该VRRP组了），定时器时间设置为Skew_time（偏移时间，Skew_time= (256 - priority)/256）；
+- 如果收到优先级比自己小的VPPR报文，且优先级不为0时，丢弃该报文，立即转变为Master状态；
+- Master_Down_Interval定时器超时，立即转变为Master状态；
+- 收到Shutdown（关闭）消息后，则立即转变为初始状态(Initialize)；
+
+关键字《keepalived print stats》
+```
+sudo kill -s $(keepalived --signum=DATA) $(cat /var/run/keepalived.pid)
+cat /tmp/keepalived.data
+```
+
+[keepalived的配置解析&安装与爬坑](https://www.cnblogs.com/shuiguizi/p/11172267.html)
+=> 虽然指定了从eno2上发的包，但是如果想要给他搞一个假的ip就用他
+
+[unexpected state transition when backup node is rebooted, even though nopreempt is set](https://github.com/acassen/keepalived/issues/2209)
+TLDR: firewall issue: the rebooting node was blocking incoming icmp packets until the node made an outgoing icmp request
+=> 确实，关了防火墙之后，没有这个问题了!!!
+
 ## 问题
 
 #### 既然backup会选主，为什么要配置一个master呢?
