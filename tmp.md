@@ -3,6 +3,29 @@
 https://linux.cn/article-7961-1.html
 sudo badblocks -v /dev/sda > badsectors.txt
 
+#### xxx
+
+https://www.youtube.com/watch?v=4INHXju0azI&ab_channel=%E7%A8%8B%E5%BA%8F%E5%91%98%E5%BE%A1%E9%A3%8E
+fitten价格 => 个人免费使用
+https://cn.v2ex.com/t/1007228
+
+关键字《redis源码》
+
+[如何阅读 redis 源码](https://mytechshares.com/2022/04/06/how-to-read-redis-source/)
+
+歪个楼，学习 etcd 时腾讯云贡献了一个 issue11651, 解决了三年之久的 etcd3 数据不一致 bug, 分析验证过程干货十足。强烈建义有空多看看 issue
+横向对比 etcd fully concurrent 实现，也是由读写共用一把锁，到读写锁拆分，再到最后写不影响读，是不是特别像 mvcc 原理？
+
+https://redissrc.readthedocs.io/en/latest/
+https://tech.youzan.com/redisyuan-ma-jie-xi/
+
+https://www.zhihu.com/question/28677076
+Redis更为优秀的地方在于，它的代码风格极其精简，整个源码只有23000行，很有利于阅读和赏析！还在等什么呢？Start！
+redis是完全开源的，其源代码可以在直接在官网上获取（目前最新版本是3.2.5）
+
+Redis 设计与实现
+http://redisbook.com/
+
 #### 复制插件
 
 chrome使用super copy

@@ -180,9 +180,63 @@ cat /tmp/keepalived.data
 [keepalived的配置解析&安装与爬坑](https://www.cnblogs.com/shuiguizi/p/11172267.html)
 => 虽然指定了从eno2上发的包，但是如果想要给他搞一个假的ip就用他
 
+关键字《keepalived wrong Receive advertisement timeout》
+
 [unexpected state transition when backup node is rebooted, even though nopreempt is set](https://github.com/acassen/keepalived/issues/2209)
 TLDR: firewall issue: the rebooting node was blocking incoming icmp packets until the node made an outgoing icmp request
 => 确实，关了防火墙之后，没有这个问题了!!!
+
+VRRP has its own protocol number (at the same level as TCP or UDP) - 112.
+```
+-A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
+```
+Once a VRRP packet has been sent, incoming VRRP adverts will be RELATED
+=> 防火墙默认会放通`RELATED` 的VRRP包!
+
+```
+cat /proc/net/nf_conntrack | grep -w 112
+ipv4     2 unknown  112 596 src=192.168.101.72 dst=192.168.101.71 src=192.168.101.71 dst=192.168.101.72 mark=0 zone=0 use=2
+```
+新的防火墙规则展示: `nft list ruleset`
+```
+yum install -y conntrack-tools
+conntrack -F # 清除连接跟踪状态
+cat /proc/sys/net/netfilter/nf_conntrack_generic_timeout # 默认老化时间可能是10分钟
+600
+```
+
+https://www.cnblogs.com/wswind/p/13792585.html
+
+关键字《firewall 放通vrrp》
+
+https://www.cnblogs.com/wswind/p/13792585.html
+=> firewalld 去除iptables依赖了, centos8的firewalld防火墙底层使用了全新的nftables替代了iptables。
+```
+firewall-cmd --add-protocol=vrrp --permanent
+firewall-cmd --reload
+```
+
+关键字《firewall allow vrrp for specific source》
+=> 就好像tcpdump 抓112端口，抓不到vrrp的包, 指定vrrp协议才行
+
+https://superuser.com/questions/1415995/allow-vrrp-on-firewall
+However, although it runs on top of IP, VRRP does not use a transport protocol and does not have "ports". Rather, it runs alongside TCP/UDP/ICMP and has the IP protocol number 112.
+
+https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/load_balancer_administration/s1-lvs-connect-vsa
+```
+firewall-cmd --add-rich-rule='rule protocol value="vrrp" accept' --permanent
+```
+
+关键字《firewall-cmd allow vrrp for specific ipset》
+https://serverfault.com/questions/1097034/keepalived-going-split-brain-when-firewalld-is-running
+```
+enabled LogDenied=all in /etc/firewalld/firewalld.conf
+firewall-cmd --get-log-denied
+firewall-cmd --add-rich-rule='rule protocol value="ah" accept' --permanent
+
+dmesg | grep -i REJECT
+[   75.108415] "filter_IN_public_REJECT: "IN=ethx0 OUT= MAC=52:54:84:00:0c:bd:52:54:84:00:0c:bc:08:00 SRC=192.168.101.71 DST=192.168.101.72 LEN=40 TOS=0x00 PREC=0xC0 TTL=255 ID=1 PROTO=112
+```
 
 ## 问题
 

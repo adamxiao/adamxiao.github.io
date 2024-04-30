@@ -132,6 +132,44 @@ firewall-cmd --permanent --direct --passthrough ipv4 -A FORWARD -i br0 -j ACCEPT
 firewall-cmd --permanent --direct --passthrough ipv4 -A INPUT -i br0 -j ACCEPT
 firewall-cmd --permanent --direct --passthrough ipv4 -A FORWARD -i br0 -j ACCEPT
 
+### ipset使用
+
+https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/security_guide/sec-setting_and_controlling_ip_sets_using_firewalld
+```
+firewall-cmd --permanent --ipset=test --get-entries
+```
+
+关键字《firewall-cmd allow vrrp for specific ipset》
+
+https://www.linuxquestions.org/questions/linux-server-73/how-to-launch-a-keepalived-server-4175693612/
+```
+firewall-cmd --add-rich-rule='rule source ipset="ksvdset" protocol value="vrrp" accept' --permanent
+```
+
+public.xml中是这种形式
+```
+  <rule>
+    <source ipset="ksvdset"/>
+    <protocol value="vrrp"/>
+    <accept/>
+  </rule>
+```
+
+### 查看丢包日志
+
+https://www.skynats.com/blog/how-to-enable-firewalld-logging-for-a-denied-packet-on-linux/
+
+https://serverfault.com/questions/1097034/keepalived-going-split-brain-when-firewalld-is-running
+```
+enabled LogDenied=all in /etc/firewalld/firewalld.conf
+firewall-cmd --get-log-denied
+firewall-cmd --add-rich-rule='rule protocol value="ah" accept' --permanent
+
+dmesg | grep -i REJECT
+[   75.108415] "filter_IN_public_REJECT: "IN=ethx0 OUT= MAC=52:54:84:00:0c:bd:52:54:84:00:0c:bc:08:00 SRC=192.168.101.71 DST=192.168.101.72 LEN=40 TOS=0x00 PREC=0xC0 TTL=255 ID=1 PROTO=112
+```
+
+
 ## 参考资料
 
 https://segmentfault.com/a/1190000019978741

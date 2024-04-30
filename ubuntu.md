@@ -106,6 +106,7 @@ ln -sf /usr/lib/x86_64-linux-gnu/libpcap.so.1.10.1 /usr/lib/x86_64-linux-gnu/lib
 其他
 ```
 sudo apt install -y virt-viewer libqt5core5a
+libqt5glib-2.0-0 => ubuntu2404?
 ```
 
 #### 配置Desktop等目录位置

@@ -37,6 +37,33 @@ mirror -R registry-data .
 
 ## FAQ
 
+#### ls: Fatal error: Certificate verification: Not trusted
+
+ftp服务器证书有问题
+
+https://serverfault.com/questions/411970/how-to-avoid-lftp-certificate-verification-error
+```
+lftp ftp://$(FTP_USER)@$(FTP_HOST) -e "set ftp:ssl-allow no; mirror -R $(OUTPUTDIR) $(FTP_TARGET_DIR) ; quit"
+```
+=> 验证发现`ftp:ssl-allow no`参数生效可以用
+
+~/.lftprc
+```
+set ssl:verify-certificate false
+```
+=> 验证发现虽然没有告警，但是还是连接失败
+
+https://askubuntu.com/questions/323284/ftps-client-preferably-integrated-in-nautilus
+=> nautilus使用ftps://x.x.x.x也不行
+
+[FTP client list and installation on Ubuntu 20.04 Linux Desktop/Server](https://linuxconfig.org/ftp-client-list-and-installation-on-ubuntu-20-04-linux-desktop-server)
+=> ubuntu安装其他软件使用吧，配置使用明文? 或者信任证书
+```
+sudo apt install filezilla
+sudo apt install gftp
+```
+=> 例如filezilla，File -> Site Mananger -> Encryption -> Only use plain FTP(insecure)
+
 #### 连接ftp服务器私有ip失败
 
 strace发现居然连接了私有ip地址
