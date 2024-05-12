@@ -103,10 +103,14 @@ fi
 ln -sf /usr/lib/x86_64-linux-gnu/libpcap.so.1.10.1 /usr/lib/x86_64-linux-gnu/libpcap.so.1
 ```
 
-其他
+其他, ubuntu24.04使用uniface
 ```
 sudo apt install -y virt-viewer libqt5core5a
-libqt5glib-2.0-0 => ubuntu2404?
+=> 最后发现使用系统的glib库拷贝过来就行, 或者删除掉
+rsync -avh /usr/lib/x86_64-linux-gnu/libglib-2.0.so.0* /opt/ksvd/usr/lib64/
+rm -f /opt/ksvd/usr/lib64/libglib-2.0.so.0*
+# 以及还缺失一些动态库, 从ubuntu20.04 上拷贝过来
+scp /usr/lib/x86_64-linux-gnu/librest-0.7.so.0 root@10.90.4.117:/opt/ksvd/usr/lib64/
 ```
 
 #### 配置Desktop等目录位置

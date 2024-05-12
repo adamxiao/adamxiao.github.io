@@ -309,6 +309,22 @@ virsh qemu-agent-command $domain '{"execute":"guest-exec-status","arguments":{"p
 
 ## 其他
 
+#### virt-manager连接ssh密码问题
+
+关键字《openssh askpass virt manager》
+https://askubuntu.com/questions/1045395/kvm-connection-to-a-remote-server-ubuntu-18-04
+```
+sudo apt install ssh-askpass-gnome
+```
+
+或者配置共享ssh通道, 配置文件 ~/.ssh/config, 然后用ssh联机一次服务端
+```
+ControlMaster auto
+ControlPath /tmp/ssh_mux_%h_%p_%r
+```
+
+或者注入ssh密钥，通过密钥免密访问
+
 #### libvirt开启调试日志
 
 关键字《libvirt开启调试日志》

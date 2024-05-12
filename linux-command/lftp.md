@@ -53,6 +53,16 @@ set ssl:verify-certificate false
 ```
 => 验证发现虽然没有告警，但是还是连接失败
 
+```
+lftp -dv -c "
+set ftp:ssl-allow no
+open 10.0.0.40
+user cl-ro xxx
+ls
+bye
+"
+```
+
 https://askubuntu.com/questions/323284/ftps-client-preferably-integrated-in-nautilus
 => nautilus使用ftps://x.x.x.x也不行
 
@@ -63,6 +73,64 @@ sudo apt install filezilla
 sudo apt install gftp
 ```
 => 例如filezilla，File -> Site Mananger -> Encryption -> Only use plain FTP(insecure)
+
+https://www.linuxquestions.org/questions/linux-software-2/ftp-with-the-ssl-modules-turned-on-4175655134/
+https://unix.stackexchange.com/questions/236954/lftp-does-not-connect-to-ftps-ftp-over-ssl
+https://community.unix.com/t/how-to-connect-to-ftp-server-which-requires-ssl-authentication/298287/11
+```
+REMHOST=<remote host name or IP>
+REMPORT=<remote host port e.g. 21 or 20021>
+REMUSER=<user login ID for remote host>
+REMPASS=<password for remote host>
+REMDIR=<Directory on remote host>
+lftp -dv -c "
+set ftp:ssl-force true
+set ftp:ssl-protect-data true
+set ssl:verify-certificate false
+open $REMHOST:$REMPORT
+user $REMUSER $REMPASS
+ls $REMDIR/LBX*
+get $REMDIR/<remote host file>
+bye
+"
+```
+
+GNOME虚拟文件系统（英语：GNOME Virtual file system，缩写GVfs）
+
+https://linuxconfig.org/mount-remote-ftp-directory-host-locally-into-linux-filesystem
+=> curlftp挂载ftp目录
+
+https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html/using_the_desktop_environment_in_rhel_8/managing-storage-volumes-in-gnome_using-the-desktop-environment-in-rhel-8
+Available GIO commands
+
+原来是ftp服务器不支持`LIST -a`命令
+
+chat关键字《gvfs configure ftp only use "LIST"》
+=> ubuntu 20.04测试没有用 => 看代码也没有发现有这种配置
+- 1.Edit GVFS Configuration File:
+  /etc/gvfs/gvfs.conf or ~/.config/gvfs/gvfs.conf
+
+- 2.Add FTP Configuration:
+```ini
+[FTP]
+use_list_command_only=true
+```
+
+- 3.Save and Close the File:
+
+- 4.Restart GVFS Services:
+```
+sudo systemctl restart gvfs-daemon
+```
+
+发现匹配代码在这里，修改一下即可
+=> 注销再登录即可 => 后来发现杀掉这个进程就行
+```
+/usr/libexec/gvfsd-ftp
+```
+
+原理就是`daemon/gvfsbackendftp.c`的接口`gvfs_backend_ftp_determine_system`, 将windows filezilla的ftp服务器，判定为unix服务器，使用了`LIST -a`命令，而这个filezilla ftp服务器不支持这个命令。
+现在把这个二进制改掉，把判定为unix的字符串，从`UNIX `改错, 例如`LINUX `，就行了
 
 #### 连接ftp服务器私有ip失败
 

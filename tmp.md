@@ -3,6 +3,25 @@
 https://linux.cn/article-7961-1.html
 sudo badblocks -v /dev/sda > badsectors.txt
 
+https://liujia.anqun.org/index.php/archives/4414/
+ubuntu 24.04 - pxe 安装
+
+https://unix.stackexchange.com/questions/633218/unable-to-find-a-live-file-system-on-the-network-pxe-boot-ubuntu-from-centos
+```
+menuentry 'Ubuntu 20.04.2' {
+  linuxefi /vmlinuz ip=dhcp url=http://10.10.10.1/ubuntu-20.04.2-live-server-amd64.iso
+  initrdefi /initrd
+}
+```
+
+关键字《terminal show png》
+https://tinplavec.medium.com/how-to-open-an-image-directly-inside-the-terminal-0c730b2f1f04
+catimg => 可以在纯终端下cat图片
+
+关键字《cpu dies cluster是什么意思》
+[如何理解处理器、CPU、多处理器、内核、多核？](https://segmentfault.com/a/1190000042458609)
+=> 只有socket才是插槽数量
+
 #### xxx
 
 https://www.youtube.com/watch?v=4INHXju0azI&ab_channel=%E7%A8%8B%E5%BA%8F%E5%91%98%E5%BE%A1%E9%A3%8E
