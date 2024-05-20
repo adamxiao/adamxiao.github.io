@@ -33,3 +33,19 @@ Arguments:
 ```
 
 Ctrl-C保存截图到剪切板，就可以直接拷贝到腾讯文档中了。
+
+## FAQ
+
+#### ubuntu 2404 flameshot error unable to capture screen
+
+关键字《flameshot error unable to capture screen》
+
+https://github.com/flameshot-org/flameshot/issues/3365
+=> 验证可以
+
+创建可执行脚本文件: /usr/bin/fixflameshot
+```
+#!/bin/bash
+env QT_QPA_PLATFORM=wayland flameshot gui
+EOF
+```

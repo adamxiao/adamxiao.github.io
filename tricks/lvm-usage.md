@@ -186,6 +186,7 @@ cryptsetup luksUUID /dev/adam/home
 最后配置到/etc/fstab就可以自动挂载了
 ```
 /dev/mapper/open /mnt ext4 errors=remount-ro 0 1
+/dev/mapper/sda4_crypt /mnt ext4 errors=remount-ro 0 1
 ```
 
 ## FAQ

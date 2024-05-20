@@ -378,6 +378,55 @@ grub-install --target=i386-pc --boot-directory=/boot /dev/sda
 ls /sys/firmware/efi # 若成功执行, 说明为UEFI引导; 若提示找不到文件, 则为BIOS引导
 ```
 
+关键字《command line use parted create part table》
+
+https://unix.stackexchange.com/questions/200582/scripteable-gpt-partitions-using-parted
+```
+parted --script /device \
+    mklabel gpt \
+    mkpart primary 1MiB 100MiB \
+    mkpart primary 100MiB 200MiB \
+    ...
+```
+
+关键字《parted command line create BIOS boot partition》
+
+https://unix.stackexchange.com/questions/679971/how-to-create-a-grub-bios-boot-partition-using-sectors-34-to-2047
+
+尝试用命令行处理:
+```
+parted
+unit s
+=> 单位sector扇区, 2048s为1MB
+mklabel gpt
+disk_set pmbr_boot on => 不做也行吧, 不知道那吗用的
+
+#mkpart grub 34s 2047s => 性能不好, start要2048s的倍数才好
+mkpart grub 2048s 10239s
+set 1 bios_grub on
+=> 5MB
+
+mkpart EFI 10240s 1023999s
+set 2 boot on
+set 2 esp on
+=> 500MB
+
+mkpart root 1024000s 83886079s
+=> 40G
+
+print free
+=> 获取最后一个sector
+mkpart home 83886080s
+set 4 lvm on
+```
+
+[(好)How to Create Partitions in Linux](https://phoenixnap.com/kb/linux-create-partition)
+
+其他parted命令
+```
+rm 1 => 删除分区1
+resizepart # 扩容, 缩容分区
+```
 
 ## centos pxe iscsi启动
 
