@@ -547,7 +547,77 @@ https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/in
 https://forums.centos.org/viewtopic.php?t=71900
 I can install CentOS to an iSCSI volume, no issue. But I am unsure how to boot into the installation. My computer does not support configuring iscsi in the bios, so I am unable to use the ibft boot table.
 
+## 参考资料
+
+https://www.dddns.icu/posts/家庭网络pxe启动全攻略/
+
 ## FAQ
+
+#### 新机器iscsi无盘启动失败
+
+使用如下参数配置可以启动了!
+```
+sanboot --filename \EFI\ubuntu\grubx64.efi ${root-path} || goto failed
+```
+
+netroot这个参数是centos系列的dracut程序使用的参数。。。
+```
+:ubuntu24_new
+echo Starting ubuntu 24.04
+set base-url ${http-url}/iscsi-ubuntu2404
+set root-path iscsi:10.30.2.99::::iqn.2005-10.org.freenas.ctl:ubuntu2404
+set keep-san 1
+sanhook --no-describe --drive 0x80 ${root-path} || goto failed
+imgfree
+kernel ${base-url}/vmlinuz-6.8.0-31-generic root=UUID=c6309774-993c-4421-ab8c-fb05e45ae54b ro quiet splash initrd=initrd.img-6.8.0-31-generic netroot=iscsi:@10.30.2.99::3260::iqn.2005-10.org.freenas.ctl:ubuntu2404 rd.iscsi.initiator=iqn.2022-3.org.freenas.ctl:6c:3c:8c:30:95:c1 ip=10.90.4.118::10.90.4.1:255.255.255.0::enp4s1:none || goto retry
+initrd ${base-url}/initrd.img-6.8.0-31-generic || goto retry
+
+#set base-url ${http-url}/ubuntu2004
+#kernel ${base-url}/vmlinuz
+#initrd ${base-url}/initrd
+#imgargs vmlinuz initrd=initrd ip=dhcp boot=casper netboot=nfs nfsroot=10.30.2.99:/mnt/data1/pxe/ubuntu2005/ splash toram ---
+
+boot || goto failed
+goto start
+```
+
+- snponly.efi 网启UEFI引导，文件小不自带驱动，大约就是uefi下的undionly.kpxe ；
+  编译新的ipxe.efi
+- 使用\EFI
+  sanboot --filename \EFI\centos\grubx64.efi iscsi:192.168.100.5:::1:iqn.com.kylin:vdisk2
+  sanboot --filename \EFI\ubuntu\grubx64.efi ${root-path} || goto failed
+  **验证成功!**
+
+- keep-san 1 是什么意思?
+
+- nfs启动吧!
+  关键字《ubuntu pxe iscsi 启动》
+https://blog.csdn.net/u010438035/article/details/132479878
+
+https://forum.ipxe.org/showthread.php?tid=13181
+```
+#!ipxe
+
+set username <secret>
+set password <secret>
+
+set keep-san 1
+set initiator-iqn <custom-prefix>:${net0/mac:hexhyp}
+
+set iscsi-server ${next-server}
+
+set san-filename \EFI\boot\bootx64.efi
+
+set root-path iscsi:${iscsi-server}::3260:1:iqn.xxxx-yy.de.foo.iscsi:<target_name>
+
+sanhook --drive 0x80 ${root-path} || goto fail
+
+chain shellx64.efi
+
+:fail
+shell
+```
+
 
 #### Could not open SAN device: Error 0x3232094
 

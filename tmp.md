@@ -18,9 +18,21 @@ menuentry 'Ubuntu 20.04.2' {
 https://tinplavec.medium.com/how-to-open-an-image-directly-inside-the-terminal-0c730b2f1f04
 catimg => 可以在纯终端下cat图片
 
+关键字《ascii图片生成》
+https://blog.csdn.net/Ber_Bai/article/details/127743821
+根据图像生成字符图
+http://www.degraeve.com/img2txt.php
+http://life.chacuo.net/convertfont2char
+
 关键字《cpu dies cluster是什么意思》
 [如何理解处理器、CPU、多处理器、内核、多核？](https://segmentfault.com/a/1190000042458609)
 => 只有socket才是插槽数量
+
+#### neovim
+
+https://luyuhuang.tech/2023/03/21/nvim.html
+https://blog.csdn.net/aiyolo/article/details/128567132
+https://jdhao.github.io/2020/01/12/vim_nvim_history_development/
 
 #### xxx
 

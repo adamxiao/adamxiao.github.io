@@ -86,6 +86,40 @@ UUID=33e9ae3c-24bb-4fd5-bfb8-f90dc5275379 /adam           ext4    defaults      
 
 ## 其他
 
+#### 同步vscode编辑器配置
+
+同步这个目录即可
+```
+$HOME/.vscode
+```
+
+#### 同步firefox浏览器配置
+
+同步这个目录即可(注意不同版本的firefox配置可能存在兼容问题!)
+```
+ubuntu 20.04
+$HOME/.mozilla
+ubuntu 24.04 snap firefox => 从20.04上的配置导入过来不兼容?
+$HOME/snap/firefox/common/.mozilla
+```
+
+#### 同步chrome浏览器配置
+
+同步这个目录即可
+```
+$HOME/.config/google-chrome
+```
+
+#### 隐藏硬盘驱动器图标
+
+关键字《gnome disable disk dock icon》
+
+[How to Hide Mounted Drives on Ubuntu Dock (Quick Guide)](https://www.omgubuntu.co.uk/2019/11/hide-mounted-drives-ubuntu-dock)
+
+```
+gsettings set org.gnome.shell.extensions.dash-to-dock show-mounts false
+```
+
 #### uniface ubuntu 22.04起不来
 
 修改入口脚本: /opt/ksvd/usr/bin/uniface
