@@ -129,6 +129,46 @@ zfs cannot mount 'xxx': directory is not empty
 sudo zfs set overlay=on data1/adam-backup
 ```
 
+https://serverfault.com/questions/340837/how-to-delete-all-but-last-n-zfs-snapshots
+快照列举, 以及批量删除
+```
+zfs list -t snapshot -o name | grep ^tank@Auto | tac | tail -n +16 | xargs -n 1 zfs destroy -r
+```
+
+可以看到空的snap(USED=0)? 然后删除掉?
+```
+zfs list -t all
+```
+
+https://docs.oracle.com/cd/E36784_01/html/E36835/gbcya.html
+查看保留的快照?
+```
+zfs holds -r tank/home@now
+```
+
+zfs获取快照的自动删除属性
+```
+zfs get com.sun:auto-snapshot poolname
+```
+
+获取dataset的属性
+```
+zfs get all tank/home
+```
+
+#### 快照定时创建和删除
+
+关键字《zfs快照定时删除》
+
+https://blog.vgot.net/archives/zfsnap.html
+=> 未验证
+```
+# Auto ZFS Snapshot
+0	*/8	*	*	*	root	zfsnap snapshot -v -a 1w tank/docs >> /var/log/zfsnap.log
+0	18	*	*	1-5	root	zfsnap snapshot -v -a 1w tank/public >> /var/log/zfsnap.log
+0	23	*	*	*	root	zfsnap destroy -rv tank >> /var/log/zfsnap.log
+```
+
 #### 加密存储数据
 
 [在Ubuntu Server上使用ZFS加密存储数据](https://im.salty.fish/index.php/archives/using-zfs.html)

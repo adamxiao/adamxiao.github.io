@@ -1,5 +1,7 @@
 # 临时计划
 
+windows 10 pxe安装
+
 https://linux.cn/article-7961-1.html
 sudo badblocks -v /dev/sda > badsectors.txt
 
@@ -27,12 +29,6 @@ http://life.chacuo.net/convertfont2char
 关键字《cpu dies cluster是什么意思》
 [如何理解处理器、CPU、多处理器、内核、多核？](https://segmentfault.com/a/1190000042458609)
 => 只有socket才是插槽数量
-
-#### neovim
-
-https://luyuhuang.tech/2023/03/21/nvim.html
-https://blog.csdn.net/aiyolo/article/details/128567132
-https://jdhao.github.io/2020/01/12/vim_nvim_history_development/
 
 #### xxx
 

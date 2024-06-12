@@ -37,6 +37,16 @@ sudo ./make install
 sudo modprobe r8822be
 ```
 
+## ubuntu刻录安装windows iso
+
+关键字《ubuntu 刻录windows iso》
+
+使用woeusb
+```
+ERROR: WoeUSB requires wimlib-imagex command in the executable search path, but it is not found.
+apt-get install wimtools
+```
+
 ## ubuntu安装windows软件
 
 使用Bottles安装

@@ -102,3 +102,65 @@ BOOT_IMAGE=/boot/vmlinuz-4.15.0-54-generic root=UUID=5ba34c3d-bd14-451d-a7d8-09a
 但是报了一个错误，Failed to install module kvmgt
 
 
+
+## FAQ
+
+#### crashkernel reservation failed - No suitable area found.
+
+=> 安装了crash 7.3，可以bt了。
+
+```
+cd /var/crash/xxx
+crash /lib/debug/lib/modules/4.19.90-2003.4.0.0036.ky3.kb29.ksvd5.x86_64/vmlinux vmcore
+```
+
+https://bugs-old.openanolis.cn/view.php?id=486
+这里有一样的问题, 解决方案：更新软件包
+crash-7.2.8-3.an7
+kexec-tools-2.0.15-51.1.an7.3
+
+现有环境
+```
+[root@node1 ~]# rpm -q crash kexec-tools
+crash-7.2.3-8.ky3.kb3.x86_64
+kexec-tools-2.0.20-34.el8.x86_64
+kexec-tools-2.0.20-14.el8.x86_64
+```
+
+https://bugzilla.redhat.com/show_bug.cgi?id=1623127
+这里也有跟踪和解决
+
+补丁:
+https://github.com/crash-utility/crash/commit/d7eec45d4c2cdd836ce48a81b0ae688a7d2879ba
+https://github.com/crash-utility/crash/commit/001f77a05585c15ebd14bb72d5fde314a63c06fe
+
+## FAQ
+
+#### crashkernel reservation failed - No suitable area found.
+
+=> 安装了crash 7.3，可以bt了。
+
+```
+cd /var/crash/xxx
+crash /lib/debug/lib/modules/4.19.90-2003.4.0.0036.ky3.kb29.ksvd5.x86_64/vmlinux vmcore
+```
+
+https://bugs-old.openanolis.cn/view.php?id=486
+这里有一样的问题, 解决方案：更新软件包
+crash-7.2.8-3.an7
+kexec-tools-2.0.15-51.1.an7.3
+
+现有环境
+```
+[root@node1 ~]# rpm -q crash kexec-tools
+crash-7.2.3-8.ky3.kb3.x86_64
+kexec-tools-2.0.20-34.el8.x86_64
+kexec-tools-2.0.20-14.el8.x86_64
+```
+
+https://bugzilla.redhat.com/show_bug.cgi?id=1623127
+这里也有跟踪和解决
+
+补丁:
+https://github.com/crash-utility/crash/commit/d7eec45d4c2cdd836ce48a81b0ae688a7d2879ba
+https://github.com/crash-utility/crash/commit/001f77a05585c15ebd14bb72d5fde314a63c06fe

@@ -302,6 +302,28 @@ openssl dgst -md5 xxx.file
 - NodeJS 官方建议使用环境变量 NODE_EXTRA_CA_CERTS 来指定额外的根证书。
 - Firefox 浏览器有自己的可信根证书列表
 
+#### 生成rsa密钥对
+
+关键字《openssl 使用rsa密钥加解密》
+
+https://blog.csdn.net/qq_33417509/article/details/109641958
+
+```
+生成私钥：openssl genrsa -out rsaprivatekey.pem 1024
+          openssl genrsa -out test.key 1024
+生成公钥：openssl rsa -in rsaprivatekey.pem -out rsapublickey.pem -pubout
+          openssl rsa -in test.key -pubout -out test_pub.key
+转换格式：openssl pkcs8 -topk8 -in rsaprivatekey.pem -out pkcs8rsaprivate_key.pem -nocrypt
+```
+
+加解密
+```
+加密: openssl rsautl -encrypt -in hello -inkey rsaprivatekey.pem -pubin -out hello.en
+      openssl rsautl -encrypt -in hello -inkey test_pub.key -pubin -out hello.en
+解密: openssl rsautl -decrypt -in hello.en -inkey rsapublickey.pem -out hello.de
+      openssl rsautl -decrypt -in hello.en -inkey test.key -out hello.de
+```
+
 ## 问题记录
 
 ### 1. SAN证书问题

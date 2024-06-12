@@ -112,6 +112,8 @@ git config --add oh-my-zsh.hide-dirty 1
 
 ```
 git log --graph --decorate --oneline --simplify-by-decoration --all
+# 比较两个分支的差异, 挺好用的
+git log --graph --decorate --oneline --simplify-by-decoration 2dae956539..a5f51f8772
 ```
 
 * git offline repo sync
