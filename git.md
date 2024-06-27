@@ -116,6 +116,26 @@ git log --graph --decorate --oneline --simplify-by-decoration --all
 git log --graph --decorate --oneline --simplify-by-decoration 2dae956539..a5f51f8772
 ```
 
+* git show merge commits
+  git merge show branch commits
+方法1：使用 git log 显示合并分支的提交
+例如，如果你已经将 feature-branch 合并到 main，并且想查看合并过程中包含的所有提交，可以这样做：
+```
+git log main..feature-branch
+=> 我的环境, 需要填真实的commit id
+```
+方法2:
+```
+git diff --name-only main..feature-branch
+```
+feature-branch还没有merge呢
+方法1:
+方法2：使用 git log 的对比选项
+你也可以使用 --left-right 选项来区分哪些提交在 feature-branch，哪些在 main 中：
+```
+git log --left-right --graph --oneline main...feature-branch
+```
+
 * git offline repo sync
 
 refer: http://juanmanueldehoyos.com/synchronize-git-repositories-offline-with-bundle/

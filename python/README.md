@@ -1,5 +1,35 @@
 # python编写脚本
 
+#### python多线程
+
+关键字《python开启新线程做事情》
+
+https://blog.csdn.net/cliffordl/article/details/135904601
+```
+#! -*-conding=: UTF-8 -*-
+import time
+from threading import Thread
+
+def task():
+    print("另外开始一个子线程做任务啦")
+    time.sleep(1)  # 用time.sleep模拟任务耗时
+    print("子线程任务结束啦")
+
+if __name__ == '__main__':
+    print("这里是主线程")
+    # 创建线程对象
+    t1 = Thread(target=task)
+    # 如果有参数
+	# t2 = threading.Thread(target=consumer_task_queue, args=(taskqueue, db, ds, tokenizer, evaltool))
+	# def consumer_task_queue(taskqueue, db, ds, tokenizer, evaltool):
+    # 启动
+    t1.start()
+    time.sleep(0.3)
+    print("主线程依然可以干别的事")
+```
+
+关键字《python Glib 线程同步》
+
 #### 破解linux shadow密码
 
 [/etc/shadow可以获取原密码吗](https://www.jianshu.com/p/b18f545fe451)

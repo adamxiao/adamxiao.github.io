@@ -43,6 +43,19 @@ let g:tagbar_type_markdown = {
 安装简单, 内置就有markdown tag识别,
 但是tag效果一般般, 没有分层标题效果
 
+## 其他文档
+
+https://www.youtube.com/watch?v=zbguTldYkCw&ab_channel=DaveSnider
+=> 未验证
+
+- plasticboy/vim-markdown
+  语法高亮
+- junegunn/goyo.vim
+  markdown纯净模式
+- reedes/vim-pencil
+  自动换行?
+
+
 ## 参考文档
 
 * https://github-wiki-see.page/m/preservim/tagbar/wiki

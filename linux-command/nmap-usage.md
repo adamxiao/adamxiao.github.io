@@ -53,3 +53,10 @@ https://wiki.wgpsec.org/knowledge/tools/nmap.html
 nmap 192.168.0.8
 nmap -p 1-65535 192.168.0.8		# -p选项，只扫描指定的端口
 ```
+
+https://blog.csdn.net/av11566/article/details/125598176
+```
+nmap -sV -sT -Pn --open -p0-65535 -iL test.txt -oX test.xml
+```
+
+nmap -p 80 192.168.0.1-10

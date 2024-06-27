@@ -1,5 +1,24 @@
 # python2转python3
 
+## FAQ
+
+#### ModuleNotFoundError: No module named 'urllib2'
+
+https://stackoverflow.com/questions/2792650/import-error-no-module-name-urllib2
+```
+import urllib2.request
+
+response = urllib2.urlopen("http://www.google.com")
+html = response.read()
+print(html)
+```
+转换为python的urllib使用
+```
+from urllib.request import urlopen
+html = urlopen("http://www.google.com/").read()
+print(html)
+```
+
 ## 旧的资料
 
 单号 2036

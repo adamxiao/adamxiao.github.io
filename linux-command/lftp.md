@@ -131,6 +131,9 @@ sudo systemctl restart gvfs-daemon
 
 原理就是`daemon/gvfsbackendftp.c`的接口`gvfs_backend_ftp_determine_system`, 将windows filezilla的ftp服务器，判定为unix服务器，使用了`LIST -a`命令，而这个filezilla ftp服务器不支持这个命令。
 现在把这个二进制改掉，把判定为unix的字符串，从`UNIX `改错, 例如`LINUX `，就行了
+```
+sudo sed -i 's/UNIX /LNIX /' /usr/libexec/gvfsd-ftp && killall gvfsd-ftp
+```
 
 #### 连接ftp服务器私有ip失败
 

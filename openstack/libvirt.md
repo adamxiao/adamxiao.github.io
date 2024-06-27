@@ -105,6 +105,16 @@ Hugepagesize * HugePages_Free 就是 guest 可以分配的内存。
 </cpu>
 ```
 
+## 在线修改磁盘iops限制
+
+gpt关键字《virsh 查询 block_set_io_throttle结果》
+
+最后发现是group_name这个参数起的作用 => 这个能复现两个磁盘iops一样
+```
+virsh qemu-monitor-command e82dec4f-6d82-3956-3c8e-6cbe0c31da2e '{"execute":"query-block"}' # 查询iops信息
+virsh blkdeviotune $DOMAIN vda --write-iops-sec 600 --group-name '1' --live
+```
+
 ## 在线添加内存
 
 virsh attach-device ${DOMAIN} mem.xml --live
