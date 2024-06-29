@@ -246,6 +246,45 @@ git push -u new --tags
 
 ## FAQ
 
+#### write error: Bad file descriptor
+
+最后strace验证发现是write报错，文件系统是ubuntu 20.04 nfs 4.2挂载truenas scale 22.12.0导致的!!!
+
+```
+$ git gc
+Enumerating objects: 275105, done.
+Counting objects: 100% (275105/275105), done.
+Delta compression using up to 12 threads
+Compressing objects: 100% (64709/64709), done.
+fatal: sha1 file '.git/objects/pack/tmp_pack_kgSgPZ' write error: Bad file descriptor
+fatal: failed to run repack
+```
+
+```
+$ git fetch module
+remote: Enumerating objects: 1711, done.
+remote: Counting objects: 100% (1010/1010), done.
+remote: Compressing objects: 100% (18/18), done.
+fatal: write error: Bad file descriptor.00 KiB | 20.00 KiB/s
+fatal: index-pack failed
+```
+
+https://stackoverflow.com/questions/18563246/git-gc-error-failed-to-run-repack-message
+=> 验证可以
+```
+git gc --aggressive --prune=now
+```
+
+https://stackoverflow.com/questions/67820763/loose-object-file-bad-file-descriptor-while-doing-git-pull
+```
+git config core.fsyncObjectFiles false
+```
+
+gpt关键字《git fetch write error: Bad file descriptor》
+```
+GIT_TRACE_PACKET=1 GIT_TRACE=1 GIT_CURL_VERBOSE=1 git fetch module
+```
+
 #### git pull: The requested URL returned error: 503
 
 git clone http://gitlab.iefcu.cn/openstack/devstack.git
