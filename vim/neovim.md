@@ -247,6 +247,19 @@ pipx install python-language-server
 http://liwuzhi.art/?p=592
 现在比较火的lsp插件是neoclide/coc.nvim和dense-analysis/ale。他们安装在vim中，属于lsp协议中的client。通过和lsp server通讯，带来强大的语法功能
 
+#### 图片查看
+
+https://www.youtube.com/watch?v=0O3kqGwNzTI&ab_channel=linkarzu
+
+[View and paste images in neovim](https://linkarzu.com/posts/neovim/images-neovim/)
+
+https://superuser.com/questions/104599/how-can-i-launch-the-gnome-image-viewer-from-the-terminal
+```
+eog filename
+xdg-open filename # 比较合适
+gnome-open filename # 没有命令
+```
+
 ## FAQ
 
 #### 如何在init.lua中嵌入 vim脚本配置

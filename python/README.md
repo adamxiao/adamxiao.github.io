@@ -1,5 +1,19 @@
 # python编写脚本
 
+#### struct pack
+
+关键字《python struct pack》
+
+```
+import struct
+
+struct.pack('16sHH4s232s', self.devName[:16], socket.AF_INET, 0, socket.inet_aton(netAddr), ''))
+self.mtu = struct.unpack('i', rawMTU[16:20])[0]
+
+packed_struct = struct.pack("3i", 1, 2, 3)
+print(packed_struct)
+```
+
 #### python多线程
 
 关键字《python开启新线程做事情》

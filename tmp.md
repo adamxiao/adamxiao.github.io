@@ -1,5 +1,9 @@
 # 临时计划
 
+[Manage Your Dotfiles Like a Superhero](https://www.jakewiesler.com/blog/managing-dotfiles)
+.gitconfig, .bashrc, .vimrc等等配置
+其实就是使用stow生成了链接
+
 windows 10 pxe安装
 
 https://linux.cn/article-7961-1.html
