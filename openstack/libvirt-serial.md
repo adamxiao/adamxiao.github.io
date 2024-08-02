@@ -119,6 +119,36 @@ https://libvirt.org/formatdomain.html#serial-port
 * file
 * spice channel等设备
 
+#### 文件串口
+
+关键字《libvirt将虚拟机的串口重定向到文件中》
+
+https://www.rickylss.site/qemu/virsh/2020/05/21/qemu-serial-console/
+```
+<serial type='file'>
+  <source path='/var/log/libvirt/qemu/test.log'/>
+  <target type='isa-serial' port='1'>
+    <model name='isa-serial'/>
+  </target>
+</serial>
+```
+
+对应qemu参数为
+```
+-device virtio-serial-pci,id=virtio-serial0,bus=pci.0,addr=0xb
+
+-add-fd set=3,fd=70
+-chardev file,id=charserial0,path=/dev/fdset/3,append=on
+-device isa-serial,chardev=charserial0,id=serial0
+```
+
+5、最终解决方案
+实际上有一种方法可以达到既能使用 virsh console 又能输出到本地文件。使用这种方法不需要开启两个 serial，参考 libvirt xml 如下：
+```
+<log file="/var/log/libvirt/qemu/guest-serial0.log" append="off">
+qemu参数里是 -chardev pty,id=charserial0,logfile=/dev/fdset/11,logappend=on
+```
+
 #### pty串口
 
 ```
