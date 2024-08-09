@@ -80,6 +80,12 @@ qemu-img create -f qcow2 -o preallocation=metadata GUEST.IMG 100M
 - 为什么一些USER.IMG的l1_table_offset不是0x30000 ?
   => 说明l1表被复制了一份? 验证发现内容居然一模一样!
   => 也有可能是resize过? => 看日志发现确实是的!! 好像云桌面的USER.IMG都是resize过的!
+  => 即便打了快照, l1_table_offset 也没有变化的!
+- 压缩是怎么实现的?
+
+分享思考:
+- 应用快照
+  就是删除当前l1_table相关数据, 以及refcount加一，跟打快照时一样的相关操作
 
 ## 分析
 
@@ -198,8 +204,7 @@ qcow2_snapshot_create:
 - 将snapshot header写入image file；
 
 https://sq.sf.163.com/blog/article/218146701477384192
-qcow2功能六：快照
-snapshot也是copy on write的一种应用，和backing file有微妙的不同
+=> 写ppt可以参考一点
 
 https://www.cnblogs.com/kvm-qemu/articles/14017061.html
 => 有书本讲了qcow2镜像的读写
@@ -215,3 +220,52 @@ https://github.com/zhangyoujia/qcow2-dump/blob/master/test/qcow2_layout(prealloc
 
 qcow2_alloc_cluster_offset
 qcow2_alloc_cluster_link_l2
+
+## 内部快照原理
+
+了解COW原理!
+- backing file这种外部快照也是COW的应用!
+- 内部快照COW的原理
+
+[qcow2原理详解](https://royhunter.github.io/2016/06/28/qcow2/)
+
+qcow2_snapshot_create:
+
+- 制造一个snapshot id；
+- 分配snapshot header空间，填充信息；
+- 分配l1表的空间，并从当前的image的l1表中copy；
+  => 验证是有!
+- 将snapshot的l1表写入image file；
+- 操作所有cluster的refcount，主要是l2表和data block的cluster；
+  => 验证是有! 给已经分配的每一个cluster的refcount加一, 删除则减一
+  (refcount 大于一表示有快照引用它)
+- 增加refcount，并置cluster的状态的copied位；表明这些cluster在写操作是需执行COW;
+- 将snapshot header写入image file；
+
+#### 实验验证
+
+创建镜像
+```
+qemu-img create -f qcow2 test.img 100G
+```
+
+模拟写数据, 可以看出没有metadata预分配，l2表和数据cluster是混合没有规律的
+```
+qemu-nbd -c /dev/nbd0 test.img
+dd if=/dev/random bs=512 count=1 of=/dev/nbd0
+dd if=/dev/random bs=64k count=1 seek=1 of=/dev/nbd0
+dd if=/dev/random bs=64k count=1 seek=2 of=/dev/nbd0
+dd if=/dev/random bs=64k count=1 seek=10000 of=/dev/nbd0
+dd if=/dev/random bs=64k count=1 seek=100000 of=/dev/nbd0
+qemu-nbd -d /dev/nbd0
+```
+
+qemu-img snapshot -c snap1 test.img
+
+## 其他资料
+
+kvm-forum-2017-slides.pdf
+=> cache-clean-interval? l2-cache-size=8M
+
+kvm-forum-2020-slides.pdf
+=> 讲了高版本qemu5.2支持subcluster实现，读写性能更高一点儿!

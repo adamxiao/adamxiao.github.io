@@ -196,6 +196,20 @@ git checkout @{-1}
 
 * git push origin tag_name
 
+#### git generate patch
+
+制作rpm的补丁方法
+```
+1.git config --global user.email "xxx@kylinos.com.cn"　
+2.git config --global user.name "xxx"
+3.rpmbuild -bp　“rpm包spec文件”
+4.git init --初始化git
+5.git add -A　和　git commit -m "git base" --建立备份（对比）文件
+6.git checkout -b fixed --创建并切换至新分支fixed
+7.进行内容修改，修改后再次使用git add和git commit -m "补丁名称"
+8.git format-patch -M master --生成补丁
+```
+
 #### git project migrate
 
 关键字`git project offline migrate`

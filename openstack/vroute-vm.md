@@ -417,6 +417,66 @@ net.ipv6.conf.default.disable_ipv6 = 1
 * kylin-vr开机启动服务
 * 网卡新增事件配置
 
+## arm架构适配
+
+关键问题: 热添加网卡后，没有更新生效 (虚拟机里面没有新增网卡)
+
+- 1.添加网卡后上报事件, web控制台触发更新配置
+  即便rescan之后, 网卡出现的时机，还是不太可控?
+  以及卸载网卡, 旧系统下rescan也不起作用
+  => 再次访问这个删除掉的网卡，系统crash，严重问题!
+- 2.修改arm架构网卡模式，可以热添加生效(pcie root port的方式)
+  可以多预留几个pci槽位
+- 3.合并网卡，首次关联需要重启，后续无需添加网卡?
+  => 不是很合适
+- 4. vroute-vm特殊flag，后台处理，参考思路1
+- 5. 使用R101等新OS系统，热添加能生效的?
+  缺点: 需要重新适配配置更新程序?
+  rocky linux 9.4 ? => 无法启动, 启动后，发现不能自动识别在线添加的网卡, 需要rescan!
+  debian 11 ?  (都不是rpm系列了，只能做run包了?)
+  centos7 arm => 不行
+  R101 arm (3.5.1) => 可以, 最终使用 KylinSec-Server-3.5.1-2206-052234-aarch64.iso
+  centos stream 9 => 不行, 同rocky 9
+
+#### 基于kylin 3.5.1创建虚拟vpc路由器
+
+- 基于iso安装最小系统
+  注意选择最小安装, 配置root密码即可
+  (使用os那边定制好的镜像 => 他们没做好用不了!)
+- 安装kylin-vr rpm包
+  可能需要手动配置ip,网关,dns
+  然后使用yum源自动安装依赖包
+- 安装qemu-guest-agent
+```
+yum install -y qemu-guest-agent
+```
+- 额外配置ipforward放通
+```
+sed -i 's/^net.ipv4.ip_forward/#&/' /etc/sysctl.conf
+```
+- 做个python链接
+```
+ln -sf /usr/bin/python3 /usr/bin/python2
+ln -sf /usr/bin/python3 /usr/bin/python
+```
+
+最后关机，转换为vpc路由器模板即可!
+
+#### 验证用例
+
+- 创建arm vpc路由器, 关联公有网络，vpc网络, 开机生效 => ok
+- arm vpc路由器，在线关联/解关联 vpc网络生效 => doing mc有bug
+- 在线创建弹性ip生效 => ok
+  其他端口映射，由于我没有改动，不测也没有关系
+
+#### 旧的arm适配
+
+- 1.下载centos7 arm64云镜像: CentOS-7-aarch64-GenericCloud-2009.qcow2
+- 2.基于源码构建kylin-vr 虚拟路由器镜像rpm包:
+- 3.创建arm64云服务器，安装rpm包
+- 4.禁用cloud-init
+- 5.转为vpc镜像模板，导出即可
+
 ## 其他资料
 
 ```
@@ -478,6 +538,18 @@ virsh qemu-agent-command $domain '{"execute":"guest-exec-status","arguments":{"p
 ```
 
 ## FAQ
+
+#### udev规则执行脚本有问题
+
+原来是脚本没有解析器, 加上就好了`#!/bin/bash`
+
+```
+journalctl -f -u systemd-udevd.service
+systemd-udevd[542960]: Using default interface naming scheme 'v249'.
+systemd-udevd[542960]: eth0: Network interface 12 is renamed from 'eth0' to 'ethx2'
+systemd-udevd[542960]: eth0: Process '/usr/bin/kylin-vr.sh' failed with exit code 1.
+systemd-udevd[542992]: Using default interface naming scheme 'v249'.
+```
 
 #### vpc路由器下的vm无法访问其他子网的弹性ip
 

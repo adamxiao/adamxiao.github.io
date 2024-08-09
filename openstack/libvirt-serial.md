@@ -142,11 +142,45 @@ https://www.rickylss.site/qemu/virsh/2020/05/21/qemu-serial-console/
 -device isa-serial,chardev=charserial0,id=serial0
 ```
 
+path直接使用文件路径也可以!
+```
+-chardev file,id=charserial0,path=/tmp/adam.log,append=on
+```
+
 5、最终解决方案
 实际上有一种方法可以达到既能使用 virsh console 又能输出到本地文件。使用这种方法不需要开启两个 serial，参考 libvirt xml 如下：
 ```
 <log file="/var/log/libvirt/qemu/guest-serial0.log" append="off">
 qemu参数里是 -chardev pty,id=charserial0,logfile=/dev/fdset/11,logappend=on
+```
+
+使用tcp server, 加上logfile报错?
+=> 原来是device的chardev名称写错了...
+```
+qemu-kvm: -device isa-serial,chardev=charserial0,id=serial0: the bus isa.0 -driver isa-serial set property failed
+```
+
+TODO: 使用 logrotate 能否处理日志截断等问题?
+
+关键字《qemu reopen chardev file path》
+
+https://mail.gnu.org/archive/html/qemu-devel/2014-12/msg00766.html
+Re: [Qemu-devel] Providing a mechanism to reopen() file based chardevs
+=> 没有合适的资料, qmp命令也没有reopen的机制
+
+或者发送到virtlogd? => 注意: virtlogd默认只会保留当前开机的日志! 会rm console.log{,.0,.1,.2}
+  => 不合理
+或者使用sock，fd等方式，由runtime读写, 然后转存
+
+https://blog.csdn.net/huang987246510/article/details/107869142
+A：使用libvirt管理虚机时，默认情况下libvirt会使能virtlogd服务，将qemu的输出通过管道重定向到virtlogd的后台进程，然后由virtlogd输出到文件中。因此qemu命令行没有file的配置。
+https://www.ctyun.cn/developer/article/426619366686789
+这儿日志只要达到2M+1个字节就切片；
+
+验证发现使用chardev-change，可以通知qemu切换写新的日志文件!
+```
+{"execute":"chardev-change","arguments":{"id":"charserial0","backend":{"type":"file","data":{"path":"/tmp/adam.log"}}}}
+chardev-change charserial0 file,path=/tmp/adam.log
 ```
 
 #### pty串口
