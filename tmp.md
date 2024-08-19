@@ -1,5 +1,18 @@
 # 临时计划
 
+关键字《zsh history do not save some commands》
+[Block certain commands from being added to history](https://github.com/zsh-users/zsh-autosuggestions/issues/750)
+```
+HISTORY_IGNORE="(l|l *|ls|ls *|cd|cd ..*|cd -|z *|pwd|exit)"
+export HISTORY_IGNORE="(l|l *|ls|ls *|cd|cd ..*|cd -|z *|pwd|exit|*workspace*)"
+```
+[Hiding secret keys from shell history: Part 1](https://medium.com/@prasincs/hiding-secret-keys-from-shell-history-part-1-5875eb5556cc)
+```
+setopt HIST_IGNORE_ALL_DUPS      # Delete old recorded entry if new entry is a duplicate.
+export HISTIGNORE="ls*:cat*:*AWS*:*SECRET* # for bash
+export HISTORY_IGNORE="(ls|cat|AWS|SECRET)" # for zsh
+```
+
 [Manage Your Dotfiles Like a Superhero](https://www.jakewiesler.com/blog/managing-dotfiles)
 .gitconfig, .bashrc, .vimrc等等配置
 其实就是使用stow生成了链接

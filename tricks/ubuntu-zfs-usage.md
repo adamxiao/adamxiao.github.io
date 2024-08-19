@@ -202,6 +202,14 @@ sudo losetup -fP --show adam.bin # 会返回设备路径如 /dev/loop0
 sudo zpool create data1 /dev/loop0
 ```
 
+#### zfs zvol copy
+
+https://www.truenas.com/community/threads/how-to-copy-zvol-to-new-pool.107395/
+```
+zfs send oldpool/path/to/zvol | zfs receive newpool/path/to/zvol
+zfs send vmhd2/win2016 | zfs recv vmhd2/win2016T2
+```
+
 #### ZFS优缺点
 
 [zfs文件系统优缺点](https://juejin.cn/s/zfs%E6%96%87%E4%BB%B6%E7%B3%BB%E7%BB%9F%E4%BC%98%E7%BC%BA%E7%82%B9)

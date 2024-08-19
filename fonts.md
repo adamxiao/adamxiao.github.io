@@ -7,3 +7,11 @@
 后来不知道怎么就修复成功了，默认没有这个问题
 - 通过Character Map(`gucharmap`)这个软件查看ubuntu上安装的所有的字体的效果
 - 实时改变gnome-terminal的字体配置，也能实时看字体效果
+
+## FAQ
+
+#### ubuntu 24.04 wps字体粗体问题
+
+安装宋体后解决
+
+关键字《ubuntu simsun font downloads》

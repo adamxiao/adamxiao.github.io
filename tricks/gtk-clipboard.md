@@ -372,3 +372,43 @@ https://docs.gtk.org/gtk3/method.Clipboard.get_owner.html
 => c接口 api文档
 
 https://api.gtkd.org/gtk.Clipboard.Clipboard.html
+
+## FAQ
+
+#### ubuntu 24.04 Gdk SELECTION_PRIMARY 报错
+
+解决方法, 使用gtk 3.0:
+```
+import gi
+
+# Ensure that the correct GTK version is loaded
+gi.require_version('Gtk', '3.0')  # For GTK 3
+#gi.require_version('Gtk', '4.0')  # Uncomment for GTK 4 if needed
+
+from gi.repository import Gtk, Gdk
+val = Gdk.SELECTION_CLIPBOARD
+```
+
+
+错误信息:
+```
+AttributeError: 'gi.repository.Gdk' object has no attribute 'SELECTION_PRIMARY'
+```
+
+#### gi gtk版本提示错误
+
+解决方法:
+```
+import gi
+
+# Ensure that the correct GTK version is loaded
+gi.require_version('Gtk', '3.0')  # For GTK 3
+# gi.require_version('Gtk', '4.0')  # Uncomment for GTK 4 if needed
+
+from gi.repository import Gtk, Gdk
+```
+
+错误提示:
+```
+Use gi.require_version('Gtk', '3.0') before import to ensure that the right version gets loaded.
+```

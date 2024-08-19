@@ -36,3 +36,23 @@ https://www.youtube.com/watch?v=FIroBSgBbOE&ab_channel=i%E9%81%8B%E5%8B%95
 
 [(好)【游泳救生6】必学自救技能：初级踩水，不会这招等于不会游泳｜梦觉教游泳](https://www.youtube.com/watch?v=tEAaCiWbYlY&ab_channel=%E6%A2%A6%E8%A7%89%E6%95%99%E6%B8%B8%E6%B3%B3)
 => 百万次观看视频，讲的不错
+
+https://www.youtube.com/watch?v=1zDmy5gJmGw
+ep.36 〖 專業解析 〗蛙式v.s自由式要先學哪個泳姿好
+
+### 游泳教程
+
+[【零基础自学游泳十步曲，步骤学习不凌乱，立马把游泳学会！】｜Aimee游泳学堂](https://www.youtube.com/watch?v=0I6kXnMMr_M)
+蛙泳学习概要
+
+### 游泳学习计划
+
+关键字《游泳学习计划》
+
+https://www.sohu.com/a/670415281_121642911
+=> 这个是分解到很小的目标了，我要中长期目标
+
+目标:
+- 3分钟游100米?
+- 20分钟游1000米?
+- 踩水1分钟?
