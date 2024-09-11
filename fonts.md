@@ -15,3 +15,23 @@
 安装宋体后解决
 
 关键字《ubuntu simsun font downloads》
+
+[ubuntu 黑体 Ubuntu 字体安装](https://blog.csdn.net/weixin_39620578/article/details/111753414)
+1.建立一个新的fonts目录来存放需要的字体。
+```
+sudo mkdir /usr/share/fonts/zh_CN
+```
+2.可以从安装了windows的机器上拷贝如下的字体到上面建立的目录内。
+注：windows的字体一般存放在c:\windows\fonts目录下，以上字体凭自己爱好挑选，参考
+- simhei.ttf 黑体
+
+[Ubuntu 下载常用字体](https://pipboy.cn/code/server/linux/ubuntuFont.html)
+```
+sudo apt update
+sudo apt install ttf-mscorefonts-installer
+```
+这个软件包包含了一些常用的微软字体，如宋体、微软雅黑等，并且支持中文字符。
+=> 但是没有黑体
+
+[Google Fonts](https://fonts.google.com/specimen/Ubuntu?preview.text=simhei)
+=> 参考neovim安装Nerd字体, 下载下将ttf文件解压到指定目录

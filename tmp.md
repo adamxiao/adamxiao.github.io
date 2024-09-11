@@ -1,5 +1,20 @@
 # 临时计划
 
+#### auditctl审计
+
+```
+auditctl -s //查询状态
+auditctl -l //查看规则
+auditctl -D //删除所有规则
+```
+
+#### 其他
+
+编译数据恢复工具testdisk, extundelete
+```
+yum install -y ncurses-devel gcc make automake e2fsprogs-devel gcc-c++
+```
+
 关键字《zsh history do not save some commands》
 [Block certain commands from being added to history](https://github.com/zsh-users/zsh-autosuggestions/issues/750)
 ```
