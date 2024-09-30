@@ -87,6 +87,13 @@
 
 下班就去, 自己一个人去游蛙泳，能够游完整的35米泳池了，但是不是每次都完整
 
+#### 2024.09.15
+
+泳镜在车子里，车那去修了，尝试了仰泳，居然一下成功了!
+泳镜没戴，蛙泳好不习惯
+反蛙泳的仰泳，还行，不比蛙泳差多少的感觉, 不用换气了
+自由泳腿的尝试未成功...
+
 ## 韵律呼吸
 
 https://www.youtube.com/watch?v=SLg_IwYkcH0&ab_channel=i%E9%81%8B%E5%8B%95
@@ -169,6 +176,22 @@ ep.36 〖 專業解析 〗蛙式v.s自由式要先學哪個泳姿好
 
 [自由泳入门第二版--梦觉教游泳](https://www.youtube.com/watch?v=MXKgWbJ8fVQ&list=PLgbBfAM7XPKi3EBeNUjlq1N_80b1v3tW8&ab_channel=梦觉教游泳)
 => 自由泳教程合集
+
+[6-0仰躺~學仰泳及仰漂必先會，許多自學者先會的泳姿](https://www.youtube.com/watch?v=kV3l9hfRR70&ab_channel=林小虎)
+=> 仰泳学习
+
+[0～1000 蛙 泳手腳換氣完整結合](https://www.youtube.com/watch?v=TjgUEgKWZmo&t=464s&ab_channel=林小虎)
+=> 蛙泳动作协调，可以慢一点
+
+#### 仰泳
+
+https://www.youtube.com/watch?v=0OTQlbU0v2g&ab_channel=梦觉教游泳
+=> 头可以放到水下，手伸出水面的反蛙泳
+
+#### 蝶泳
+
+[【蝶泳入门】1.学蝶泳需要达到哪些门槛？｜梦觉教游泳](https://www.youtube.com/watch?v=4qPGJxn5_Hg&list=PLgbBfAM7XPKisw_XyNibcO5i09RHCeZkI&ab_channel=梦觉教游泳)
+=> 蝶泳合集
 
 ### 游泳学习计划
 

@@ -22,6 +22,18 @@ only syscall `-e sendto`
 exclude  syscall `-e 'trace=!epoll_wait,select'`
 或者 `-e trace=\!select` (使用反斜杠处理)
 
+#### strace threads
+
+[strace追踪多线程程序](https://blog.csdn.net/prike/article/details/50224193)
+
+方法一
+先用ps -mp pid或者top -H查出线程pid。
+
+然后strace -p pid追踪其中一个线程。
+
+方法二
+直接用strace -fp pid追踪进程下所有线
+
 ## 参考资料
 
 [Linux调试分析诊断利器——strace](https://www.cnblogs.com/clover-toeic/p/3738156.html)

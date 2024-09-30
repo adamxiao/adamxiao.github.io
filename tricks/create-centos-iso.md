@@ -43,7 +43,7 @@ implantisomd5 /data/centos-new.iso
 mkisofs -v -U -J -R -T \
   -m repoview -m boot.iso \
   -eltorito-alt-boot -e images/efiboot.img -no-emul-boot -V KylinSec \
-  -o /data/ksvd-new.iso /data/ksvd-new
+  -o /data/ksvd-new.iso /data/centos-new-dir
 implantisomd5 /data/ksvd-new.iso
 ```
 

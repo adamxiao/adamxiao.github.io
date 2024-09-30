@@ -1,5 +1,11 @@
 # 临时计划
 
+关键字《后端开发的RSS》
+[ChatGPT帮我彻底搞懂RSSHub：一篇你不想错过的RSS指南](https://medium.com/@h.zuomin/chatgpt帮我彻底搞懂rsshub-一篇你不想错过的rss指南-d4988ffac8d)
+
+https://roadmap.sh/golang
+学习路线?
+
 #### auditctl审计
 
 ```
