@@ -80,3 +80,9 @@ thread apply all bt full
 finish
 quit
 ```
+
+#### 调试子进程
+
+```
+set follow-fork-mode child
+```

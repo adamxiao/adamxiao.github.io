@@ -183,6 +183,11 @@ ep.36 〖 專業解析 〗蛙式v.s自由式要先學哪個泳姿好
 [0～1000 蛙 泳手腳換氣完整結合](https://www.youtube.com/watch?v=TjgUEgKWZmo&t=464s&ab_channel=林小虎)
 => 蛙泳动作协调，可以慢一点
 
+#### 自由泳
+
+https://www.youtube.com/watch?v=-B0j9Wttgok&ab_channel=林小虎
+5分钟学会自由泳，首先简单找到换气的感觉，然后划手
+
 #### 仰泳
 
 https://www.youtube.com/watch?v=0OTQlbU0v2g&ab_channel=梦觉教游泳
