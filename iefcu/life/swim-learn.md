@@ -198,6 +198,10 @@ https://www.youtube.com/watch?v=0OTQlbU0v2g&ab_channel=梦觉教游泳
 [【蝶泳入门】1.学蝶泳需要达到哪些门槛？｜梦觉教游泳](https://www.youtube.com/watch?v=4qPGJxn5_Hg&list=PLgbBfAM7XPKisw_XyNibcO5i09RHCeZkI&ab_channel=梦觉教游泳)
 => 蝶泳合集
 
+#### 踩水
+
+[梦觉教游泳 -- “踩水”之五：高级踩水的随心所欲](https://www.youtube.com/watch?v=ZtxevFJQhsQ&ab_channel=%E6%A2%A6%E8%A7%89%E6%95%99%E6%B8%B8%E6%B3%B3)
+
 ### 游泳学习计划
 
 关键字《游泳学习计划》

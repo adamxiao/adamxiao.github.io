@@ -229,3 +229,20 @@ sudo apt install mplayer
 sudo apt install smplayer # 这个可以生效
 ```
 之后将 mkv 文件的打开方式设置为 Smplayer 即可。
+
+## FAQ
+
+#### firefox 火狐浏览器高版本 SSL_ERROR_RX_RECORD_TOO_LONG
+
+https://www.cnblogs.com/zheh/p/11119360.html
+
+禁用TLS 1.3
+- 1、在Firefox的地址栏中输入“ about:config ”。
+- 2、在搜索条目“tls.version.max ”。将值从4更改为3。
+- 3、值4所表示TLS 1.3，3个代表TLS 1.2。
+=> 还是不行?
+
+[(好)SSL_ERROR_RX_RECORD_TOO_LONG解决方案](https://tech.ifeng.com/c/7fAWfNLarbH)
+
+网上搜到说禁用代理，我开启代理就能访问了。。。
+=> 就是服务端https版本低了, 没办法就找个靠谱的中间人了...

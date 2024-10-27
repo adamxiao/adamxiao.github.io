@@ -196,6 +196,46 @@ git checkout @{-1}
 
 * git push origin tag_name
 
+#### git delete remote branch
+
+```
+git push <remote> --delete <branch>
+```
+
+gpt关键字《git删除掉所有已经合并的本地分支》
+1.首先，确保您的当前分支是最新的，比如主分支（main 或 master）：
+2.然后删除所有已经合并到当前分支的本地分支：
+```
+git checkout main
+git pull origin main
+git branch --merged | grep -v "\*" | grep -v main | grep -v master | xargs -n 1 git branch -d
+```
+
+检查一个远程仓库A的所有分支，跟另外一个远程仓库B比较，如果分支中没有代码需要合并到远程仓库B中，则删除掉远程仓库A中的这个分支
+A仓库中分支的代码落后B仓库中的分支，但是没有需要合并的，也应该要删除掉
+```
+for branch in $(git branch -r | grep xiaoyun/ | sed 's/xiaoyun\///'); do
+  # 检查分支是否在 module 中存在
+  if git show-ref --verify --quiet refs/remotes/module/$branch; then
+    # 检查 module 分支是否完全领先于 xiaoyun 分支
+    if [ -z "$(git log xiaoyun/$branch --not module/$branch)" ]; then
+      echo "Deleting branch xiaoyun/$branch: module/$branch is ahead of xiaoyun/$branch and no changes to merge."
+      # 删除远程仓库 xiaoyun 中的分支
+      git push xiaoyun --delete $branch
+    else
+      echo "Branch xiaoyun/$branch has unique changes or needs merging with module/$branch"
+    fi
+  else
+    echo "Branch xiaoyun/$branch does not exist in module"
+  fi
+done
+```
+
+上面的脚本关键是用了一个log命令: 查询一个分支中是否有需要合并的commit，到另外一个分支
+```
+git log xiaoyun/$branch --not module/$branch
+```
+
 #### git generate patch
 
 制作rpm的补丁方法
