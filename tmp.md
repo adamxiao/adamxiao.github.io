@@ -6,6 +6,17 @@
 https://roadmap.sh/golang
 学习路线?
 
+[cursor 让程序员体验当甲方爸爸的快乐](https://juejin.cn/post/7420088865463877659)
+
+#### 博客网站
+
+- 掘金
+- 知乎
+- reddit
+- DEV community
+- Medium
+- V2EX
+
 #### auditctl审计
 
 ```

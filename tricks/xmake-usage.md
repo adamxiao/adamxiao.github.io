@@ -162,6 +162,12 @@ Generate CMakelists.txt
 
 - [xmake新增智能代码扫描编译模式](https://www.cnblogs.com/tboox/p/12014652.html)
 
+https://xmake.io/mirror/manual/builtin_variables.html
+使用shell命令生成变量
+```
+add_defines("$(shell uname -m)") -- 根据当前架构生成 -Daarch64
+```
+
 ## FAQ
 
 #### error: assertion failed!
