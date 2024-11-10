@@ -57,3 +57,5 @@ alias go='http_proxy=127.0.0.1:8080 go'
 ## 其他
 
 [Go socket编程](https://www.cnblogs.com/Yunya-Cnblogs/p/13815864.html)
+
+[20分钟入门与精通Go 语言](https://juejin.cn/post/7432604908266061824)

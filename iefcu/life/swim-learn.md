@@ -188,6 +188,12 @@ ep.36 〖 專業解析 〗蛙式v.s自由式要先學哪個泳姿好
 https://www.youtube.com/watch?v=-B0j9Wttgok&ab_channel=林小虎
 5分钟学会自由泳，首先简单找到换气的感觉，然后划手
 
+https://www.youtube.com/watch?v=c33S5XYWo3I&ab_channel=%E6%A2%A6%E8%A7%89%E6%95%99%E6%B8%B8%E6%B3%B3
+=> 侧身打腿
+
+https://www.youtube.com/watch?v=P71LRAUVkmE&ab_channel=%E6%A2%A6%E8%A7%89%E6%95%99%E6%B8%B8%E6%B3%B3
+=> 换气，要练两边
+
 #### 仰泳
 
 https://www.youtube.com/watch?v=0OTQlbU0v2g&ab_channel=梦觉教游泳

@@ -71,3 +71,25 @@ https://chrisirwin.ca/posts/discard-with-kvm-2020/
 sudo fstrim -av
 sudo systemctl enable --now fstrim.timer
 ```
+
+#### zfs qcow2镜像缩小
+
+=> 注意，可能需要比较长的时间才能trim完成, 变为sparse文件, du容量缩小
+
+gtp关键字《the discard operation is not supported zfs》
+
+首先配置虚拟机的磁盘qcow2属性`discard=unmap`
+```
+<driver name='qemu' type='qcow2' discard='unmap'/>
+```
+
+手动trim
+```
+zpool trim pool1
+```
+
+设置自动trim
+```
+zpool get autotrim
+zpool set autotrim=on pool1
+```
