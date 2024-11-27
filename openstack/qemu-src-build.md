@@ -27,7 +27,7 @@ sudo apt install -y libpixman-1-dev
 
 ubuntu 20.04安装最新版qemu，依赖包处理
 ```
-sudo apt install -y libglib2.0-dev
+sudo apt install -y libglib2.0-dev \
   libpixman-1-dev \
   python3.8-dev \
   python3-venv \

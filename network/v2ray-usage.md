@@ -188,6 +188,27 @@ You can still disable this security feature with environment variable v2ray.vmes
 failed to process reverse connection > app/reverse: empty worker list
 ```
 
+## 正向代理
+
+配置文件见附件: `v2ray-proxy.config`
+
+可以配置docker-compose拉起服务
+```
+version: '3.3'
+services:
+  proxy:
+    image: v2fly/v2fly-core
+    volumes:
+      - ./config/:/etc/v2ray/
+    restart:
+          always
+    network_mode: host
+    command:
+    - run
+    - -c
+    - /etc/v2ray/config.json
+```
+
 ## 参考资料
 
 [v2ray官网文档 - 反向代理](https://www.v2ray.com/chapter_02/reverse.html)

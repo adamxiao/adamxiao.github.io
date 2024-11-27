@@ -251,6 +251,28 @@ int main(int argc, char *argv[]) {
 
 ## FAQ
 
+#### 普通用户访问文件
+
+- 1.原始目录权限处理
+=> 不用处理
+```
+chmod 755 /mnt/hellofs
+```
+- 2.fuse挂载权限配置
+```
+./hellofs /mnt/hellofs -o allow_other -o default_permissions -d -o uid=1000
+# -o allow_other：允许其他用户访问文件系统。
+# -o default_permissions：使用系统的权限检查机制。
+# -o uid=1000 : 设置挂载后的用户, fuse文件系统里面所有的文件都是这个
+# -o gid=1000 : 设置挂在后的属组
+```
+- 3.fuse应用权限配置
+=> 改了用户后，这个也不需要
+```
+hello_getattr 中输出对应的权限
+stbuf->st_mode = S_IFDIR | 0755;
+```
+
 #### 调试使用
 
 有参数，可以前端运行，开启调试日志
