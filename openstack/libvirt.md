@@ -391,6 +391,27 @@ arm64下需要占用pci插槽的设备列表
 
 ## FAQ
 
+#### 开启qemu的coredump文件
+
+```
+ulimit -c unlimited
+sysctl -w kernel.core_pattern=/var/crash/core-%e.%p
+# 修改/etc/libvirtd/qemu.conf
+max_core = "unlimited"
+systemctl restart libvirtd
+```
+
+可以实时查看qemu进程的limit配置
+```
+cat /proc/`pidof qemu-kvm`/limits
+```
+
+手动kill进程，验证生成coredump文件
+```
+killall -11 qemu-kvm
+```
+=> 验证发现手动kill runtime-server可以产生, qemu-kvm只有日志文件有堆栈信息, 可能捕获了这个信号(魔改版qemu的逻辑。。。)
+
 #### mac地址错误, 添加网卡失败
 
 libvirt: Domain Config error : XML 错误：意外单播 mac 地址，找到多播 '11:11:22:22:33:00'
