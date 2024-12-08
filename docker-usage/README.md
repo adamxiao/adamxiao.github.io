@@ -163,6 +163,68 @@ if [[ -f /usr/bin/vim ]]; then alias vi=vim; fi
 if [[ -f /usr/bin/docker ]]; then alias vi='docker run -ti -e TERM=xterm-256color -e COLUMNS=$(tput cols) -e LINES=$(tput lines) --rm -v $(pwd):/data hub.iefcu.cn/public/vim-env:base'; fi
 ```
 
+#### macvlan静态ip
+
+首先创建macvlan网络, 指定macvlan物理网卡
+
+子网--subnet和网关--gateway，以及parent=enp3s0网卡名称根据实际情况做调整
+
+```bash
+docker network create -d macvlan \
+  --subnet=192.168.0.0/24 \
+  --gateway=192.168.0.1 \
+  -o parent=enp3s0 \
+  openwrt-LAN
+
+# 查看创建的虚拟网络
+docker network ls |grep openwrt-LAN
+21dcddacc389        openwrt-LAN         macvlan             local
+```
+
+然后使用macvlan网络，配置静态ip地址
+```bash
+# --network使用第4步创建的虚拟网络
+docker run --name openwrt -d --privileged --restart always \
+  --network openwrt-LAN --ip 192.168.0.200 \
+  crazygit/openwrt-x86-64
+
+# 查看启动的容器
+docker ps -a
+```
+
+docker-compose使用
+```
+version: '3.7'
+
+services:
+  openwrt:
+    image: crazygit/lean-openwrt-x86-64
+    restart: always
+    privileged: true
+    volumes:
+      - ./etc/config/network:/etc/config/network
+      - ./etc/rc.local:/etc/rc.local
+    networks:
+      macvlan:
+        ipv4_address: 192.168.0.200
+
+networks:
+  macvlan:
+    external:
+      name: openwrt-LAN
+
+#networks:
+#  macvlan:
+#    driver: macvlan
+#    driver_opts:
+#      # 宿主机网卡
+#      parent: enp3s0
+#    ipam:
+#      config:
+#        - subnet: 192.168.0.0/24
+#          gateway: 192.168.0.1
+```
+
 ## FAQ
 
 #### docker信任http仓库

@@ -199,6 +199,11 @@ https://www.youtube.com/watch?v=P71LRAUVkmE&ab_channel=%E6%A2%A6%E8%A7%89%E6%95%
 https://www.youtube.com/watch?v=0OTQlbU0v2g&ab_channel=梦觉教游泳
 => 头可以放到水下，手伸出水面的反蛙泳
 
+## 自由泳
+
+33 划手：抱水
+https://www.youtube.com/watch?v=UEYyKwSZIsw&list=PLgbBfAM7XPKi3EBeNUjlq1N_80b1v3tW8&index=33&ab_channel=%E6%A2%A6%E8%A7%89%E6%95%99%E6%B8%B8%E6%B3%B3
+
 #### 蝶泳
 
 [【蝶泳入门】1.学蝶泳需要达到哪些门槛？｜梦觉教游泳](https://www.youtube.com/watch?v=4qPGJxn5_Hg&list=PLgbBfAM7XPKisw_XyNibcO5i09RHCeZkI&ab_channel=梦觉教游泳)
