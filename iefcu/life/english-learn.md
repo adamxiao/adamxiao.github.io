@@ -16,15 +16,16 @@ english listen one hour every day (VibeEnglish)
 
 - https://www.youtube.com/watch?v=_BQPbpcF0kI => 2024-12-01 1:00:13
 
-- https://www.youtube.com/watch?v=J6wV4Yur_Kk => 1:02:19
+- https://www.youtube.com/watch?v=J6wV4Yur_Kk => 2024-12-02 1:02:19
+  2024-12-09
 
-- https://www.youtube.com/watch?v=bMp55Uxi3d0
+- https://www.youtube.com/watch?v=bMp55Uxi3d0 => 2024-12-03 47:36
 
-- https://www.youtube.com/watch?v=fJTsTmNDsiA
+- https://www.youtube.com/watch?v=fJTsTmNDsiA => 2024-12-04 45:28
 
-- https://www.youtube.com/watch?v=USt5BeZp9Qs
+- https://www.youtube.com/watch?v=USt5BeZp9Qs => 2024-12-05 1:17:50
 
-- https://www.youtube.com/watch?v=MvVTk0LX6fs
+- https://www.youtube.com/watch?v=MvVTk0LX6fs => 2024-12-06 52:37
 
 ## tv shows
 
@@ -51,7 +52,7 @@ The dessert will be spoil if you don't keep it in the fridge =>1
 Please cover your mouse with a tissue when you sneeze, all right?
 We put Emma on a dating app, and we're seeing what't out there
 Have you seen the remote control for the TV anywhere?
-Take some hand warmers in case the weather is extremely cold
+30.Take some hand warmers in case the weather is extremely cold.
 
 36.you shouldn't just assume things without geting all the facts.
 38.He just cannot tolerate any back talk from his children.
@@ -77,3 +78,20 @@ https://www.youtube.com/watch?v=J6wV4Yur_Kk => 1:02:19
 
 1.I'd like to a fried egg with a hard yolk.
 13.Can I get a brown sugar boba milk with cream mousse?
+139.Polish your shoes regularly to protect the leather.
+
+#### USt5BeZp9Qs
+
+https://www.youtube.com/watch?v=USt5BeZp9Qs => 1:17:50
+
+23.Why don't you find find someone your own age to go out with?
+31.Do you prefer your eggs boiled os scrambled?
+32.Do you think you could introduce me to Mr.Lee?
+85.Can I get you somethings to drink?
+129.Featured this evening is a wonderful steamed fish.
+
+#### MvVTk0LX6fs
+
+1.The bus stop is just across the street from Wallmart.
+5.I promised that I will never get mad to you again.
+53.He ofen shows off his wealth in front of the public.

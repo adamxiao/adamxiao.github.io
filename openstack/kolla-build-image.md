@@ -8,17 +8,45 @@ apt install -y python3-pip
 pip install kolla 
 ```
 
+首先创建Dockerfile目录, 然后在dockerfile目录手动构建镜像!
+```
+kolla-build -b ubuntu --template-only --openstack-release xena -t source --work-dir yoga3 --tag yoga3 ^cinder-
+```
+
+开始构建相关镜像
+=> source需要下载cinder的release包并解压
+```
+pip3 install  kolla==10.4.0 #  支持ubuntu 18.04构建yoga镜像
+
+docker build -t xxx:yoga3
+
+kolla/ubuntu-binary-cinder-backup      yoga2
+kolla/ubuntu-binary-cinder-scheduler   yoga2
+kolla/ubuntu-binary-cinder-api         yoga2
+kolla/ubuntu-binary-cinder-volume      yoga2
+kolla/ubuntu-binary-cinder-base        yoga2
+kolla/openstack-base                   yoga2
+kolla/ubuntu-binary-openstack-base     yoga2
+kolla/base                             yoga2
+kolla/ubuntu-binary-base               yoga2
+base                                   yoga2
+```
+
 ## 构建cinder镜像
 
 单独编译cinder-api镜像, 基于ubuntu
 ```
 kolla-build -b ubuntu cinder-api
 kolla-build -b ubuntu ^cinder- # 或者编译cinder所有镜像
+
+#kolla-build -b ubuntu --base-tag 18.04 --openstack-release yoga --tag yoga2 ^cinder-
+kolla-build -b ubuntu --openstack-release yoga --tag yoga2 ^cinder-
 ```
 
 只构建cinder-api的相关Dockerfile
 ```
 kolla-build -b ubuntu --template-only --work-dir . cinder-api
+=> 然后手动使用docker命令构建镜像
 ```
 
 配置代理 => 没有作用, 没有用到代理, 官网文档居然有问题!!!

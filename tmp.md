@@ -17,14 +17,6 @@ https://roadmap.sh/golang
 - Medium
 - V2EX
 
-#### auditctl审计
-
-```
-auditctl -s //查询状态
-auditctl -l //查看规则
-auditctl -D //删除所有规则
-```
-
 #### 其他
 
 编译数据恢复工具testdisk, extundelete
