@@ -55,6 +55,30 @@ kylin-vr-0.1/kylin-vr.py
 mv /tmp/kylin-vr-0.1.tar.gz ~/rpmbuild/SOURCES/
 ```
 
+#### cmake宏
+
+解析宏
+```
+rpm -E '%cmake'
+```
+
+- /etc/rpm/macros.cmake
+- /usr/lib/rpm/macros.d/
+
+cmake_make
+```
+/usr/bin/cmake --build redhat-linux-build -j4 --verbose
+=> 低版本实现
+make VERBOSE=1 %{?_smp_mflags}
+```
+
+cmake_install
+```
+/usr/bin/cmake --install redhat-linux-build
+=> 低版本实现
+make install DESTDIR=$RPM_BUILD_ROOT
+```
+
 ## 未整理
 
 列出所有已安装rpm包
