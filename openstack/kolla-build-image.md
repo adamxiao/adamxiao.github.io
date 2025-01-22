@@ -95,6 +95,155 @@ location = /tmp/ironic.tar.gz
 enabled = False
 ```
 
+### 基于ubuntu 18.04基础镜像构建yoga版本镜像
+
+安装指定版本kolla
+```
+apt install -y python3-pip
+pip3 install  kolla==10.4.0 #  支持ubuntu 18.04构建yoga镜像
+```
+
+首先创建Dockerfile目录, 然后在dockerfile目录手动构建镜像!
+```
+kolla-build -b ubuntu --template-only --openstack-release yoga -t source --work-dir yoga --tag yoga ^cinder-
+```
+
+开始构建相关镜像
+=> source需要下载cinder的release包并解压
+
+大致有如下一些镜像
+
+- kolla/ubuntu-binary-cinder-backup      yoga
+- kolla/ubuntu-binary-cinder-scheduler   yoga
+- kolla/ubuntu-binary-cinder-api         yoga
+- kolla/ubuntu-binary-cinder-volume      yoga
+- kolla/ubuntu-binary-cinder-base        yoga
+- kolla/ubuntu-binary-openstack-base     yoga
+- kolla/openstack-base                   yoga
+- kolla/ubuntu-binary-base               yoga
+- kolla/base                             yoga
+
+#### 构建base镜像
+
+docker/base
+
+一些apt key的下载有点问题了, 需要处理一下
+修改 docker/base/Dockerfile
+主要是去除key: A20F259AEB9C94BB
+```
+          RUN apt-key adv --no-tty --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 391A9AA2147192839E9DB0315EDB1B62EC4926EA
+               RUN apt-key adv --no-tty --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 46095ACC8548582C1A2699A9D27D666CD88E42B4
+               RUN apt-key adv --no-tty --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 49B07274951063870A8B7EAE7B8AA1A344C05248
+               RUN apt-key adv --no-tty --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 58118E89F3A912897C070ADBF76221572C52609D
+               RUN apt-key adv --no-tty --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 4D8EB5FDA37AB55F41A135203BF88A0C6A770882
+               RUN apt-key adv --no-tty --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 901F9177AB97ACBE
+               #RUN apt-key adv --no-tty --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 A20F259AEB9C94BB
+               RUN apt-key adv --no-tty --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 F1656F24C74CD1D8
+               RUN apt-key adv --no-tty --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 F77F1EDA57EBB1CC
+               RUN apt-key adv --no-tty --recv-keys --keyserver hkp://keyserver.ubuntu.com:80 F6609E60DC62814E
+```
+
+构建镜像
+```
+docker build -t kolla/ubuntu-source-base:yoga .
+```
+
+#### 构建openstack-base镜像
+
+docker/openstack-base
+
+先准备openstack yoga版本的 requirements
+```
+openstack-base-archive
+```
+
+Dockerfile需要适配一下
+```
+apt install python3-anyjson
+mkdir -p /requirements && ln -s /openstack-base-source/upper-constraints.txt /requirements/
+# pip install anyjson # 去除这个anyjson
+```
+
+构建镜像
+```
+docker build -t kolla/ubuntu-source-openstack-base:yoga .
+```
+
+#### 构建ubuntu-source-cinder-base镜像
+
+docker/cinder/cinder-base
+
+需要准备cinder包 cinder-base-source
+
+Dockerfile修改
+```
+RUN mkdir -p /cinder && ln -s /cinder-base-source/* /cinder/ \
+```
+
+构建镜像
+```
+docker build -t kolla/ubuntu-source-cinder-base:yoga .
+```
+
+#### 构建cinder-api等镜像
+
+构建镜像
+```
+docker build -t hub.iefcu.cn/public/ubuntu-source-cinder-scheduler:yoga .
+docker build -t hub.iefcu.cn/public/ubuntu-source-cinder-api:yoga .
+docker build -t hub.iefcu.cn/xiaoyun/ubuntu-source-cinder-backup:yoga .
+docker build -t hub.iefcu.cn/xiaoyun/ubuntu-source-cinder-volume:yoga .
+```
+
+保存镜像
+```
+docker image save \
+  hub.iefcu.cn/public/ubuntu-source-cinder-scheduler:yoga \
+  hub.iefcu.cn/public/ubuntu-source-cinder-api:yoga \
+  hub.iefcu.cn/xiaoyun/ubuntu-source-cinder-backup:yoga \
+  hub.iefcu.cn/xiaoyun/ubuntu-source-cinder-volume:yoga \
+  > yoga.img
+```
+
+#### 定制cinder-api镜像
+
+Dockerfile
+```
+FROM hub.iefcu.cn/public/ubuntu-source-cinder-api:yoga
+ADD ./api.py /var/lib/kolla/venv/lib/python3.6/site-packages/cinder/volume/api.py
+```
+
+构建新镜像
+```
+docker build -t hub.iefcu.cn/public/ubuntu-source-cinder-api:yoga-new .
+```
+
+#### 制作额外驱动cinder-volume镜像
+
+准备额外驱动
+```
+git clone -b python3 http://192.168.120.13/xiaoyun/mmj-cinder.git
+```
+
+Dockerfile
+```
+FROM hub.iefcu.cn/xiaoyun/ubuntu-source-cinder-volume:yoga
+ADD ./mmj-cinder/kylinsec /var/lib/kolla/venv/lib/python3.6/site-packages/cinder/volume/drivers/kylinsec
+```
+
+构建镜像
+```
+docker build -t hub.iefcu.cn/xiaoyun/ubuntu-source-cinder-volume:yoga-new .
+```
+
+#### 制作rpm包
+
+```
+git clone http://192.168.120.13/xiaoyun/mmj-dev.git
+cd mmj-dev
+bash ./build-cinder-rpm.sh
+```
+
 ## 旧的资料
 
 关键字《kolla镜像本地缓存》
