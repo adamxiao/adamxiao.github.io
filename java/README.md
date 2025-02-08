@@ -35,3 +35,16 @@ java -Dlog4j.configurationFile=file:/home/adam/Downloads/smart-license/conf/log4
   org.smartboot.license.server.LicenseServer \
   1d hello 
 ```
+
+## java web
+
+jnlp后缀文件打开方式，安装了jre环境没用
+
+- 1.旧的浏览器支持, 例如kylin 3.3-3B系统自带的firefox
+  新版浏览器都不支持了
+- 2.手动使用javaws打开, javaws launch.jnlp
+  ubuntu 20.04安装javaws, apt install icedtea-netx
+
+自Java 11起，Oracle不再包含Java Web Start和 javaws 工具在其JRE/JDK发行版中
+
+由于安全性和其他考虑，许多现代浏览器已经不再支持NPAPI插件，这意味着它们可能不支持直接在浏览器中运行Java应用程序。在这种情况下，你可以尝试使用支持Java的较旧版本的浏览器
