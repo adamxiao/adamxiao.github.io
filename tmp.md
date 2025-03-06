@@ -8,6 +8,21 @@ https://roadmap.sh/golang
 
 [cursor 让程序员体验当甲方爸爸的快乐](https://juejin.cn/post/7420088865463877659)
 
+#### ollama模型导出导入离线安装
+
+ollama模型镜像导出，方便离线安装模型
+
+https://blog.csdn.net/weixin_37841024/article/details/138183851
+ollama show --modelfile deepseek-r1:7b
+
+#### nas文件收集
+
+文件收集，极空间
+
+https://zhuanlan.zhihu.com/p/20882424615
+
+可以发送一个链接，收集对方的文件，挺好用的
+
 #### 博客网站
 
 - 掘金
@@ -29,6 +44,8 @@ yum install -y ncurses-devel gcc make automake e2fsprogs-devel gcc-c++
 ```
 HISTORY_IGNORE="(l|l *|ls|ls *|cd|cd ..*|cd -|z *|pwd|exit)"
 export HISTORY_IGNORE="(l|l *|ls|ls *|cd|cd ..*|cd -|z *|pwd|exit|*workspace*)"
+=> test ok
+export HISTORY_IGNORE="(l|l *|ls|ls *|cd|cd ..*|cd -|z *|pwd|exit|adam|jobs|vim|vi|%|*workspace*|*10.30.2.99*)"
 ```
 [Hiding secret keys from shell history: Part 1](https://medium.com/@prasincs/hiding-secret-keys-from-shell-history-part-1-5875eb5556cc)
 ```

@@ -41,6 +41,8 @@ for i in range(len(sys.argv)):
     if 'virtio-blk-pci,drive=virtio0-hd2,bus=pci.0' == sys.argv[i]:
         sys.argv[i] = 'virtio-blk-pci,drive=virtio0-hd2,bus=pcie.0'
 
+# sys.argv.append("-no-shutdown") # add param
+
 cmd=' '.join(sys.argv)
 logging.info(cmd)
 sys.argv[0] = '/usr/libexec/qemu-kvm.1127'

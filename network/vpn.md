@@ -28,7 +28,7 @@ apt install wireguard-tools
 
 编译安装wireguard-tools
 ```
-git clone https://github.com/WireGuard/wireguard-tools.git
+git clone https://github.com/WireGuard/wireguard-tools.git # 13f4ac4cb74b5a833fa7f825ba785b1e5774e84f
 cd wireguard-tools/src
 make install
 ```

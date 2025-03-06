@@ -47,6 +47,25 @@ ERROR: WoeUSB requires wimlib-imagex command in the executable search path, but 
 apt-get install wimtools
 ```
 
+https://github.com/WoeUSB/WoeUSB
+=> 验证了commit 34b400d99d3c4089f487e1d4f7d71970b2d4429e
+```
+git clone https://github.com/WoeUSB/WoeUSB
+cd WoeUSB
+sudo ./sbin/woeusb --device xxx/cn_windows_10_xxx.iso /dev/sdb
+```
+
+https://github.com/WoeUSB/WoeUSB-ng
+
+https://blog.csdn.net/otter1010/article/details/104242760
+```
+sudo add-apt-repository ppa:nilarimogard/webupd8
+sudo apt update
+sudo apt install woeusb
+
+sudo woeusb --target-filesystem NTFS --device windows_7_ultimate_with_sp1_x64_dvd_u_677408.iso /dev/sdb
+```
+
 ## ubuntu安装windows软件
 
 使用Bottles安装
@@ -120,6 +139,16 @@ sudo ufw allow OpenSSH # 放行ssh服务
 sudo ufw allow from 91.198.174.0/24 proto tcp to any port 22 # 放行特定ip访问特定端口
 sudo ufw delete allow OpenSSH # 删除规则
 ```
+
+配置dnat, 编辑 /etc/ufw/before.rules
+(可能需要添加nat段, 注意是COMMIT后面)
+```
+*nat
+-A PREROUTING -p tcp -i eno2 --dport 62022 -j DNAT --to-destination 10.0.0.3:22
+COMMIT
+```
+
+sudo ufw reload # 立即生效
 
 ## 投屏到电视
 
