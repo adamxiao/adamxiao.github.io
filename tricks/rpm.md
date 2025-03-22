@@ -178,3 +178,10 @@ rpmrebuild -m /bin/bash -np rpm/xxx.rpm
 ```
 rpmbuild -bp ~/rpmbuild/SPECS/*.spec --nodeps
 ```
+
+#### 查看哪些rpm是新安装的
+
+这将列出所有已安装的 RPM 包，并按照安装时间从新到旧排序。
+```
+rpm -qa --last
+```

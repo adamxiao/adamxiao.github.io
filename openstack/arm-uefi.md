@@ -59,5 +59,48 @@ https://blog.csdn.net/Y1309SIR/article/details/105385648
 
 [install aarch64 on x86-centos](https://medium.com/%E9%AB%94%E9%A9%97%E4%BA%BA%E7%94%9F-touch-life/install-aarch64-on-x86-centos-c35919f798a9)
 
+## UEFI fd文件查看
+
+UEFITool
+=> 只能看到uuid..
+
+nvramtool -l xxx.fd
+=> 没有coreboot table, 不行
+=> nvramtool 主要用于处理 coreboot 固件的 NVRAM 数据，而不是直接解析 UEFI 变量存储文件（如 .fd 文件）。
+
+UEFI Shell
+=> dmpstore 命令，问题是fd文件有问题, 无法处理
+
+edk2 varcheck
+=> 不知道怎么安装
+
+```
+sudo apt install fwts
+fwts uefivars -f /path/to/your.fd
+=> 报错
+```
+
+mtools
+mdir -i xxx.fd
+
+efi-readvar
+=> 读取当前系统的...
+
+pip install uefi-firmware-parser
+=> 没有这个模块
+
+efibootmgr -v
+=> 读取当前系统
+efivar -l 
+
+pip install chipsec
+chipsec_util uefi nvram print -i OVMF_VARS.fd
+
+$ sudo cp KYLIN_ARM-pure-efi.fd.bak /sys/firmware/efi/efivars/
+cp: cannot stat '/sys/firmware/efi/efivars/KYLIN_ARM-pure-efi.fd.bak': Invalid argument
+
+/sys/firmware/efi/efivars/
+=> 在系统中读取，挺方便的
+
 
 ## 参考资料
