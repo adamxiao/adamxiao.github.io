@@ -219,6 +219,12 @@ lvchange -an vg_vrm/lv_root
 lvchange -an vg_vrm # 取消激活全部vg
 ```
 
+激活名相同的冲突卷
+```
+vgs -o vg_name,vg_uuid
+lvchange -ay --select vg_uuid=<uuid>
+```
+
 https://access.redhat.com/documentation/zh-cn/red_hat_enterprise_linux/8/html/configuring_and_managing_logical_volumes/managing-lvm-volume-groups_configuring-and-managing-logical-volumes
 vgscan 可以扫描
 pvscan
