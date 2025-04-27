@@ -262,6 +262,52 @@ qemu-nbd -d /dev/nbd0
 
 qemu-img snapshot -c snap1 test.img
 
+## qemu-img convert commit差异分析
+
+为什么在不同的机器上，不同的qemu版本，以及其他因素下，转换出来的新qcow2镜像，md5sum不是一样的?
+
+```
+qemu-img commit delta.img
+qemu-img convert -O qcow2 \
+            -o compat=1.1,lazy_refcounts=off,cluster_size=65536 \
+            delta.img convert.img
+```
+
+qemu-img convert 回放测试，能保证每次convert出来的镜像md5sum都是一样的吗？
+
+直接解析 QCOW2 数据块（高级）
+```
+# 1. 获取数据块物理偏移
+qemu-img map --output=json base.qcow2 | jq -r '.[] | select(.data) | "\(.start) \(.length)"' > blocks.txt
+
+# 2. 使用 dd 提取数据块并哈希
+while read -r start length; do
+    dd if=base.qcow2 bs=1 skip=$start count=$length status=none
+done < blocks.txt | md5sum
+```
+
+分析 qemu-img compare src.img dst.img
+为啥比较是相同的呢?
+
+qemu-img map
+```
+qemu-img  map delta.img
+Offset          Length          Mapped to       File
+0               0x10000         0x50000         centos-ksvd2020.img
+0x100000        0x10000         0xbf0000        delta.img
+0x110000        0x20000         0x70000         centos-ksvd2020.img
+0x130000        0x10000         0xc00000        delta.img
+
+qemu-img map --output=json delta.img
+[{ "start": 0, "length": 65536, "depth": 1, "zero": false, "data": true, "offset": 327680},
+{ "start": 65536, "length": 983040, "depth": 1, "zero": true, "data": false},
+{ "start": 1048576, "length": 65536, "depth": 0, "zero": false, "data": true, "offset": 12517376},
+{ "start": 1114112, "length": 131072, "depth": 1, "zero": false, "data": true, "offset": 458752},
+```
+
+比较113 819 x86机器 qemu 4.1.0，与ubuntu 20.04 x86机器qemu 4.2.1, qemu-img convert 的差异
+=> 主要是多了bitmaps, raw external data
+
 ## 其他资料
 
 kvm-forum-2017-slides.pdf

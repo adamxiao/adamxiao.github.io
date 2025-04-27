@@ -162,6 +162,7 @@ wipefs -a /dev/sdb2
 pvcreate /dev/sda4
 vgcreate adam /dev/sda4
 lvcreate -l 100%FREE adam -n home
+lvcreate --thin --size 100G adam/home
 ```
 
 设置加密

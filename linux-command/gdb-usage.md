@@ -66,6 +66,12 @@ bt full
 thread apply all bt full
 ```
 
+查看线程，切换到其他线程
+```
+(gdb) info threads
+(gdb) thread <thread_id>  # 例如：thread 2
+```
+
 #### 调试qemu程序
 
 ```
