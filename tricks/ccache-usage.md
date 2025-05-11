@@ -22,3 +22,15 @@ xmake关于ccache的问题讨论
 
 https://xuanwo.io/reports/2023-04/
 Sccache 共享缓存
+
+## FAQ
+
+#### 调试日志
+
+发现老是没有命中
+=> 最后发现.h头文件中有`__TIME__`, `__DATE__` 宏导致
+  以及编译命令有相关时间的宏变化了!
+
+`ccache -s`查看命中率, 发现direct hit很少
+
+export CCACHE_LOGFILE=/tmp/ccache.log

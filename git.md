@@ -196,6 +196,27 @@ git checkout @{-1}
 
 * git push origin tag_name
 
+#### git submodule独立化
+
+git  submodule 怎么独立抽取为还有完整.git目录的独立目录，不请求远端仓库，只用本地仓库
+
+在submodule1目录下, 你会发现没有真正的 .git/ 目录，而是一个 .git 文件，内容类似：
+```
+gitdir: ../.git/modules/submodule1
+```
+
+将子模块复制到新的目录中（例如独立的 extracted-submodule/）
+```
+cp -a submodule1 ../extracted-submodule1
+cp -a .git/modules/submodule1 ../extracted-submodule1/.git
+```
+
+修复 Git 仓库引用
+编辑.git/config, 修改worktree配置 => 发现注释掉更合适
+```
+worktree = .
+```
+
 #### git delete remote branch
 
 ```

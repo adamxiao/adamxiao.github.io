@@ -89,3 +89,9 @@ https://www.sohu.com/a/494934258_121080659
 https://www.youtube.com/watch?v=8kz-0edWRwk&ab_channel=%E7%BE%8E%E9%A3%9F%E4%BD%9C%E5%AE%B6%E7%8E%8B%E5%88%9A
 
 料汁：胡椒粉 1克，白糖 15 克，生抽酱油 25 克，料酒 30 克；煎虾 5 分钟后淋入料酒 30 克，开小火翻炒姜葱，炒香后加入料汁，小火焖 5 分钟
+
+
+## 面饼
+
+家常饼，外酥里软
+https://www.youtube.com/watch?v=waKMp30IlTU&t=523s&ab_channel=%E6%B5%B7%E5%A8%9F%E7%BE%8E%E9%A3%9F
