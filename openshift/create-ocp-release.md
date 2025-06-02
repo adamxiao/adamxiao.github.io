@@ -41,6 +41,12 @@ RUN sed -i -e "s#quay.io/openshift-release-dev/ocp-v4.0-art-dev@sha256:#hub.iefc
 ostree系统的特殊性，以及openshift的版本升级原理,
 需要构建新的os-content镜像，然后修改release镜像
 
+os-content镜像的sha256，可以从release镜像的如下文件中找到 ./release-manifests/image-references
+```
+"name": "machine-os-content",
+"name": "hub.iefcu.cn/xiaoyun/openshift4-x86-4.9.25@sha256:21ddd91ee17d368ba82e43b5910bce30e7def147f184948982e79976f79f4a73"
+```
+
 ### 构建kylin coreos的os-content镜像
 
 基于已有的os-content镜像，提取内容，然后替换ostree版本目录/srv/repo/
