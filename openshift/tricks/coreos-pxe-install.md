@@ -152,6 +152,22 @@ LABEL rhcos-4.8.2
 EOF
 ```
 
+### coreos-ipxe.sh.x86
+
+mac-52548400122f.ipxe
+```
+#!ipxe
+
+goto deploy
+
+:deploy
+imgfree
+kernel http://10.30.2.95/rhcos-x86/vmlinuz ip=10.90.4.105::10.90.4.1:255.255.255.0:bootstrap.kcp4.iefcu.cn:enp4s1:none nameserver=10.90.4.107 ignition.platform.id=metal coreos.live.rootfs_url=http://10.30.2.95/rhcos-x86/rootfs.img coreos.inst.install_dev=/dev/vda coreos.inst.insecure coreos.inst.ignition_url=http://10.90.4.107:9090/kcp4.iefcu.cn/bootstrap.ign
+
+initrd http://10.30.2.95/rhcos-x86/initrd.img
+boot
+```
+
 ## 参考文档
 
 * [centos pxe install](https://docs.centos.org/en-US/centos/install-guide/pxe-server/#sect-network-boot-setup-uefi)

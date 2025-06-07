@@ -16,10 +16,59 @@ oc get clusterversion # 查看升级过程
 
 #### 控制平面ca证书
 
+安装时, bootstrap默认就生成了只有1年有效期的, 改apiserver-operator没有影响到这里。。。
+  => 但是可以让它删除重建!(安装完后尝试成功)
+  bootstrap节点上的证书位置: /etc/kubernetes/bootstrap-secrets/kube-control-plane-signer.crt
+
+修改openshift-install源码, 将bootstrap.ign证书有效期延长
+```
+// Generate generates the root-ca key and cert pair.
+func (c *KubeControlPlaneSignerCertKey) Generate(parents asset.Parents) error {
+    cfg := &CertCfg{
+        Subject:   pkix.Name{CommonName: "kube-control-plane-signer", OrganizationalUnit: []string{"openshift"}},
+        KeyUsages: x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign,
+        Validity:  Validity99Years,
+        IsCA:      true,
+    }
+
+    return c.SelfSignedCertKey.Generate(cfg, "kube-control-plane-signer")
+}
+```
+
 => 为啥变为两个月有效期了?
 ```
-oc get secret kube-control-plane-signer -n openshift-kube-apiserver-operator -o yaml
+=> 是自签名的tls.crt, tls.key
+oc get secret kube-control-plane-signer -n openshift-kube-apiserver-operator -o jsonpath='{.data.tls\.crt}' | base64 -d | openssl x509 -noout -text | head
+        Version: 3 (0x2)
+        Serial Number: 2048834006936142688 (0x1c6eebac932b4360)
+        Signature Algorithm: sha256WithRSAEncryption
+        Issuer: CN = openshift-kube-apiserver-operator_kube-control-plane-signer@1780668001
+        Validity
+            Not Before: Jun  5 14:00:01 2026 GMT
+            Not After : May 25 14:00:02 2028 GMT
+        Subject: CN = openshift-kube-apiserver-operator_kube-control-plane-signer@1780668001
 ```
+
+安装节点是: /etc/kubernetes/bootstrap-secrets/kube-control-plane-signer.crt
+=> 估计需要修改openshift-install，或者可以配置吗? 点火文件里面已经生成了这个证书
+
+#### 根证书10年
+
+```
+[ssh_10.90.3.21] root@localhost: manifests$openssl x509 -noout -text -in kube-system-configmap-root-ca.yaml | head
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number: 5797259221592292138 (0x5074008bfdddbb2a)
+    Signature Algorithm: sha256WithRSAEncryption
+        Issuer: OU=openshift, CN=root-ca
+        Validity
+            Not Before: Jun  6 03:26:15 2025 GMT
+            Not After : Jun  4 03:26:15 2035 GMT
+        Subject: OU=openshift, CN=root-ca
+```
+
+签发证书 machine-config-server-tls-secret.yaml => 也是10年
 
 #### oc 访问 apiserver证书
 
@@ -29,7 +78,28 @@ oc get secret kube-control-plane-signer -n openshift-kube-apiserver-operator -o 
 oc get secret kube-scheduler-client-cert-key -n openshift-kube-scheduler -o jsonpath='{.data.tls\.crt}' | base64 -d | openssl x509 -noout -text | head
 ```
 
+证书有效期上限: **不能超过签发ca证书的上限**
+cluster-kube-apiserver-operator : vendor/github.com/openshift/library-go/pkg/operator/certrotation/target.go
+```
+func setTargetCertKeyPairSecret(targetCertKeyPairSecret *corev1.Secret, validity time.Duration, signer *crypto.CA, certCreator TargetCertCreator) error {
+...
+    // our annotation is based on our cert validity, so we want to make sure that we don't specify something past our signer
+    targetValidity := validity
+    remainingSignerValidity := signer.Config.Certs[0].NotAfter.Sub(time.Now())
+    if remainingSignerValidity < validity {
+        targetValidity = remainingSignerValidity
+    }
+```
+
 #### controller-manager
+
+=> 删除ca证书secret, 删除自己secret? => 验证可以!
+```
+oc delete secret kube-control-plane-signer -n openshift-kube-apiserver-operator
+=> 然后确认证书生效
+oc delete secret kube-controller-manager-client-cert-key -n openshift-config-managed
+oc delete secret kube-scheduler-client-cert-key -n openshift-config-managed
+```
 
 证书路径
 (zhouming找到的宿主机路径)
@@ -85,6 +155,84 @@ oc get secret kube-controller-manager-client-cert-key -n openshift-kube-controll
 ```
 
 考虑变为100年, 一年, 十年?
+
+## csr机制
+
+- kubelet发起csr请求?
+- oc 主动通过csr请求, 或者xxx自动通过csr请求?
+- controller-manager 请求签发证书?
+  证书请求有效期, controller-manager的参数 `experimental-cluster-signing-duration`, 由operator拉起定制的
+  NewCertRotationController => operator中这个controller同样控制了证书论转策略
+
+csr的ca证书是如下的(由controller-manager-operator处理):
+=> 还需要修改apiserver-operator的证书论转控制器 `node-system-admin-signer`
+```
+oc get secret -A | grep csr
+openshift-kube-controller-manager-operator         csr-signer-signer => 自签名
+openshift-kube-controller-manager-operator         csr-signer => 由csr-signer-signer签名, 签发csr证书
+openshift-kube-controller-manager                  csr-signer
+```
+
+## etcd证书延长
+
+gpt《openshift 4.9中etcd的证书有效期默认是3年，延长改为10年，如何改》
+
+https://github.com/openshift/cluster-etcd-operator.git
+pkg/tlshelpers/tlshelpers.go
+=> 改掉就行, 根据3年有效期这种关键字搜到的
+=> 改成10年验证生效，改出99年试试 => 成功!
+```
+etcdCertValidity = 3 * 365 * 24 * time.Hour
+```
+
+## 其他证书
+
+#### oc访问openshift apiserver 证书?
+
+默认只有两年?
+=> 后续自动更新了, 不用手动管!
+```
+oc get nodes
+Unable to connect to the server: x509: certificate has expired or is not yet valid: current time 2028-06-06T10:52:08Z is after 2027-06-07T10:44:39Z
+```
+
+#### oauth web应用证书
+
+xxx.apps.kcp4.iefcu.cn的证书
+=> 由 ingress-operator@1749268763 签发
+```
+https://oauth-openshift.apps.kcp4.iefcu.cn/healthz
+openssl s_client -connect oauth-openshift.apps.kcp4.iefcu.cn:443 -servername oauth-openshift.apps.kcp4.iefcu.cn -showcerts < /dev/null | openssl x509 -noout -text
+        Issuer: CN = ingress-operator@1749268763
+        Validity
+            Not Before: Jun  7 04:05:05 2025 GMT
+            Not After : Jun  7 04:05:06 2027 GMT
+        Subject: CN = *.apps.kcp4.iefcu.cn
+```
+
+对应 openshift-ingress
+```
+oc get secret router-ca -n openshift-ingress-operator
+```
+=> 自签名证书, 有效期两年，过期后没有续期?
+=> 删除了也没有重新创建?
+
+最后删除pods，让它重新运行，生成了新的!
+=> 但是xxx.apps证书还是没有更新。。。
+```
+oc delete pod -n openshift-ingress-operator -l name=ingress-operator
+```
+
+检查xxx.apps证书
+```
+oc get secret router-certs-default -n openshift-ingress -o jsonpath='{.data.tls\.crt}' | base64 -d | openssl x509 -noout -dates
+```
+
+删除secret居然不会续期，删除pod吧
+=> 删除pods后证书续期了。。。
+```
+oc get pods -n openshift-ingress
+```
 
 ## FAQ
 
@@ -143,7 +291,40 @@ No resources found in 1020-test namespace.
 ## kubelet证书
 
 systemctl cat kubelet , 发现参数中这个证书有效期只有1个月!
-/var/lib/kubelet/pki/kubelet-client-current.pem
+```
+sudo openssl x509 -noout -text -in /var/lib/kubelet/pki/kubelet-client-current.pem  | head -20
+        Version: 3 (0x2)
+        Serial Number:
+            b0:81:d8:c0:4c:c0:43:4c:9a:32:20:24:73:15:cf:cc
+        Signature Algorithm: sha256WithRSAEncryption
+        Issuer: CN = kube-csr-signer_@1753952283
+        Validity
+            Not Before: Sep 27 00:03:48 2025 GMT
+            Not After : Sep 29 08:58:03 2025 GMT
+        Subject: O = system:nodes, CN = system:node:master1.kcp4.iefcu.cn
+```
+
+=> 改为一年生效，但是改为99年无效?
+  => 考虑改一下ca证书的
+```
+Issuer: CN = kube-csr-signer_@1780713160
+csr-signer-signer => csr-controller-signer-ca
+
+oc get secret csr-signer-signer -n openshift-kube-controller-manager-operator -o jsonpath='{.data.tls\.crt}' | base64 -d | openssl x509 -noout -text | head
+        Subject: CN = openshift-kube-controller-manager-operator_csr-signer-signer@1780711736
+=> 好像不对? => 是更上层的自签名ca证书
+```
+
+=> 自签名 CN = openshift-kube-controller-manager-operator_csr-signer-signer@1780711736 => oc get secret csr-signer-signer -n openshift-kube-controller-manager-operator
+=>  签名 Subject: CN = kube-csr-signer_@1780711737 => oc get secret csr-signer -n openshift-kube-controller-manager-operator
+
+过滤看看是哪个secret
+```
+oc get secret -A | grep csr
+openshift-kube-controller-manager-operator         csr-signer                                                 kubernetes.io/tls                     2      372d
+openshift-kube-controller-manager-operator         csr-signer-signer                                          kubernetes.io/tls                     2      371d
+openshift-kube-controller-manager                  csr-signer                                                 kubernetes.io/tls                     2      372d
+```
 
 openshift中的kubelet源码是这个?
 https://github.com/openshift/machine-config-operator
