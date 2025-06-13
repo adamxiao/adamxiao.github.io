@@ -14,3 +14,10 @@ do
     fi
 done
 ```
+
+VDE R022C27 配置使用自动化
+
+安装xdotool => xdotool-3.20150503.1-1.el7.x86_64.rpm
+http://10.20.20.17/koji/buildinfo?buildID=18330
+
+然后使用kylin用户, export DISPLAY=:0, 就可以使用xdotool工具自动化处理了!

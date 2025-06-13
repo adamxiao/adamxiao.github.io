@@ -123,6 +123,33 @@ oc get secret kube-controller-manager-client-cert-key -n openshift-config-manage
 - kube-controller-manager
   => 最终使用证书文件
 
+服务证书:
+=> 签发两年有效期的证书...
+=> /etc/kubernetes/static-pod-resources/kube-controller-manager-pod-7/secrets/serving-cert ??
+```
+Issuer: CN = openshift-service-serving-signer@1749386113
+Validity
+    Not Before: Jun  8 12:35:12 2025 GMT
+    Not After : Aug  7 12:35:13 2027 GMT
+Subject: CN = openshift-service-serving-signer@1749386113
+
+Issuer: CN = openshift-service-serving-signer@1749386113
+Validity
+    Not Before: Jun  8 12:35:22 2025 GMT
+    Not After : Jun  8 12:35:23 2027 GMT
+Subject: CN = kube-controller-manager.openshift-kube-controller-manager.svc
+```
+
+找到是这个secret
+```
+oc get secret signing-key -n openshift-service-ca -o jsonpath='{.data.tls\.crt}' | base64 -d | openssl x509 -noout -text | head
+        Issuer: CN = openshift-service-serving-signer@1749386113
+        Validity
+            Not Before: Jun  8 12:35:12 2025 GMT
+            Not After : Aug  7 12:35:13 2027 GMT
+        Subject: CN = openshift-service-serving-signer@1749386113
+```
+
 #### 证书签名层级
 
 - 10年CA证书
@@ -232,6 +259,68 @@ oc get secret router-certs-default -n openshift-ingress -o jsonpath='{.data.tls\
 => 删除pods后证书续期了。。。
 ```
 oc get pods -n openshift-ingress
+```
+
+#### kubeconfig中的ca证书
+
+都是自签名10年ca有效期
+- kube-apiserver-localhost-signer
+- kube-apiserver-service-network-signer
+- kube-apiserver-lb-signer
+
+```
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number: 5309923250703375150 (0x49b0a31036c31b2e)
+        Signature Algorithm: sha256WithRSAEncryption
+        Issuer: OU = openshift, CN = kube-apiserver-localhost-signer
+        Validity
+            Not Before: Jun  7 18:29:00 2025 GMT
+            Not After : Jun  5 18:29:00 2035 GMT
+        Subject: OU = openshift, CN = kube-apiserver-localhost-signer
+```
+
+```
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number: 3552735194120858951 (0x314dd9d5fa9a2d47)
+        Signature Algorithm: sha256WithRSAEncryption
+        Issuer: OU = openshift, CN = kube-apiserver-service-network-signer
+        Validity
+            Not Before: Jun  7 18:29:00 2025 GMT
+            Not After : Jun  5 18:29:00 2035 GMT
+        Subject: OU = openshift, CN = kube-apiserver-service-network-signer
+```
+
+```
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number: 2971205358419176856 (0x293bd788074fed98)
+        Signature Algorithm: sha256WithRSAEncryption
+        Issuer: OU = openshift, CN = kube-apiserver-lb-signer
+        Validity
+            Not Before: Jun  7 18:29:01 2025 GMT
+            Not After : Jun  5 18:29:01 2035 GMT
+        Subject: OU = openshift, CN = kube-apiserver-lb-signer
+```
+
+#### kubeconfig中admin证书
+
+默认生成的kubeconfig中的证书
+```
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number: 7957817456628324288 (0x6e6fd8d081bbd7c0)
+        Signature Algorithm: sha256WithRSAEncryption
+        Issuer: OU = openshift, CN = admin-kubeconfig-signer
+        Validity
+            Not Before: Jun  7 18:29:00 2025 GMT
+            Not After : Jun  5 18:29:00 2035 GMT
+        Subject: O = system:masters, CN = system:admin
 ```
 
 ## FAQ
