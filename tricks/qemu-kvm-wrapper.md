@@ -48,3 +48,21 @@ logging.info(cmd)
 sys.argv[0] = '/usr/libexec/qemu-kvm.1127'
 os.execv(sys.argv[0], sys.argv)
 ```
+
+例如，直接给qemu添加串口参数，记录串口日志
+```
+sys.argv.append("-chardev")
+sys.argv.append("socket,id=charserial0,host=0.0.0.0,port=38443,server,nowait,logfile=/tmp/console.log,logappend=on")
+sys.argv.append("-device")
+sys.argv.append("isa-serial,chardev=charserial0,id=serial0")
+
+for i in range(len(sys.argv)):
+    logging.info(sys.argv[i])
+    if '-boot' == sys.argv[i]:
+        sys.argv[i+1] = 'c,menu=on,splash=/usr/lib/ksvd/etc/bootsplash.jpg,splash-time=800,strict=on'
+    if '-serial' == sys.argv[i]:
+        sys.argv[i] = '-chardev'
+        sys.argv[i+1] = 'socket,id=charserial0,host=0.0.0.0,port=38443,server,nowait,logfile=/tmp/console.log,logappend=on'
+        sys.argv.insert(i+2, "-device")
+        sys.argv.insert(i+3, "isa-serial,chardev=charserial0,id=serial0")
+```
