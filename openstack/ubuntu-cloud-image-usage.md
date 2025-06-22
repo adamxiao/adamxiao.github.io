@@ -352,6 +352,27 @@ libvirt/Ignition-config
 
 [OpenShift Assisted Installer – 让安装更加简单](https://www.talkwithtrend.com/Article/257115)
 
+## nocloud iso镜像制作
+
+创建配置文件
+```
+#cloud-config
+password: ksvd2020
+chpasswd: { expire: False }
+ssh_pwauth: True
+timezone: Asia/Shanghai
+```
+
+其实就是这些文件
+- user-data
+- meta-data
+- network-config => 可选
+
+制作引导iso镜像, 使用cloud-localds工具(cloud-init包提供)
+```
+cloud-localds xxx.iso xxx.conf
+```
+
 ## FAQ
 
 #### image cloud-init初始化后，放到另外一个虚拟机硬件中跑，密码居然不正确了，cloud-init重新初始化了?

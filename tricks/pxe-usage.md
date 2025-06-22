@@ -207,6 +207,71 @@ menuentry 'Install Ksvd-818 x86 (0408)' {
 }
 ```
 
+## pxe安装openeuler 22.03
+
+openEuler-22.03-LTS-SP3-x86_64-dvd.iso
+- 提取vmlinuz, initrd.img
+  images/pxeboot/ 目录下
+  (如果是ipxe的话，直接拷贝整个iso目录到http目录下)
+```
+mount xxx.iso /mnt/
+rsync -avh /mnt/ xxx/
+```
+- 构建repo (可选，更新rpm包才需要做)
+```
+createrepo -d -g repodata/*.comps.xml .
+```
+- 配置ipxe选项
+```
+#!ipxe
+
+goto openeuler-2203-x86-install
+
+:openeuler-2203-x86-install
+echo Starting install openEuler-22.03-LTS-SP3-x86_64-dvd.iso
+set base-url ${http-url}/openeuler-x86
+kernel ${base-url}/images/pxeboot/vmlinuz initrd=initrd.img ip=dhcp net.ifnames=0 biosdevname=0 inst.repo=${base-url} inst.ks=${base-url}/ks/ks.cfg devfs=nomount
+initrd ${base-url}/images/pxeboot/initrd.img
+boot
+```
+
+- 配置kickstart脚本自动化安装
+  设置语言
+  设置root密码
+  设置硬盘分区
+```
+lang en_US.UTF-8
+rootpw --iscrypted $y$j9T$c7fw7aHlK3QrGWAy0Y/NC.a9$zHFiZgjt9zMAjPHmc17k9M1WjfF1yKeTF0R2QRaHnQ/
+
+# Disk partitioning (critical fixes below)
+clearpart --all --initlabel --drives=vda
+ignoredisk --only-use=vda
+#clearpart --none --initlabel
+
+# Partition scheme (adjusted sizes)
+part /boot --fstype="ext4" --ondisk=vda --size=1024 --asprimary
+part /boot/efi --fstype="efi" --ondisk=vda --size=1024 --fsoptions="umask=0077,shortname=winnt"
+part pv.111 --fstype="lvmpv" --ondisk=vda --size=409600 --grow --asprimary  # Reduced to 400GB
+
+# LVM configuration
+volgroup openeuler --pesize=4096 pv.111
+logvol / --fstype="ext4" --size=204800 --name=root --grow --vgname=openeuler  # 200GB
+logvol /opt/suzaku/data --fstype="xfs" --size=102400 --name=opt_suzaku_data --vgname=openeuler  # 100GB
+logvol /var/lib/docker --fstype="xfs" --size=51200 --name=var_lib_docker --vgname=openeuler  # 50GB
+```
+
+其他配置
+```
+# Post-installation scripts
+%post
+mkdir -p /etc/docker
+sed -i '/\/opt\/suzaku\/data/ s/defaults /defaults,sync /' /etc/fstab
+%end
+
+# Reboot after installation
+reboot
+```
+
 ## pxe安装ubuntu
 
 关键字《centos pxe install ubuntu》
@@ -329,6 +394,10 @@ sanboot ${root-path}
 ```
 
 ## FAQ
+
+#### dracut-initque timeout
+
+可能是repo参数不对。。。 openeuler就是跟centos7不一样，需要配置inst.repo=xxx
 
 #### PXE-09 I/O buffer allocate failed
 
