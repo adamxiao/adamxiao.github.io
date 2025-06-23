@@ -262,6 +262,9 @@ logvol /var/lib/docker --fstype="xfs" --size=51200 --name=var_lib_docker --vgnam
 
 其他配置
 ```
+selinux --disabled
+firewall --disabled
+
 # Post-installation scripts
 %post
 mkdir -p /etc/docker
@@ -271,6 +274,9 @@ sed -i '/\/opt\/suzaku\/data/ s/defaults /defaults,sync /' /etc/fstab
 # Reboot after installation
 reboot
 ```
+
+Installation Destination kickstart infulicent
+=> 硬盘太小了，kickstart配置的分区格式至少要更大的空间才行!
 
 ## pxe安装ubuntu
 
