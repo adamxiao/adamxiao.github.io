@@ -265,6 +265,8 @@ logvol /var/lib/docker --fstype="xfs" --size=51200 --name=var_lib_docker --vgnam
 selinux --disabled
 firewall --disabled
 
+network --hostname=node1 --bootproto=static --ip=10.90.6.190 --netmask=255.255.255.0 --gateway=10.90.6.1 --nameserver=192.168.168.168
+
 # Post-installation scripts
 %post
 mkdir -p /etc/docker
@@ -277,6 +279,7 @@ reboot
 
 Installation Destination kickstart infulicent
 => 硬盘太小了，kickstart配置的分区格式至少要更大的空间才行!
+  => 使用ctrl+alt+F2进入shell模式, 看看日志文件? /tmp/anaconda.log
 
 ## pxe安装ubuntu
 
