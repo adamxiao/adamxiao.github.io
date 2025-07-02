@@ -34,6 +34,26 @@ minicom -D /dev/ttyS0 -b 115200 -8 -w -c on -R utf8
 * -c on: 启动minicom的时候，显示颜色：
 这样，启动之后我们会发现显示的内容不是黑白的了。
 
+=> 接入华为交换机, 只有输出, 无法输入, 发现minicom的`Hardware Flow Control` 默认为Yes导致的
+`Ctrl-A o` -> `Serial port setup` 配置这个参数
+华为交换机默认**无流控**，但若终端启用了流控（如RTS/CTS），会阻塞输入：
+
+- Hardware Flow Control: No
+- Software Flow Control: No
+
+
+华为交换机参数
+```
+minicom -D /dev/ttyUSB0 -b 9600 -8
+```
+
+- 波特率: 9600
+- 数据位: 8
+- 停止位: 1
+- 奇偶校验: 无
+- 流控制: 无
+
+
 ## iterm使用串口
 
 关键字《iterm 配置串口》

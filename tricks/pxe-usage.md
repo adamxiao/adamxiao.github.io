@@ -242,6 +242,7 @@ boot
 ```
 lang en_US.UTF-8
 rootpw --iscrypted $y$j9T$c7fw7aHlK3QrGWAy0Y/NC.a9$zHFiZgjt9zMAjPHmc17k9M1WjfF1yKeTF0R2QRaHnQ/
+# root passwd ksvd@2025
 
 # Disk partitioning (critical fixes below)
 clearpart --all --initlabel --drives=vda

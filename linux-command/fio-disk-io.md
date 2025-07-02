@@ -62,6 +62,29 @@ fio --filename=adam.img -iodepth=64 -ioengine=libaio --direct=1 --rw=randwrite \
 fio测试磁盘性能
 https://m.linuxidc.com/Linux/2017-04/143251.htm
 
+## 华瑞存储测试
+
+```
+[global]
+direct=1
+ioengine=libaio
+time_based
+
+bs=4k
+rw=randwrite
+iodepth=8
+runtime=60
+numjobs=8
+
+[job1]
+filename=/dev/dm-15
+
+[job2]
+filename=/dev/dm-16
+
+[job3]
+filename=/dev/dm-17
+```
 
 ## 测试配置
 
