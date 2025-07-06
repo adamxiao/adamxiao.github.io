@@ -282,6 +282,97 @@ Installation Destination kickstart infulicent
 => 硬盘太小了，kickstart配置的分区格式至少要更大的空间才行!
   => 使用ctrl+alt+F2进入shell模式, 看看日志文件? /tmp/anaconda.log
 
+先DHCP探测，后静态设置网络(高级技巧)
+```
+%include /tmp/network.ks
+%pre --interpreter=/bin/bash
+#!/bin/bash
+
+# 1. get nic from default route
+ACTIVE_NIC=$(ip route show default | grep -w default | head -1 | awk '{print $5}')
+
+# maybe kylin bug, lost default route from dhcp
+if [ -z "$ACTIVE_NIC" ]; then
+    ACTIVE_NIC=$(ip route | grep link | head -1 | awk '{print $3}')
+fi
+
+# No default route, using first NIC
+if [ -z "$ACTIVE_NIC" ]; then
+  ACTIVE_NIC=$(ip -o link show | awk -F': ' '{print $2}' | grep -v 'lo' | head -1)
+  echo "No default route, using first NIC: $ACTIVE_NIC" >> /tmp/network-debug.log
+fi
+
+# 2. get ip address from dhcp
+if ! ip -4 addr show $ACTIVE_NIC | grep -q 'inet'; then
+  dhclient -v $ACTIVE_NIC 2>&1 | tee -a /tmp/dhclient.log
+fi
+# maybe kylin bug, lost default route from dhcp
+if ! ip route | grep -q 'default via'; then
+  dhclient -v $ACTIVE_NIC 2>&1 | tee -a /tmp/dhclient.log
+fi
+
+#dhclient eth0 2>/dev/null
+
+IP=$(ip -4 addr show $ACTIVE_NIC | grep 'inet ' | head -1 | awk '{print $2}' | cut -d/ -f1)
+NETMASK=$(ifconfig $ACTIVE_NIC | grep 'netmask' | awk '{print $4}')
+GATEWAY=$(ip route | grep 'default via' | head -1 | awk '{print $3}')
+DNS_SERVERS=$(grep 'nameserver' /etc/resolv.conf | awk '{print $2}' | tr '\n' ',' | sed 's/,$//')
+HOSTNAME=$(hostnamectl --transient 2>/dev/null || echo "node0")
+
+cat > /tmp/network.ks <<EOF
+network \
+  --bootproto=static \
+  --ip=$IP \
+  --netmask=$NETMASK \
+  --gateway=$GATEWAY \
+  --nameserver=$DNS_SERVERS \
+  --hostname=$HOSTNAME
+EOF
+%end
+```
+
+自动选择硬盘，自动lvm分区
+```
+%include /tmp/partition
+%pre
+# 选择第一个非可移动驱动器
+SYS_DIR="/sys/block"
+ROOT_DRIVE=""
+
+# sd: SCSI磁盘
+# hd: IDE磁盘
+# vd: virtio磁盘
+for dev in $SYS_DIR/vd? $SYS_DIR/nvme* $SYS_DIR/sd? $SYS_DIR/hd?
+do
+    if [ -d $dev ]; then
+        REMOVABLE=$(cat $dev/removable 2>/dev/null || echo "0")
+        if [ "$REMOVABLE" = "0" ]; then
+            ROOT_DRIVE=${dev##*/}
+            break
+        fi
+    fi
+done
+
+# 如果没有非可移动驱动器，则选择第一个不是安装介质的驱动器
+if [ "$ROOT_DRIVE" = "" ]; then
+    REPO=$(mount | grep "/run/install/repo" | awk '{print $1}')
+    for dev in /dev/vd? /dev/nvme* /dev/sd? /dev/hd?
+    do
+        if ! [[ $REPO =~ ${dev}[0-9]* ]]; then
+            ROOT_DRIVE=${dev##*/}
+            break
+        fi
+    done
+fi
+
+cat << EOF > /tmp/partition
+ignoredisk --only-use=$ROOT_DRIVE
+autopart --type=lvm
+clearpart --all --initlabel --drives=$ROOT_DRIVE
+EOF
+%end
+```
+
 ## pxe安装ubuntu
 
 关键字《centos pxe install ubuntu》
