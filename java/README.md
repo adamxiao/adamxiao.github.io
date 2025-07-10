@@ -2,6 +2,13 @@
 
 编译工程
 
+## 反编译class
+
+解压jar包, `unzip xxx.jar`
+
+反编译class文件, `javap xxx.class`
+javap -c -v xxx.class
+
 ## 编译jar包
 
 使用了mvn镜像仓库配置编译(可以去除,直接使用外网镜像仓库)

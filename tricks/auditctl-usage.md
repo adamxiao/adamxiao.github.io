@@ -1,5 +1,12 @@
 # auditctl使用
 
+## 监控文件删除
+
+监控文件wa操作
+```
+auditctl -w /xxx/xxx -p aw -k adam_delete
+```
+
 ## ioctl系统调用
 
 https://docs.redhat.com/zh-cn/documentation/red_hat_enterprise_linux/8/html/security_hardening/understanding-audit-log-files_auditing-the-system#understanding-audit-log-files_auditing-the-system

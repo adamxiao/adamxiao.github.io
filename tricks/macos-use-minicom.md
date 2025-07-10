@@ -53,6 +53,26 @@ minicom -D /dev/ttyUSB0 -b 9600 -8
 - 奇偶校验: 无
 - 流控制: 无
 
+#### 华为交换机配置
+
+配置trunk, access口
+```
+system-view
+interface GigabitEthernet 0/0/19
+display this
+
+port-security
+port-isolate
+port-mirroring
+
+port link-type trunk
+port trunk allow-pass vlan 2 100
+
+port link-type access
+port default vlan 2
+
+quit
+```
 
 ## iterm使用串口
 

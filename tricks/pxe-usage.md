@@ -494,6 +494,100 @@ set keep-san 1
 sanboot ${root-path}
 ```
 
+## cobbler安装使用
+
+#### 安装
+
+cobbler教程
+
+https://cloud.tencent.com/developer/article/1180830
+
+基于openeuler 22.03
+```
+yum -y install cobbler cobbler-web dhcp tftp-server pykickstart httpd
+```
+
+启动服务
+```
+systemctl enable --now httpd
+systemctl enable --now cobblerd
+```
+
+检查Cobbler的配置
+```
+cobbler check
+```
+
+看着上面的结果，一个一个解决。
+```
+# server，Cobbler服务器的IP。
+sed -i 's/server: 127.0.0.1/server: 10.90.3.30/' /etc/cobbler/settings
+
+# next_server，如果用Cobbler管理DHCP，修改本项，作用不解释，看kickstart。
+sed -i 's/next_server: 127.0.0.1/next_server: 10.90.3.30/' /etc/cobbler/settings
+
+# 用Cobbler管理DHCP
+sed -i 's/manage_dhcp: 0/manage_dhcp: 1/' /etc/cobbler/settings
+
+# 防止循环装系统，适用于服务器第一启动项是PXE启动。
+sed -i 's/pxe_just_once: 0/pxe_just_once: 1/' /etc/cobbler/settings
+```
+
+设置新装系统的默认root密码123456
+```
+openssl passwd -6 -salt 'oldboy' '123456'
+```
+
+下载boot loaders
+```
+cobbler get-loaders  # 会自动从官网下载
+ls /var/lib/cobbler/loaders/
+```
+=> https://www.cnblogs.com/hukey/p/18024800
+=> download loaders: https://github.com/hbokh/cobbler-loaders/blob/main/files/cobbler-loaders.tar.gz
+
+2.3 配置 DHCP
+修改配置文件 /etc/cobbler/dhcp.template
+```
+subnet 10.0.0.0 netmask 255.255.255.0 {
+     option routers             10.0.0.2;
+     option domain-name-servers 10.0.0.2;
+     option subnet-mask         255.255.255.0;
+     range dynamic-bootp        10.0.0.100 10.0.0.200;
+```
+
+2.4 同步 cobbler 配置
+```
+cobbler sync   # 同步所有配置，可以仔细看一下sync做了什么。
+```
+
+3.Cobble  的命令行管理
+
+3.2 导入镜像
+```
+mount xxx.iso /mnt
+cobbler import --path=/mnt/ --name=Kylin344A-x86_64 --arch=x86_64 --breed=openeuler
+# --path 镜像路径
+# --name 为安装源定义一个名字
+# --arch 指定安装源是32位、64位、ia64, 目前支持的选项有: x86│x86_64│ia64
+```
+
+报错签名
+```
+No signature matched in /var/www/cobbler/distro_mirror/Kylin344A-x86_64
+Exception occured: <class 'cobbler.cexceptions.CX'>
+Exception value: 'No signature matched in /var/www/cobbler/distro_mirro /Kylin344A-x86_64'
+```
+
+手动创建发行版
+```
+cobbler distro add --name=Kylin344A-x86_64 --kernel=/var/www/cobbler/distro_mirror/Kylin344A-x86_64/images/pxeboot/vmlinuz --initrd=/var/www/cobbler/distro_mirror/Kylin344A-x86_64/images/pxeboot/initrd.img --arch=x86_64 --breed=openeuler
+```
+
+cobbler distro report
+
+gpt《cobbler修改安装时的内核参数, 例如ks=xx改为inst.ks》
+
 ## FAQ
 
 #### dracut-initque timeout
