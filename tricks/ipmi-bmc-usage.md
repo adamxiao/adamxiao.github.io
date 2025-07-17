@@ -120,6 +120,15 @@ ipmitool lan set 1 netmask 255.255.255.0 # 设置 IPMI 子网掩码。
 ipmitool lan set 1 defgw ipaddr 10.42.223.254 # 设置 IPMI 网关。
 ```
 
+## ipmi设置启动顺序
+
+```
+ipmitool -I lanplus -U admin -P password -H 10.30.11.113 -p 623 power status
+ipmitool -I lanplus -U admin -P password -H 10.30.11.113 -p 623 chassis bootdev pxe
+ipmitool -I lanplus -U admin -P password -H 10.30.11.113 -p 623 chassis power on
+ipmitool -I lanplus -U admin -P password -H 10.30.11.113 -p 623 chassis power reset
+```
+
 ## FAQ
 
 #### 旧版本iKVM使用

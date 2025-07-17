@@ -225,6 +225,11 @@ Certificate:
 
 #### 使用openssl进行aes256和base64加解密
 
+remap.config 解密 ksvd@2019
+```
+openssl enc -d -aes-256-cbc -in remap.config -md sha1
+```
+
 参考 https://wiki.openssl.org/index.php/Enc
 ```
 # enc
