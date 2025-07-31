@@ -129,6 +129,19 @@ ipmitool -I lanplus -U admin -P password -H 10.30.11.113 -p 623 chassis power on
 ipmitool -I lanplus -U admin -P password -H 10.30.11.113 -p 623 chassis power reset
 ```
 
+## ipmi重启mc
+
+冷重启, 重置BMC, 其他选项warm(热重启，保留部分状态)
+```
+ipmitool -I lanplus -U admin -P password -H x.x.x.x -p 623 mc reset cold # 验证生效
+ipmitool -I lanplus -U admin -P password -H x.x.x.x -p 623 mc info | grep Uptime # 检查启动时间, 验证没有?
+```
+
+飞腾5000C BMC恢复出厂设置:
+```
+ipmitool raw 0x32 0x7
+```
+
 ## FAQ
 
 #### 旧版本iKVM使用

@@ -68,6 +68,90 @@ ExitOnForwardFailure yes
 ExitOnForwardFailure表示端口转发失败时退出ssh。因为有可能服务器上要监听的端口被占用了，可能导致转发失败，这时候自动退出，systemctl才会重新执行ssh。如果不退出，systemctl就会认为ssh转发成功了，导致ssh进程存在，但是转发通道实际上没有建立。
 保存之后在客户端重启ssh: `sudo systemctl restart ssh`
 
+#### ssh random service
+
+/etc/systemd/system/random-ssh-link.service
+```
+[Unit]
+Description=Check API and Control ServerA Service
+After=network.target
+
+[Service]
+Type=simple
+User=root
+#WorkingDirectory=/opt
+ExecStart=/usr/bin/python3 /usr/bin/random-ssh-link.py
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+```
+
+random-ssh-link.py
+```
+#!/usr/bin/env python3
+
+#import requests
+import socket
+import subprocess
+import random
+import time
+
+# 服务器的HTTP接口URL
+API_URL = 'http://x.x.x.x:8080/dir1/func1'
+
+#def check_api():
+#    try:
+#        response = requests.get(API_URL)
+#        print(response)
+#        if response.status_code == 200 and response.text.strip().lower() == 'true':
+#            return True
+#        else:
+#            return False
+#    except requests.RequestException as e:
+#        #print(f"Error: {e}")
+#        return False
+
+# 目标服务器信息
+TARGET_HOST = 'x.x.x.x'
+TARGET_PORT = 8080  # 替换为要检查的端口号
+
+def check_port_open(host, port):
+    """检查给定的主机和端口是否开放"""
+    try:
+        with socket.create_connection((host, port), timeout=5) as sock:
+            return True
+    except (socket.timeout, socket.error):
+        return False
+
+def control_service(action):
+    # 根据你的操作系统和服务名修改这条命令。
+    # 这里假设是Linux系统并且服务名为ssh1。
+    command = f'systemctl {action} ssh1'
+    try:
+        result = subprocess.run(command, shell=True, check=True,
+                               stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        print(f'Service action "{action}" completed with output: {result.stdout.decode()}')
+    except subprocess.CalledProcessError as e:
+        print(f'Failed to {action} service: {e.stderr.decode()}')
+
+def main():
+    while True:
+        #if check_api():
+        if check_port_open(TARGET_HOST, TARGET_PORT):
+            control_service('start')
+        else:
+            control_service('stop')
+
+        # 随机选择5到10分钟之间的等待时间
+        wait_time = random.randint(5, 7) * 60  # 转换为秒
+        print(f"Waiting for {wait_time / 60} minutes before next check.")
+        time.sleep(wait_time)
+
+if __name__ == "__main__":
+    main()
+```
+
 # ssh sock5 代理
 
 代理端口1080
