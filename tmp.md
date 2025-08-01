@@ -8,6 +8,24 @@ https://roadmap.sh/golang
 
 [cursor 让程序员体验当甲方爸爸的快乐](https://juejin.cn/post/7420088865463877659)
 
+#### linux设置网络策略，访问一个特定的ip的指定端口，走特定的网关
+
+方法一：使用 ip route + iptables 方案
+```
+# 创建自定义路由表（例如表ID 100）
+echo "100 custom_gw" >> /etc/iproute2/rt_tables
+
+# 添加路由规则到新表
+ip route add default via 192.168.0.254 dev eth0 table custom_gw
+=> 注意选择正确的网卡和网关
+
+# 添加策略路由：来自本机的流量（可选加源IP）使用新表
+ip rule add from all to 192.168.1.100 dport 8080 lookup custom_gw
+```
+
+方法二：使用 nftables（现代替代方案）
+=> 待后续了解学习
+
 #### ollama模型导出导入离线安装
 
 ollama模型镜像导出，方便离线安装模型
@@ -291,7 +309,8 @@ ovs-ofctl add-flow mdvs2 "table=5,priority=100,dl_src=6c:b3:11:33:da:df actions=
 ovs-ofctl add-flow mdvs2 "table=5,priority=100,dl_src=00:91:10:00:28:c5 actions=drop"
 ovs-ofctl add-flow mdvs2 "table=5,priority=100,dl_src=52:54:64:00:00:08 actions=drop"
 ovs-ofctl add-flow mdvs2 "table=5,priority=100,dl_src=90:e2:fc:b1:3c:9b actions=drop"
-ovs-ofctl add-flow mdvs2 "table=5,priority=99,udp,src_port=67 actions=drop" => TODO: test
+ovs-ofctl add-flow mdvs2 "table=5,priority=99,udp,src_port=67 actions=drop" => udp 没有src_port
+ovs-ofctl add-flow mdvs2 "table=5,priority=99,udp,udp_src=67,udp_dst=68,nw_src=10.31.1.192,actions=drop" # ok
 ovs-ofctl add-flow mdvs2 "priority=100,dl_src=8c:2a:8e:84:64:35 actions=drop"
 ```
 

@@ -74,6 +74,18 @@ port default vlan 2
 quit
 ```
 
+#### 华为S5700交换机重置出厂设置
+
+重置密码, 问AI得到答案验证ok
+
+- 1.重启设备进入BootROM
+  - 交换机上电启动时，当出现"Press Ctrl+B to enter BootROM"提示时，3秒内按下Ctrl+B
+  - 输入默认密码：Admin@huawei.com（注意大小写）
+- 2.清除配置文件
+  输入 7. Clear Configuration File
+- 3.恢复启动
+  输入 1. Boot with default mode
+
 ## iterm使用串口
 
 关键字《iterm 配置串口》
