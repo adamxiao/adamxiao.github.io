@@ -7,6 +7,23 @@
 auditctl -w /xxx/xxx -p aw -k adam_delete
 ```
 
+## 监控信号
+
+linux如何监控进程收到的TERM信号，以及USR2信号
+
+```
+sudo auditctl -a always,exit -S kill -S tkill -S tgkill -F arch=b64 -F "a1=15" -F "a1=12"  # 监控 TERM(15) 和 USR2(12)
+     auditctl -a always,exit -F arch=b64 -S kill -S tkill -S tgkill -F a1=15 -F a1=12 # => ok
+     auditctl -a always,exit -F arch=b64 -S kill -S tkill -S tgkill -S rt_sigqueueinfo -S rt_tgsigqueueinfo -F a1=15 -F a1=12
+     auditctl -a always,exit -F arch=b64 -S kill -S tkill -S tgkill -S rt_sigqueueinfo -S rt_tgsigqueueinfo -F a1=15 -k adamkill;
+     auditctl -a always,exit -F arch=b64 -S kill -S tkill -S tgkill -S rt_sigqueueinfo -S rt_tgsigqueueinfo -F a1=12 -k adamkill2
+```
+
+查看审计日志
+```
+sudo ausearch -sc kill -i | grep -E "pid=12345|sig=15|sig=12"
+```
+
 ## ioctl系统调用
 
 https://docs.redhat.com/zh-cn/documentation/red_hat_enterprise_linux/8/html/security_hardening/understanding-audit-log-files_auditing-the-system#understanding-audit-log-files_auditing-the-system

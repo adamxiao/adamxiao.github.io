@@ -426,6 +426,14 @@ rsync -avh /mnt/ $remote_server:/data/ubuntu-2004
 
 - [Set up PXE Server on Ubuntu20.04 and Window 10](https://medium.com/jacklee26/set-up-pxe-server-on-ubuntu20-04-and-window-10-e69733c1de87)
 
+https://etesami.github.io/2021/01/03/install-ubuntu-20-04-uefi-pxe.html
+=> 待尝试
+```
+ KERNEL vmlinuz
+ INITRD initrd
+ APPEND root=/dev/ram0 ramdisk_size=1500000 ip=dhcp url=http://<IP-ADDR>/ubuntu2004/ubuntu-20.04.1-live-server-amd64.iso
+```
+
 ## pxe安装windows
 
 => 未尝试成功，暂放弃, 暂时可以使用dd到硬盘上的方式pxe安装windows
