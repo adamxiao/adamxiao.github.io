@@ -243,6 +243,70 @@ iSCSI术语
 
 - iSNS:  internet storage name service ,一个命名服务，用来让initiator发现target，较少使用
 
+#### iscsiadm 连接使用
+
+```
+iscsiadm -m node
+10.90.17.72:3260,4294967295 iqn.2017-01.cn.com.kylinsec:node1-dom1-volume-2efc0b2c-58d8-43a6-ab9b-a6664848c9d4
+10.90.17.72:3260,4294967295 iqn.2017-01.cn.com.kylinsec:node1-dom1-volume-ad3b96c3-7935-4703-bddb-2b38d0e4efd5 => 
+10.90.17.72:3260,4294967295 node1-dom1-volume-ad3b96c3-7935-4703-bddb-2b38d0e4efd5 => 
+```
+
+```
+[ssh_10.90.6.122] root@node1: 7bc35a11-46c0-3263-0e10-ca4b2b367a0b$iscsiadm -m session
+tcp: [36] 10.90.17.72:3260,1 iqn.2017-01.cn.com.kylinsec:node1-dom1-volume-ad3b96c3-7935-4703-bddb-2b38d0e4efd5 (non-flash) => 这个
+tcp: [46] 10.90.17.72:3260,1 iqn.2017-01.cn.com.kylinsec:node1-dom1-volume-2efc0b2c-58d8-43a6-ab9b-a6664848c9d4 (non-flash)
+```
+
+```
+[10:0:0:0]   disk    iqn.2017-01.cn.com.kylinsec:node1-dom1-volume-ad3b96c3-7935-4703-bddb-2b38d0e4efd5,t,0x1  /dev/sdf   26631323662376238  82.6GB
+[11:0:0:0]   disk    iqn.2017-01.cn.com.kylinsec:node1-dom1-volume-2efc0b2c-58d8-43a6-ab9b-a6664848c9d4,t,0x1  /dev/sdg   23938653965363861   107GB
+```
+
+iscsiadm -m node -T node1-dom1-volume-ad3b96c3-7935-4703-bddb-2b38d0e4efd5 -p 10.90.17.72:3260 --login
+=> 报错 19
+
+=> 待验证
+```
+# 设置会话认证
+iscsiadm -m node -T node1-dom1-volume-ad3b96c3-7935-4703-bddb-2b38d0e4efd5 -p 10.90.17.72:3260 -o update -n node.session.auth.authmethod -v CHAP
+iscsiadm -m node -T node1-dom1-volume-ad3b96c3-7935-4703-bddb-2b38d0e4efd5 -p 10.90.17.72:3260 -o update -n node.session.auth.username -v node1
+iscsiadm -m node -T node1-dom1-volume-ad3b96c3-7935-4703-bddb-2b38d0e4efd5 -p 10.90.17.72:3260 -o update -n node.session.auth.password -v S9wyAgqDQGASz5g8
+```
+
+退出会话
+```
+iscsiadm -m node -T node1-dom1-volume-ad3b96c3-7935-4703-bddb-2b38d0e4efd5 -p 10.90.17.72:3260 -u
+iscsiadm: No matching sessions found
+
+[ssh_10.90.6.122] root@node1: 7bc35a11-46c0-3263-0e10-ca4b2b367a0b$iscsiadm -m session
+tcp: [36] 10.90.17.72:3260,1 iqn.2017-01.cn.com.kylinsec:node1-dom1-volume-ad3b96c3-7935-4703-bddb-2b38d0e4efd5 (non-flash)
+tcp: [46] 10.90.17.72:3260,1 iqn.2017-01.cn.com.kylinsec:node1-dom1-volume-2efc0b2c-58d8-43a6-ab9b-a6664848c9d4 (non-flash)
+
+=> 使用合适的target
+iscsiadm -m node -T iqn.2017-01.cn.com.kylinsec:node1-dom1-volume-ad3b96c3-7935-4703-bddb-2b38d0e4efd5 -p 10.90.17.72:3260 -u
+Logging out of session [sid: 36, target: iqn.2017-01.cn.com.kylinsec:node1-dom1-volume-ad3b96c3-7935-4703-bddb-2b38d0e4efd5, portal: 10.90.17.72,3260]
+Logout of [sid: 36, target: iqn.2017-01.cn.com.kylinsec:node1-dom1-volume-ad3b96c3-7935-4703-bddb-2b38d0e4efd5, portal: 10.90.17.72,3260] successful.
+```
+
+```
+iscsiadm -m discovery -t st -p 10.90.17.72:3260
+iscsiadm -m node -T iqn.2017-01.cn.com.kylinsec:node1-dom1-volume-ad3b96c3-7935-4703-bddb-2b38d0e4efd5 -p 10.90.17.72:3260 -l
+
+# 重新发现目标并设置认证
+iscsiadm -m discovery -t st -p 10.90.17.72:3260 -o update -n discovery.sendtargets.auth.authmethod -v CHAP
+iscsiadm -m discovery -t st -p 10.90.17.72:3260 -o update -n discovery.sendtargets.auth.username -v node1
+iscsiadm -m discovery -t st -p 10.90.17.72:3260 -o update -n discovery.sendtargets.auth.password -v S9wyAgqDQGASz5g8
+
+
+iscsiadm -m node -T iqn.2017-01.cn.com.kylinsec:node1-dom1-volume-ad3b96c3-7935-4703-bddb-2b38d0e4efd5 -p 10.90.17.72:3260 -o update -n node.session.auth.authmethod -v CHAP
+iscsiadm -m node -T iqn.2017-01.cn.com.kylinsec:node1-dom1-volume-ad3b96c3-7935-4703-bddb-2b38d0e4efd5 -p 10.90.17.72:3260 -o update -n node.session.auth.username -v node1
+iscsiadm -m node -T iqn.2017-01.cn.com.kylinsec:node1-dom1-volume-ad3b96c3-7935-4703-bddb-2b38d0e4efd5 -p 10.90.17.72:3260 -o update -n node.session.auth.password -v MAL3zJf7SEQRUmTe
+S9wyAgqDQGASz5g8
+```
+
+./cinder-manage.py prepare-cinder-volume -i ad3b96c3-7935-4703-bddb-2b38d0e4efd5
+=> 原来是target没有server iqn导致?
 
 #### iscsiadm使用
 

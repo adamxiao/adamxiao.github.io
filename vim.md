@@ -120,6 +120,32 @@ hardy: 1. 符号快速定位 2. 自动补全 3.文件符号模糊搜索
 
 ## 其他
 
+#### vim搜索中文
+
+=> 但是无法搜索中文乱码...
+
+可以用vimgrep
+```
+/[^\x00-\xff]\+
+```
+
+发现还有这个命令，可以搜索中文
+```
+git grep -nP '[\p{Han}]' --
+git grep -nP '[一-鿿]'
+git grep -P '[\x{4e00}-\x{9fff}]' # 低版本不行..
+```
+
+还有其他工具支持
+```
+rg -n '\p{Han}' 
+```
+
+使用perl脚本
+```
+perl -CSD -ne 'print if /[\x{4e00}-\x{9fff}]/' ha.cpp
+```
+
 #### vim urldecode
 
 https://vi.stackexchange.com/questions/24547/decode-url-percent-decoding

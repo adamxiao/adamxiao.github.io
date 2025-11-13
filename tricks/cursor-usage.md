@@ -71,6 +71,23 @@ project/
     .cursor/rules/      # 前端特定规则
 ```
 
+user rules (json_ola@hotmail.com)
+=> 云配置, 多处登录都生效
+- go语言代码空行不要tab
+- 修改代码需要确认
+- 不要修改编码格式
+- 新增的所有注释使用中文
+- Always respond in Chinese-simplified
+
+c++项目规则
+生成项目级别的rules：
+- 函数的大括号新起一行
+- 每行结尾不要有空格或者tab
+
+### cursor index
+
+给文件建立索引
+
 ### 其他
 
 了解使用cursor可以做什么事情:

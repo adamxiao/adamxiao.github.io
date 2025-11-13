@@ -6,6 +6,8 @@
 
 kolla-ansible --help
 
+构建cinder镜像方法，见kolla-build-image中的文档
+
 ## 参考kolla安装的yoga版本，运行cinder服务
 
 #### KSVD环境准备

@@ -24,6 +24,50 @@ iptables -A FORWARD -i eth0 -s 192.168.1.3 -p tcp --sport 3306 -j ACCEPT
 sudo iptables -t nat -A OUTPUT -p tcp --dport 80 -j REDIRECT --to-ports 3128
 sudo iptables -t nat -A OUTPUT -p tcp --dport 80 -j DNAT --to 10.20.3.18:3128
 
+#### 基于目的端口的策略路由
+
+gpt: 节点A访问目的ip地址B，可以配置基于端口的路由策略吗？例如访问指定端口8080，走路由a，访问其他端口，走路由b
+
+=> deepseek回答有效，验证成功，yuanbao的有问题
+```
+ip rule add from all to 目的地B dport 8080 table rt_b
+```
+
+=> 下面配置无效, **在 OUTPUT链中标记数据包（MARK）时，Linux 的路由决策已经完成**，因此这种方式可能无法生效。这是因为 Linux 网络栈的数据包处理流程中，路由查找（route lookup）发生在 mangle/OUTPUT链之前。
+
+- 1. 应用程序发送数据包 → 
+- 2. **路由决策（第一次路由查找，基于 `main` 表）** → 
+- 3. `mangle/OUTPUT`（在这里标记数据包 MARK） → 
+- 4. `nat/OUTPUT` → 
+- 5. **策略路由（基于 `ip rule` 和 `fwmark` 的第二次路由查找）**
+
+问题：在第 2 步时，内核已经根据 main路由表决定了出口网关和接口，后续的 MARK操作虽然能影响策略路由，但无法改变最初的出口选择（除非使用更早的干预点）。
+策略路由生效时机：ip rule基于 fwmark的路由查找是第二次决策，但如果数据包已经被决定从某个接口发出，可能不会重新路由。
+
+linux系统可以做如下配置
+
+- 1.创建多路由表（如table 100和table 200）。
+- 2.使用iptables/nftables标记数据包：
+```
+iptables -A OUTPUT -d [目的IP_B] -p tcp --dport 8080 -j MARK --set-mark 100
+```
+- 3.基于标记选择路由表：
+```
+ip rule add fwmark 100 table 100
+ip route add default via [路由a_网关] table 100
+ip route add default via [路由b_网关] table main
+```
+
+路由跟踪测试
+=> 无效!... 不受上述规则影响! => 为啥不受策略路由影响? 可能是没理解清楚traceroute的原理
+```
+traceroute -T -p 8080 [目的IP_B]  # 测试8080端口路径
+```
+抓包分析
+```
+tcpdump -i eth0 "host [目的IP_B] and port 8080"  # 确认流量是否按预期路由
+```
+
 #### DNAT目的地址转换
 
 例如把访问ip1的tcp 80流量转到new_ip2上去, 如下:

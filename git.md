@@ -196,7 +196,21 @@ git checkout @{-1}
 
 * git push origin tag_name
 
+* git reflog 找回误删的commit
+
+#### git submodule commit log
+
+gpt: 如何查询两个commit之前，是哪个commit修改了submodule的commit?
+
+方法1：使用 git log 查看子模块变更
+```
+# 更详细的查看，显示子模块的commit hash变化
+git log -p --submodule=diff -- KSVD/src/uniqb-runtime-server
+```
+
 #### git submodule独立化
+
+=> 否则单纯给子模块目录重命名之后，git checkout新分支会有问题。。。
 
 git  submodule 怎么独立抽取为还有完整.git目录的独立目录，不请求远端仓库，只用本地仓库
 
