@@ -8,6 +8,10 @@ https://roadmap.sh/golang
 
 [cursor 让程序员体验当甲方爸爸的快乐](https://juejin.cn/post/7420088865463877659)
 
+摄像头监控自己的工位 => 自定义摄像头服务器，操作摄像头的api接口? 或者就是usb摄像头
+
+[当上传不再只是 /upload，我们是怎么设计大文件上传的](https://juejin.cn/post/7571355989133099023)
+
 #### linux设置网络策略，访问一个特定的ip的指定端口，走特定的网关
 
 方法一：使用 ip route + iptables 方案

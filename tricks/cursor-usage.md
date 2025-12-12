@@ -50,6 +50,12 @@ Cursor+MCP实现用嘴操纵数据库
 https://modelscope.cn/mcp
 看看有哪些MCP可以用
 
+browser-use-MCP-Server
+
+https://juejin.cn/post/7492271292155756583
+browser-use 是一个让 AI 操作浏览器的工具。你只需给出指令，AI 就能帮你完成浏览器操作任务。browser-use 官方开发了 mcp-server-browser-use，通过这个 MCP，其他软件也能调用 browser-use 来操作浏览器。下面的画面展示了我在 Cline 中让 AI 打开 Google 并找到 MCP 官网的过程，全程我完全没有操作浏览器，都是AI自主完成的。
+
+
 ### cursor rules
 
 https://docs.cursor.com/zh/context/rules
@@ -129,6 +135,16 @@ cursor登录
   => 主页
 - authenticator.cursor.sh
   => 跳转到这里登录的
+
+## cursor cli
+
+关键字《cursor cli 怎么做计划》
+
+https://cursor.com/cn/docs/cli/overview
+
+#### 是否有memory? 如何查看
+
+#### 是否共享cursor rules?
 
 ## cursor功能测试
 

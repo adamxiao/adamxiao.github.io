@@ -143,6 +143,8 @@ refer: http://juanmanueldehoyos.com/synchronize-git-repositories-offline-with-bu
 git bundle create ../mybundle.gitbundle f8469b7a4b..develop
 git bundle verify ../mybundle.gitbundle
 git pull mybundle.gitbundle develop develop
+git pull mybundle.gitbundle xxx
+git pull mybundle.gitbundle HEAD # => 验证ok
 ```
 
 * git status 中文文件名乱码
