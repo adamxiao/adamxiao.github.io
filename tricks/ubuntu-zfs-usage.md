@@ -195,6 +195,7 @@ https://wuli.wiki/online/ZFS.html
 
 ```
 创建一个 500MB 虚拟硬盘文件
+truncate -s 10G adam.bin
 dd if=/dev/zero of=adam.bin bs=1M count=500
 制作 loopback 设备
 sudo losetup -fP --show adam.bin # 会返回设备路径如 /dev/loop0

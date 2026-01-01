@@ -186,6 +186,7 @@ ep.36 〖 專業解析 〗蛙式v.s自由式要先學哪個泳姿好
 #### 自由泳
 
 https://www.youtube.com/watch?v=-B0j9Wttgok&ab_channel=林小虎
+https://www.youtube.com/watch?v=hRxq1G9h284
 5分钟学会自由泳，首先简单找到换气的感觉，然后划手
 
 https://www.youtube.com/watch?v=c33S5XYWo3I&ab_channel=%E6%A2%A6%E8%A7%89%E6%95%99%E6%B8%B8%E6%B3%B3
@@ -193,6 +194,9 @@ https://www.youtube.com/watch?v=c33S5XYWo3I&ab_channel=%E6%A2%A6%E8%A7%89%E6%95%
 
 https://www.youtube.com/watch?v=P71LRAUVkmE&ab_channel=%E6%A2%A6%E8%A7%89%E6%95%99%E6%B8%B8%E6%B3%B3
 => 换气，要练两边
+
+https://www.youtube.com/watch?v=ReqFomUvEOc&ab_channel=%E6%A2%A6%E8%A7%89%E6%95%99%E6%B8%B8%E6%B3%B3
+=> 两次腿，打腿与转体的配合，转体与划手的配合
 
 #### 仰泳
 
@@ -212,9 +216,14 @@ https://www.youtube.com/watch?v=UEYyKwSZIsw&list=PLgbBfAM7XPKi3EBeNUjlq1N_80b1v3
 https://www.youtube.com/watch?v=JeUc59648kg&ab_channel=%E6%A2%A6%E8%A7%89%E6%95%99%E6%B8%B8%E6%B3%B3
 => 两次打腿
 
+https://www.youtube.com/watch?v=5TlnT2gYwPo&ab_channel=%E8%80%81%E4%BD%99%E5%85%A9%E5%8F%A3%E5%AD%90
+学蝶泳分这五步来进行
+
 #### 踩水
 
 [梦觉教游泳 -- “踩水”之五：高级踩水的随心所欲](https://www.youtube.com/watch?v=ZtxevFJQhsQ&ab_channel=%E6%A2%A6%E8%A7%89%E6%95%99%E6%B8%B8%E6%B3%B3)
+
+[踩水教學系列 EP 3 | 蛙泳腿精講及練習方法](https://www.youtube.com/watch?v=7Mh6jBNrTbs&ab_channel=BlackMantaWorld)
 
 ### 游泳学习计划
 

@@ -113,6 +113,21 @@ https://www.youtube.com/watch?v=v5uUacAeQtE&ab_channel=%E6%9E%81%E5%AE%A2%E5%8F%
 全面对比Cursor和Claude Code
 => claude code 命令行工具, 随地使用
 
+#### Qoder
+
+[阿里发布国际版AI编程工具Qoder,初版惊喜值得期待](https://www.youtube.com/watch?v=KeqRckq9wyM)
+=> 说memory长期? quest mode 先设计文档
+=> 没有说repo wiki
+[Qoder实测：新项目+老项目双场景，重新认识AI编程](https://www.youtube.com/watch?v=ow-s9dx1xKk)
+=> 2:48 有一个repo wiki的后台任务在跑?
+
+- quest mode
+  => 多个任务并行执行? => 会有互相影响，虽然可以，但是某些不建议
+  先做任务拆解, 确认无误后执行?
+- memory => cursor也有的
+  项目规划，架构设计, 技术栈选型, 阶段性调整
+- repo wiki
+  系统总揽，如何上手，核心架构, 还有图示
 
 ## 防火墙放通
 

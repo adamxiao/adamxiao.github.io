@@ -90,8 +90,89 @@ https://www.youtube.com/watch?v=8kz-0edWRwk&ab_channel=%E7%BE%8E%E9%A3%9F%E4%BD%
 
 料汁：胡椒粉 1克，白糖 15 克，生抽酱油 25 克，料酒 30 克；煎虾 5 分钟后淋入料酒 30 克，开小火翻炒姜葱，炒香后加入料汁，小火焖 5 分钟
 
+#### 剁辣椒
+
+https://www.youtube.com/watch?v=9YEeI7jG3L8
+=> 加酒发酵, 加油，炒熟
+
+#### 剁椒鱼头
+
+https://www.youtube.com/watch?v=I5Ojff5TGiw
+=> 王刚
 
 ## 面饼
 
 家常饼，外酥里软
 https://www.youtube.com/watch?v=waKMp30IlTU&t=523s&ab_channel=%E6%B5%B7%E5%A8%9F%E7%BE%8E%E9%A3%9F
+
+#### 包子
+
+https://www.youtube.com/watch?v=kjxFYr8vm3M
+荠菜肉包
+
+https://www.youtube.com/watch?v=8d6U98m-Tg4
+韭菜粉丝包
+
+## 甜品
+
+#### 西米糕
+
+https://www.youtube.com/shorts/rfx4QJsu8u4
+钵仔糕粉... => 就是淀粉??
+
+#### 西米布丁
+
+https://www.youtube.com/watch?v=l5jsGJSq4lI&ab_channel=Tina%27sHomemade
+=> 吉利丁片 => 鱼胶
+
+主要用鱼胶和牛奶(和椰浆), 制作布丁
+
+#### 焦糖鸡蛋布丁
+
+https://www.youtube.com/shorts/gx9MF-N7ObY
+
+https://www.youtube.com/shorts/6gBWs1lS7bs
+=> 蛋，糖，牛奶
+蒸熟的，类似蒸蛋...
+
+#### 蒸蛋糕
+
+https://www.youtube.com/shorts/8Exz7iC4nAY
+鸡蛋打发
+
+#### 烤蛋糕
+
+https://www.youtube.com/watch?v=9jNQYjUX59w
+蛋白打发
+
+蛋黄+白糖+食用油 搅拌
+蛋白+白粗+白糖 打发
+
+#### 奶油
+
+https://www.youtube.com/watch?v=Xkk_MN6BPkQ
+牛奶 + 黄油 制作奶油
+
+#### 鸡蛋小饼干
+
+https://www.youtube.com/watch?v=9xemcAsYHXw
+类似烤蛋糕的做法
+
+https://www.youtube.com/watch?v=mOf4GRf0XWg
+=> 红枣花生酥
+=> 泡打粉
+
+#### 面包
+
+https://www.youtube.com/watch?v=_UbDhNDraVQ
+超软蜂蜜面包
+
+超级蜂蜜小面包食谱：
+可以做12-13 小面包
+水：320克 (可减 20-40克）
+酵母：4 克，1 小勺
+高筋面粉：400克
+蜂蜜：30克或更多
+盐：2克 1/4小勺
+无盐黄油：60克
+预热好的烤箱375°F/ 190°C 烤25分钟
