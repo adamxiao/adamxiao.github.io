@@ -30,7 +30,9 @@ gpt: 节点A访问目的ip地址B，可以配置基于端口的路由策略吗�
 
 => deepseek回答有效，验证成功，yuanbao的有问题
 ```
-ip rule add from all to 目的地B dport 8080 table rt_b
+ip rule add fwmark 100 table 100
+ip route add default via 192.168.84.254 table 100
+ip rule add from all to 目的地B dport 8080 table 100
 ```
 
 => 下面配置无效, **在 OUTPUT链中标记数据包（MARK）时，Linux 的路由决策已经完成**，因此这种方式可能无法生效。这是因为 Linux 网络栈的数据包处理流程中，路由查找（route lookup）发生在 mangle/OUTPUT链之前。

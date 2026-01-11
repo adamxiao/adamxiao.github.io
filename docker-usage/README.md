@@ -227,6 +227,26 @@ networks:
 
 ## FAQ
 
+#### userns-remap映射root用户为普通用户
+
+gpt: docker设置容器中的root用户权限为普通用户，而在容器中看到还是root用户
+
+```
+# 创建或编辑 Docker 配置文件
+sudo tee /etc/docker/daemon.json << EOF
+{
+  "userns-remap": "adam"
+}
+EOF
+```
+
+还需要配置这个
+```
+# 安全且兼容性好的设置
+echo "adam:1000:65536" | sudo tee -a /etc/subuid
+echo "adam:1000:65536" | sudo tee -a /etc/subgid
+```
+
 #### docker信任http仓库
 
 修改配置文件，重启docker服务
