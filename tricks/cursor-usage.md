@@ -161,6 +161,83 @@ https://cursor.com/cn/docs/cli/overview
 
 #### 是否共享cursor rules?
 
+## cursor cli分享
+
+- 分享TODO实现 => ok
+- 分享模型使用量, 一次消耗多少token => todo
+- 先自己写spec，然后让ai写代码，或者spec让ai扩展
+  展示经典的历史会话
+- ssh分析环境问题
+  /data/local/tmp/git2-build => 截图
+- 重构代码, 减少代码行数
+  python, c++均可
+- 建议git保存代码
+- 总体架构自己注意把握，或者先问问ai
+  我经常问网页版本的ai
+
+https://www.youtube.com/watch?v=sOvi9Iu1Dq8
+终端ai优势
+- 1.自由度大
+  可以调用系统的一切能力
+- 2.认知负担最小
+  直接说问题，ai解决问题, 不用学习界面操作，直接开始即可
+- 3.工具链天然融合
+  工作流...
+
+技巧 => 谋，定，动
+谋，确定需求; 定，规划清晰路线; 动，快速执行;
+=> 将需求文档化, 改需求比后续改代码容易
+=> 制定执行计划, 标明哪些任务要先做，哪些可以并行, TODO.md
+=> 让ai狂飙，发现跑偏, 也可以随时调整方向
+
+提示词技巧, 把话说清楚, 正面表达, 说要做什么，而不是不要做什么
+
+https://www.youtube.com/watch?v=FwSNWgTnUIQ
+markdown to EPUB这个电子书生成skill => 我要to html的吧!
+
+- 考虑让ai写的代码，给它合适的环境测试一下!
+  要么ssh，要么本地环境?
+
+- cursor使用问题?
+  慢，中断?
+
+- 移动工作目录，或者工作目录改名，cursor还能有这个工作目录的记忆，以及会话吗？
+
+## skills应用
+
+看看有什么好用的skills使用一下
+=> 了解这个就是了解ai能帮助我们做一些什么任务, 或者遵守什么流程
+  => 例如说markdown 转换为 html, 视频下载, 提取字幕等
+
+我想到的是查uniqb问题的skills，例如开机调度失败，指导查看哪个日志, 等等
+
+https://zhuanlan.zhihu.com/p/1996913009034024863
+obra/superpowers - 开发者的"全家桶"
+
+测试和调试类
+Systematic Debugging - 结构化调试流程
+
+能干啥：
+
+根本原因分析 → 假设测试 → 解决方案 → 文档记录
+
+obsidian-skills -Obsidian知识库
+
+https://blog.csdn.net/qq_44866828/article/details/156400175
+⭐⭐⭐⭐⭐ No.1：PDF（必装中的必装）
+能干什么？
+猫头虎真实使用场景：
+⭐⭐⭐⭐⭐ No.2：skill-creator（神中神）
+能干什么？
+我怎么用？
+⭐⭐⭐⭐ No.3：webapp-testing
+能干什么？
+使用场景：
+⭐⭐⭐⭐ No.4：mcp-builder
+能干什么？
+⭐⭐⭐ No.5：brand-guidelines
+能干什么？
+
 ## cursor功能测试
 
 #### 生成带lvm分区的qcow2文件测试
@@ -173,7 +250,68 @@ https://cursor.com/cn/docs/cli/overview
 
 => 方向要自己把握 => (自己把握方向，再叫ai写可能更快更好)
 
+## claude code使用
+
+https://sites.google.com/view/yueliangxiabanle/windows%E4%B8%8B%E7%94%A8docker-desktop%E8%BF%90%E8%A1%8Cclaude-code%E7%9A%84%E5%AE%8C%E6%95%B4%E6%8C%87%E5%8D%97
+旧的安装方式
+```
+npm install -g @anthropic-ai/claude-code
+```
+
+https://help.apiyi.com/claude-code-china-usage-guide.html
+中转, vpn, 代理，海外服务器 => API易中转服务
+
+https://easyclaude.com/post/claude-code-comprehensive-guide
+Easy Claude Code => api中转
+
+```
+# 检查当前配置
+cat ~/.claude/config.json
+
+# 如果使用 Easy Claude Code
+# 确保配置正确：
+{
+  "apiKey": "sk-xxxx",  # 从官网获取
+  "baseUrl": "https://code.ai2api.dev"
+}
+
+# 测试连接
+claude
+```
+
+https://www.cnblogs.com/wh2005/p/18984584
+=> 或者环境变量?
+```
+# 设置环境变量（替换为你的API KEY）
+ANTHROPIC_AUTH_TOKEN=sk-PxD3240xxxmCFM3
+#ANTHROPIC_API_KEY=sk-PxD3240xxxmCFM3
+ANTHROPIC_BASE_URL=https://anyrouter.top
+```
+
+https://devstation.connect.huaweicloud.com/space/devportal/casecenter/b7663af9fcd74623bd36307f5f817f3d/1
+1.4 配置大模型KAT-Coder
+```
+echo 'export ANTHROPIC_BASE_URL="https://wanqing.streamlakeapi.com/api/gateway/v1/endpoints/ep-xxx-xxx/claude-code-proxy"' >> ~/.bash_profile
+echo "export ANTHROPIC_AUTH_TOKEN='YOUR_WANQING_API_KEY'" >> ~/.bash_profile
+echo 'export ANTHROPIC_MODEL="KAT-Coder"' >> ~/.bash_profile
+echo 'export ANTHROPIC_SMALL_FAST_MODEL="KAT-Coder"' >> ~/.bash_profile
+source ~/.bash_profile
+```
+
 ## FAQ
+
+#### AGENTS.md 规范
+
+https://jimmysong.io/zh/book/ai-handbook/sdd/agents/
+
+#### cursor感觉比较慢
+
+https://blog.yasking.org/a/1765505478.html
+Cursor 巨慢到一定程度，17:45 提交的任务，18:21 还在 “吭哧瘪肚” 的输出。
+=> 重建下索引试试，然后问题就这样解决了?
+
+https://blog.csdn.net/qq_39632646/article/details/151580966
+模型/路由、网络/代理、扩展冲突、索引/缓存、项目体量与上下文边界。
 
 #### 如何查看auto模式用了哪些模型?
 

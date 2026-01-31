@@ -37,6 +37,31 @@
 Managing KVM Virtual Machines with Cockpit Web Console in Linux
 https://www.tecmint.com/manage-kvm-virtual-machines-using-cockpit-web-console/
 
+## nvram文件权限问题
+
+使用libvirt hook解决
+=> 新增hook脚本, 需要重启libvirt
+```
+cat /etc/libvirt/hooks/qemu
+#!/bin/bash
+
+# 在虚拟机启动时设置NVRAM权限
+if [ "$2" = "prepare" ] || [ "$2" = "start" ]; then
+    VM_NAME="$1"
+    NVRAM_FILE="/var/lib/libvirt/qemu/nvram/${VM_NAME}_VARS.fd"
+
+    if [ -f "$NVRAM_FILE" ]; then
+        chown kylin-ksvd:kvm "$NVRAM_FILE"
+        chmod 660 "$NVRAM_FILE"
+    fi
+fi
+```
+
+rc.ksvd启动脚本处理
+```
+mkdir -p /etc/libvirt/hooks && install -m 755 /usr/lib/ksvd/bin/qemu-chmod-nvram-hook.sh /etc/libvirt/hooks/qemu && systemctl restart libvirtd
+```
+
 ## console安装虚拟机
 
 https://gist.github.com/srramasw/a44b71c1573071a2136a
@@ -389,7 +414,95 @@ arm64下需要占用pci插槽的设备列表
 </controller>
 ```
 
+## systemctl启动卡住
+
+发现在等待
+```
+systemctl list-jobs | grep libvirt
+  250 libvirtd.service                                             start waiting
+```
+
+ai查到依赖服务等待, remote-fs.target
+```
+systemctl list-jobs | grep remote
+  241 remote-fs.target                                             start waiting
+  176 remote-fs-pre.target                                         start waiting
+```
+
+发现启动过，然后又停止了?
+```
+systemctl status remote-fs.target
+● remote-fs.target - Remote File Systems
+   Loaded: loaded (/usr/lib/systemd/system/remote-fs.target; enabled; vendor preset: enabled)
+   Active: inactive (dead)
+     Docs: man:systemd.special(7)
+
+Jan 23 11:36:28 localhost.localdomain systemd[1]: Reached target Remote File Systems.
+Jan 23 11:36:30 localhost.localdomain systemd[1]: Stopped target Remote File Systems.
+```
+
+ai给libvirt增加了配置，还是启动waiting
+=> 我给注释了remote-fs的依赖，可以启动了!
+```
+# /etc/systemd/system/libvirtd.service.d/override.conf
+[Unit]
+# 移除可能导致阻塞的依赖
+After=network.target dbus.service local-fs.target virtlogd.socket virtlockd.socket
+Wants=virtlogd.socket virtlockd.socket
+
+[Service]
+# 改为 simple 类型，避免 notify 导致的阻塞
+Type=simple
+# 设置启动超时
+TimeoutStartSec=30
+```
+
+后续分析?
+```
+[ssh_10.30.11.126] root@node1: ~$systemctl list-jobs | grep remote-fs
+  241 remote-fs.target                     start waiting
+  176 remote-fs-pre.target                 start waiting
+
+[ssh_10.30.11.126] root@node1: ~$systemctl status remote-fs
+Unit remote-fs.service could not be found.
+
+[ssh_10.30.11.126] root@node1: ~$systemctl status remote-fs.target
+● remote-fs.target - Remote File Systems
+   Loaded: loaded (/usr/lib/systemd/system/remote-fs.target; enabled; vendor preset: enabled)
+   Active: inactive (dead)
+     Docs: man:systemd.special(7)
+
+Jan 23 11:36:28 localhost.localdomain systemd[1]: Reached target Remote File Systems.
+Jan 23 11:36:30 localhost.localdomain systemd[1]: Stopped target Remote File Systems.
+
+[ssh_10.30.11.126] root@node1: ~$systemctl status remote-fs-pre.target
+● remote-fs-pre.target - Remote File Systems (Pre)
+   Loaded: loaded (/usr/lib/systemd/system/remote-fs-pre.target; static; vendor preset: disabled)
+   Active: inactive (dead)
+     Docs: man:systemd.special(7)
+
+Jan 23 11:36:28 localhost.localdomain systemd[1]: Reached target Remote File Systems (Pre).
+Jan 23 11:36:30 localhost.localdomain systemd[1]: Stopped target Remote File Systems (Pre).
+
+[ssh_10.30.11.126] root@node1: ~$date
+Fri Jan 23 11:14:08 CST 2026
+```
+
 ## FAQ
+
+#### Machine 'qemu-3-d4b7a760-68a9-3384-a032-c340d07b8538' already exists
+
+```
+# 查看系统中有哪些虚拟机
+sudo machinectl list
+
+# 强制删除已存在的虚拟机
+sudo machinectl terminate qemu-3-d4b7a760-68a9-3384-a032-c340d07b8538
+
+# 或使用systemctl
+sudo systemctl stop machine-qemu\\x2d3\\x2dd4b7a760\\x2d68a9\\x2d3384\\x2da032\\x2dc340d07b8538.scope
+sudo systemctl reset-failed machine-qemu\\x2d3\\x2dd4b7a760\\x2d68a9\\x2d3384\\x2da032\\x2dc340d07b8538.scope
+```
 
 #### 开启qemu的coredump文件
 
