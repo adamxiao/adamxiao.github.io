@@ -490,6 +490,31 @@ Fri Jan 23 11:14:08 CST 2026
 
 ## FAQ
 
+#### xxx
+
+文件权限自动修改, 还会修改回去root:root
+```
+2026-02-07 13:17:08.944+0000: 48239: debug : virSecurityDACRestoreAllLabel:1709 : Restoring security label on 543016a6-2dfa-3a47-8d0d-ffd603e7393d migrated=0
+2026-02-07 13:17:08.944+0000: 48239: info : virSecurityDACRestoreFileLabelInternal:836 : Restoring DAC user and group on '/home/kylin-data/ipsan2/ksvd-orgs/org-0/users/0local/mcadmin1/543016a6-2dfa-3a47-8d0d-ffd603e7393d/GUEST.IMG' to 0:0
+```
+
+配置reabel=no即可
+```
+  <seclabel type='static' model='dac' relabel='no'>
+    <label>kylin-ksvd:kylin-ksvd</label>
+    <imagelabel>kylin-ksvd:kylin-ksvd</imagelabel>
+  </seclabel>
+```
+
+libvirt对应代码 (从上面日志中获取到)
+=> virSecurityDACRestoreAllLabel (libvirt 5.0.0)
+```
+    secdef = virDomainDefGetSecurityLabelDef(def, SECURITY_DAC_NAME);
+
+    if (!priv->dynamicOwnership || (secdef && !secdef->relabel))
+        return 0;
+```
+
 #### Machine 'qemu-3-d4b7a760-68a9-3384-a032-c340d07b8538' already exists
 
 ```
