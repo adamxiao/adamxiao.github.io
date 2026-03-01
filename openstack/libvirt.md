@@ -490,6 +490,28 @@ Fri Jan 23 11:14:08 CST 2026
 
 ## FAQ
 
+#### 在线卸载磁盘问题
+
+空盘问题?
+```
+[ssh_10.90.3.33] root@node3: bed11a67-9117-34f2-4c8c-2e6cb41eb591$LANG=C virsh detach-device bed11a67-9117-34f2-4c8c-2e6cb41eb591 ~/disk.xml --live
+error: Failed to detach device from /root/disk.xml
+error: 内部错误：无法执行 QEMU 命令 'device_del'：Device virtio-disk0 is already in the process of unplug
+
+
+[ssh_10.90.3.33] root@node3: bed11a67-9117-34f2-4c8c-2e6cb41eb591$virsh detach-disk bed11a67-9117-34f2-4c8c-2e6cb41eb591 vda --live
+error: Failed to detach disk
+error: 内部错误：无法执行 QEMU 命令 'device_del'：Device virtio-disk0 is already in the process of unplug
+
+
+[ssh_10.90.3.33] root@node3: bed11a67-9117-34f2-4c8c-2e6cb41eb591$virsh reset bed11a67-9117-34f2-4c8c-2e6cb41eb591
+Domain bed11a67-9117-34f2-4c8c-2e6cb41eb591 was reset
+
+
+[ssh_10.90.3.33] root@node3: bed11a67-9117-34f2-4c8c-2e6cb41eb591$virsh detach-disk bed11a67-9117-34f2-4c8c-2e6cb41eb591 vda --live
+error: No disk found whose source path or target is vda
+```
+
 #### xxx
 
 文件权限自动修改, 还会修改回去root:root

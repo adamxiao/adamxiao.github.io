@@ -55,6 +55,19 @@ browser-use-MCP-Server
 https://juejin.cn/post/7492271292155756583
 browser-use 是一个让 AI 操作浏览器的工具。你只需给出指令，AI 就能帮你完成浏览器操作任务。browser-use 官方开发了 mcp-server-browser-use，通过这个 MCP，其他软件也能调用 browser-use 来操作浏览器。下面的画面展示了我在 Cline 中让 AI 打开 Google 并找到 MCP 官网的过程，全程我完全没有操作浏览器，都是AI自主完成的。
 
+.cursor/mcp.json
+```
+{
+  "mcpServers": {
+    "Chrome DevTools": {
+      "command": "npx chrome-devtools-mcp@latest",
+      "env": {},
+      "args": []
+    }
+  }
+}
+```
+
 
 ### cursor rules
 
@@ -237,6 +250,14 @@ https://blog.csdn.net/qq_44866828/article/details/156400175
 能干什么？
 ⭐⭐⭐ No.5：brand-guidelines
 能干什么？
+
+#### cursor安装skills
+
+https://zhuanlan.zhihu.com/p/1993066987774026974
+别只用 Cursor 写代码：手把手教你配置 Skills 技能库，解锁“完全体”工作流
+
+https://www.cnblogs.com/operajack/p/19573316
+在Cursor中使用Skills功能
 
 ## cursor功能测试
 
