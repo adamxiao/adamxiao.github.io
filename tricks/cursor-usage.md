@@ -259,6 +259,18 @@ https://zhuanlan.zhihu.com/p/1993066987774026974
 https://www.cnblogs.com/operajack/p/19573316
 在Cursor中使用Skills功能
 
+#### 其他
+
+https://juejin.cn/post/7570500819888439339
+Cursor在回收团队的实践
+
+2、基本代码审查
+我们可以使用下面的提示词引导Cursor进行基本代码审查：
+```
+扫描diff 文件中的差异代码。reviwe 的规则如下
+1. 方法体行数应少于100行, 不包括空行,和注释
+```
+
 ## cursor功能测试
 
 #### 生成带lvm分区的qcow2文件测试
@@ -318,6 +330,17 @@ echo 'export ANTHROPIC_MODEL="KAT-Coder"' >> ~/.bash_profile
 echo 'export ANTHROPIC_SMALL_FAST_MODEL="KAT-Coder"' >> ~/.bash_profile
 source ~/.bash_profile
 ```
+
+## 收集文章
+
+https://juejin.cn/post/7574997924930945064
+自定义斜杠命令
+
+https://juejin.cn/post/7611675698495733766
+claude
+2. 快速回滚 (/rewind)
+
+hooks 功能建议也可以试试，自动跑 lint 和 test 很香。
 
 ## FAQ
 

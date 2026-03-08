@@ -31,6 +31,20 @@
 </domain>
 ```
 
+#### virsh基本使用
+
+普通用户使用virsh list报错
+```
+error: failed to connect to the hypervisor
+error: Cannot create user runtime directory '/run/user/0/libvirt': Permission denied
+```
+
+改为 管理 `/var/lib/libvirt/qemu/` 中的虚拟机
+```
+export LIBVIRT_DEFAULT_URI="qemu:///system"
+virsh -c qemu:///system list
+```
+
 ## 其他
 
 关键字`virsh web console`

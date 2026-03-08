@@ -12,6 +12,15 @@ https://roadmap.sh/golang
 
 [当上传不再只是 /upload，我们是怎么设计大文件上传的](https://juejin.cn/post/7571355989133099023)
 
+#### openclaw - im控制ai干活
+
+https://juejin.cn/post/7611857436337684507
+
+关键是能干什么活?
+优点是随时通过网络控制，有点黑客的感觉
+
+借助im的api, 例如飞书聊天机器人进行处理的, 公众号平台也是类似的!
+
 #### linux设置网络策略，访问一个特定的ip的指定端口，走特定的网关
 
 方法一：使用 ip route + iptables 方案
