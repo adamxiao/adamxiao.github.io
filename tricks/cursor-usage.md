@@ -259,6 +259,12 @@ https://zhuanlan.zhihu.com/p/1993066987774026974
 https://www.cnblogs.com/operajack/p/19573316
 在Cursor中使用Skills功能
 
+#### 远程编译skills
+
+编写一个skills,名称叫做远程编译, 执行如下逻辑:
+将目录打包为临时文件，然后ssh拷贝远程服务器上解压, 然后在远程服务器上进行编译
+=> ai自己写的，立马写好，然后可以用了
+
 #### 其他
 
 https://juejin.cn/post/7570500819888439339

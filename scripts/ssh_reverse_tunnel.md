@@ -161,6 +161,45 @@ ssh -p 22345 -N -D 127.0.0.1:1080 adam@127.0.0.1
 
 ## FAQ
 
+#### ssh跳板连接
+
+Q: ssh可以跳板连接远程服务器吗, 例如A可以ssh到B，B可以ssh到C， 那么A如何配置B跳板连接到C?
+
+方法一：使用 -J参数（推荐，最简单）
+```
+ssh -J user@B的IP:端口 user@C的IP -p C的端口
+```
+
+方法二：使用 ProxyJump配置（推荐，最方便）
+```
+# 定义跳板机 B
+Host JumpServer
+    HostName 192.168.1.10
+    User alice
+    Port 22
+
+# 定义目标服务器 C，并通过 B 跳转
+Host TargetServer
+    HostName 10.0.0.20
+    User bob
+    Port 22
+    ProxyJump JumpServer  # 关键配置：指定通过哪个主机跳转
+```
+
+方法三：使用 ProxyCommand（兼容旧版本）
+
+
+#### no matching host key type found. Their offer: ssh-rsa,ssh-dss
+
+ssh -o HostKeyAlgorithms=+ssh-rsa -o PubkeyAcceptedAlgorithms=+ssh-rsa user@x.x.x.x
+
+```
+Host *
+    HostKeyAlgorithms +ssh-rsa
+    PubkeyAcceptedAlgorithms +ssh-rsa # ubuntu 20.04 ssh不支持，换成下面的!
+    PubkeyAcceptedKeyTypes +ssh-rsa # ubuntu 20.04 ssh支持
+```
+
 #### channel 1: open failed: administratively prohibited: open failed
 
 sshd对端日志

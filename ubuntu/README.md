@@ -186,6 +186,20 @@ https://gist.github.com/superjamie/d56d8bc3c9261ad603194726e3fef50f
 
 ## 其他
 
+#### 替换SwitchyOmega
+
+https://zhuanlan.zhihu.com/p/742243540
+ZeroOmega SmartProxy
+
+https://meta.appinn.net/t/topic/52872/10
+浏览器上设置个全局代理, 然后指向privoxy.
+再通过privoxy分流的列表走.
+原来的配置基本简单复制就可以复用了.
+
+AD屏蔽也可以定义, 早换早享受.
+
+https://v2ex.com/t/895078
+
 #### 绑定本地目录
 
 编辑fstab配置文件

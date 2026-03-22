@@ -200,3 +200,12 @@ https://blog.csdn.net/u011426115/article/details/112077441
 逆向工程师...
 利用Ghidra逆向分析Go二进制程序（上篇）
 https://www.4hou.com/posts/8OJ2
+
+## ai使用gdb逆向
+
+```
+gdb -batch -ex 'info sources' xxx 2>/dev/null | head -100 # 所有源文件列表
+```
+
+重点分析关键文件，使用 GDB 获取类型、函数原型和关键数据结构
+GDB info functions / ptype / disassemble

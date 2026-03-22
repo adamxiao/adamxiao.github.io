@@ -681,6 +681,24 @@ kolla-ansible deploy-containers
 
 ## FAQ
 
+#### Failed to install Ansible Galaxy dependencies
+
+方案一：修改依赖源（推荐）
+修改/usr/local/share/kolla-ansible/requirements.yml
+```
+collections:
+  - name: xxx
+    type: git
+    version: yoga-eom # 修改这里
+```
+
+kolla-ansible install-deps 执行报错
+```
+error: pathspec 'stable/yoga' did not match any file(s) known to git
+ERROR! Failed to switch a cloned Git repo `https://opendev.org/openstack/ansible-collection-kolla` to the requested revision `stable/yoga`.
+ERROR: Failed to install Ansible Galaxy dependencies
+```
+
 #### the role 'openstack.kolla.baremetal' was not found
 
 执行bootstrap-server失败
