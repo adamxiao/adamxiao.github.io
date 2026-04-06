@@ -307,6 +307,43 @@ openssl dgst -md5 xxx.file
 - NodeJS 官方建议使用环境变量 NODE_EXTRA_CA_CERTS 来指定额外的根证书。
 - Firefox 浏览器有自己的可信根证书列表
 
+#### https私钥校验证书
+
+Q: 私钥如何校验生成的证书
+
+方法1：对比公钥指纹（最常用）
+分别提取证书中的公钥和私钥对应的公钥指纹，若两者一致，则配对成功。
+```
+# 1. 提取证书中的公钥指纹
+openssl x509 -noout -pubkey -in svrcert.pem | openssl md5
+
+# 2. 提取私钥对应的公钥指纹
+openssl pkey -pubout -in svrkey.pem | openssl md5
+```
+
+方法2：直接验证签名（最严谨） => cursor用这个校验
+利用 OpenSSL 的 req或 x509命令进行验证，原理是让工具自动尝试用私钥去匹配证书。
+```
+# 方式A：使用 x509 命令（推荐）
+openssl x509 -noout -modulus -in svrcert.pem | openssl md5
+openssl rsa -noout -modulus -in svrkey.pem | openssl md5
+
+# 方式B：使用 req 命令（适用于由该私钥生成的CSR）
+openssl req -noout -modulus -key svrkey.pem -in server.csr | openssl md5
+```
+
+方法3：一键验证命令 => 验证ok
+如果你确定文件是配对的，可以直接用私钥验证证书，无报错即成功。
+```
+openssl x509 -checkend 0 -noout -in svrcert.pem -signkey svrkey.pem
+```
+
+最后用ca证书校验https证书 => ok
+```
+openssl verify -CAfile "ca.crt" "svrcert.pem"
+svrcert.pem: OK
+```
+
 #### 生成rsa密钥对
 
 关键字《openssl 使用rsa密钥加解密》

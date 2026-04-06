@@ -209,3 +209,49 @@ gdb -batch -ex 'info sources' xxx 2>/dev/null | head -100 # 所有源文件列�
 
 重点分析关键文件，使用 GDB 获取类型、函数原型和关键数据结构
 GDB info functions / ptype / disassemble
+
+#### 逆向函数
+
+```
+ssh root@10.70.3.71 "gdb -batch -ex 'set pagination off' -ex 'disassemble /m _Z13do_sd_set_ctliPvj' /usr/local/sdata/sbin/sdatad" 2>/dev/null
+ssh root@10.70.3.71 "gdb -batch -ex 'set pagination off' -ex 'disassemble _Z13do_sd_set_ctliPvj' /usr/local/sdata/sbin/sdatad" 2>/dev/null
+
+   ssh root@10.70.3.71 "gdb -batch -ex 'set pagination off' \
+     -ex 'info symbol 0x1c9770' \
+     -ex 'info symbol 0x1c9260' \
+     -ex 'info symbol 0x1c9000' \
+     -ex 'info symbol 0x1c8eb0' \
+     -ex 'info symbol 0x1c9a00' \
+     -ex 'info symbol 0x1d1630' \
+     -ex 'info symbol 0x1d15f0' \
+     -ex 'info symbol 0x1ce410' \
+     /usr/local/sdata/sbin/sdatad" 2>/dev/null
+```
+
+## ghidra 安装使用
+
+Ghidra 是一款由 NSA 开源的强大逆向工程工具，采用 Java 开发，无需安装，解压即用
+
+依赖java
+```
+sudo apt install -y openjdk-21-jdk
+```
+
+## FAQ
+
+#### 指针偏移变量
+
+需要改成变量名才合适吧
+```
+// 从对象（类实例）的起始地址开始
+// 偏移 0x1BC34（十六进制，十进制约为113,716）字节
+// 获取这个位置上的 char 类型指针
+const char *p = reinterpret_cast<const char *>(this) + 0x1bc34u;
+```
+
+#### 硬编码改为枚举值
+
+可以改成枚举值
+```
+SendStart SendMessage(0xb) failed rc=-1024
+```

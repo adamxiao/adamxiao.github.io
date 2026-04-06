@@ -63,3 +63,9 @@ xdd -s 0x30 /path/to/test.txt
 ```
 xxd -ps /path/to/test.txt
 ```
+
+#### 逆向十六进制
+
+```
+xxd -r -p
+```

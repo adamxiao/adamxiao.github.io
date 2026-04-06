@@ -2,6 +2,11 @@
 
 ## 使用经验
 
+### 会话管理
+
+最终会话分析的资料，总结为文档，编写为代码，这个会话就可以结束甚至删除了， 是吧?
+=> 文档记录遗留的TODO事件!
+
 ### agent写代码 - 实现功能, 解决问题
 
 cursor chat聊天
@@ -337,6 +342,99 @@ echo 'export ANTHROPIC_SMALL_FAST_MODEL="KAT-Coder"' >> ~/.bash_profile
 source ~/.bash_profile
 ```
 
+#### claude使用经验分享
+
+- claude code worktree并行开发用法
+  https://code.claude.com/docs/zh-TW/common-workflows
+  手动git管理worktree => 应该共享记忆啥的吧?
+- claude 后台模式
+  `/tasks`
+  ctrl+b 把任务放到后台
+- claude 计划模式
+- claude 自己测试
+- claude commit
+- ghidra mcp
+- 会话恢复
+  `claude -c`, continue,  `/resume`
+  => 问题: 恢复后会话前面的一些历史记录看不到了?
+- 定时做任务?
+  at, crond, sleep等定时调用cli命令处理
+  sleep 1800; echo continue | claude --resume xxx --dangerously-skip-permissions
+  => 肯定不是很合适，看claude code官方有什么支持方法?
+- superpowers skills
+  https://www.youtube.com/watch?v=TMmq9Wx1AIQ
+- subagent, memory
+  => 例如ai编写函数，行数太长了，需要审核
+  https://juejin.cn/post/7615868122215546943
+  自动记忆 => `~/.claude/projects/<项目路径>/memory/ ├── MEMORY.md ├── debugging.md`
+
+什么时候该交给 CLAUDE.md，什么时候该交给 Auto Memory
+
+放进 CLAUDE.md 的
+
+- 技术栈
+- 目录职责
+- 构建命令
+- 测试流程
+- 提交流程
+- 明确禁止事项
+- 团队统一规范
+
+更适合 Auto Memory 的
+
+- 最近排障结论
+- 本地环境注意事项
+- 某些模块的历史包袱
+- 反复提到的协作偏好
+- 阶段性但高频复用的背景
+
+前者是制度。
+后者是经验。
+
+前者要稳定。
+后者可以动态演化。
+
+#### 回滚会话
+
+https://www.youtube.com/watch?v=AT4b9kLtQCQ
+Claude Code 从 0 到 1 全攻略 —— MCP / SubAgent / Agent Skill / Hook / 图片 / 上下文处理/ 后台任务 / 权限
+
+回滚到某一次问题（即“对话轮次”）使用的是 Rewind（回溯）功能
+```
+快捷键（最快）：在会话中连按两次 Esc键（Esc+ Esc）。
+命令：输入 /rewind并回车。
+```
+
+```
+/rename # 可以更改会话名称
+```
+
+#### claude 权限
+
+建议这样
+```
+alias cc='claude --allow-dangerously-skip-permissions' # 可以使用shift+tab切权限
+alias cc='claude --dangerously-skip-permissions' # 默认就full权限
+```
+
+#### claude sandbox
+
+https://www.youtube.com/watch?v=VFr93XgqOkI
+别再无脑按Approve了！一行指令开启 Claude Code Sandbox，彻底解放双手
+
+https://blog.gslin.org/archives/2026/02/16/12894/linux-%e4%b8%8b%e7%94%a8-bubblewrap-bwrap-%e8%b7%91-claude-code/
+Linux 下用 bubblewrap (bwrap) 跑 Claude Code
+=> bwrap 是命令的名字。这个项目的名字叫 bubblewrap
+
+#### claude code mcp
+
+https://github.com/themixednuts/GhidraMCP
+```
+claude mcp add ghidra "http://x.x.x.x:8080/mcp" --transport http
+Added HTTP MCP server ghidra with URL: http://x.x.x.x:8080/mcp to local config
+File modified: $HOME/.claude.json [project: $HOME/workspaces/xxx]
+```
+
 ## 收集文章
 
 https://juejin.cn/post/7574997924930945064
@@ -349,6 +447,21 @@ claude
 hooks 功能建议也可以试试，自动跑 lint 和 test 很香。
 
 ## FAQ
+
+#### cursor会话存储
+
+有会话提示词记录 => 如何找到执行命令的输出?
+```
+$HOME/.cursor/projects/$DIR/agent-transcripts/${SESSION_ID}/${SESSION_ID}.jsonl
+=> 里面是很多json数据, 用户输入的提示词都有
+
+user_query => 用户提示词
+```
+
+猜测会话命令的输出在这里?
+```
+$HOME/.cursor/chats/${DIR_ID}/${SESSION_ID}/store.db
+```
 
 #### AGENTS.md 规范
 
