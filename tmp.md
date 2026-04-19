@@ -574,6 +574,25 @@ cat /proc/101595/fd/1 > /var/log/mysqld.log
 深度好文｜TCP连接的状态详解以及故障排查 转载
 https://blog.51cto.com/mingongge/5182870
 
+#### tshark使用
+
+基础用法：实时捕获或读取文件，并过滤出第 0 号 TCP 流
+```
+tshark -r xxx.pcap -Y "tcp.stream eq 0 && tcp.len != 0"
+6   0.000513   10.30.9.97 → 10.30.9.106  TCP 1516 56816 → 26833 [ACK] Seq=1 Ack=1 Win=65536 Len=1448 TSval=157674151 TSecr=116948909
+```
+
+```
+=> 显示 TCP 载荷的十六进制
+tshark -r capture.pcap -Y "tcp.stream eq 0" -T fields -e tcp.payload
+
+=> 显示 更多自定义字段
+tshark -r capture.pcap -Y "tcp.stream eq 0 && tcp.len != 0" -T fields -e frame.number -e ip.src -e ip.dst -e tcp.len -e tcp.payload
+```
+
+这个terminal版本的wireshark, NB的 => 依赖tshark...
+termshark -r xxx.pcap
+
 #### tcpdump使用
 
 https://www.cnblogs.com/ggjucheng/archive/2012/01/14/2322659.html

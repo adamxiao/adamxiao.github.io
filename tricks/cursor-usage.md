@@ -359,6 +359,7 @@ source ~/.bash_profile
   => 问题: 恢复后会话前面的一些历史记录看不到了?
 - 定时做任务?
   at, crond, sleep等定时调用cli命令处理
+  sleep $(( $(date -d "19:01" +%s) - $(date +%s) ));
   sleep 1800; echo continue | claude --resume xxx --dangerously-skip-permissions
   => 肯定不是很合适，看claude code官方有什么支持方法?
 - superpowers skills
@@ -433,6 +434,39 @@ https://github.com/themixednuts/GhidraMCP
 claude mcp add ghidra "http://x.x.x.x:8080/mcp" --transport http
 Added HTTP MCP server ghidra with URL: http://x.x.x.x:8080/mcp to local config
 File modified: $HOME/.claude.json [project: $HOME/workspaces/xxx]
+```
+
+#### ghidra mcp安装使用
+
+ubuntu 20.04安装ghidra:
+先安装 openjdk-21-jdk
+然后下载ghidra, 解压到/opt目录，然后进去运行 ./ghidraRun
+
+cursor配置使用
+```
+    "ghidra": {
+      "url": "http://127.0.0.1:8080/mcp"
+    }
+```
+
+#### rtk 节省token
+
+https://javabetter.cn/sidebar/itwanger/ai/rtk-token-killer.html
+```
+rtk init -g
+rtk init --agent cursor
+```
+
+默认是不会生成配置文件的，但如果你想自定义，可以执行 rtk config --create，配置文件在 ~/.config/rtk/config.toml，你可以在里面自定义一些行为。
+```
+[database]
+path = "~/.local/share/rtk/history.db"
+
+[commands]
+exclude = ["vim", "nano", "less"]
+
+[tee]
+enabled = true
 ```
 
 ## 收集文章
