@@ -76,6 +76,31 @@ Host github.com *.github.com
 
 ## git FAQ
 
+* git tag usage
+
+1. 列出标签, 查看标签
+```
+git tag # 列出所有标签（按字母顺序）
+git tag -l "v1.*" # 使用通配符过滤
+
+git show v1.0.0   # 查看标签详情（提交信息、标签元数据等）
+```
+
+2. 创建标签, 删除标签
+```
+git tag v1.0.0 <commit-id>  # 基于指定提交创建标签
+git tag -a v1.0.0 -m "Release version 1.0.0"
+
+git tag -d v1.0.0 # 删除本地标签
+git push origin --delete v1.0.0 # 删除远程仓库标签
+```
+
+3. 推送标签
+```
+git push origin v1.0.0      # 推送单个标签
+git push origin --tags      # 推送所有本地标签
+```
+
 * cancel a local git commit
 
 ```
@@ -320,6 +345,9 @@ git push -u new --tags
     co = !git checkout
     ci = !git commit
     di = !git difftool -t vimdiff
+    dif = diff --ignore-submodules
+    lg = log --name-status
+    cim = commit --amend --reset-author --date=now
 [https]
 #       proxy = http://127.0.0.1:20172
 [http]

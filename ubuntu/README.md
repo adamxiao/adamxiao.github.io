@@ -186,6 +186,21 @@ https://gist.github.com/superjamie/d56d8bc3c9261ad603194726e3fef50f
 
 ## 其他
 
+#### app内存占用过大导致卡死
+
+- ubuntu 桌面，开一个app占用内存过多，导致系统卡死，这种问题如何解决？
+  => 安装 earlyoom可以在内存占用达到 90% 左右时提前清理高内存进程，极大降低完全卡死的概率。
+```
+sudo apt install earlyoom
+sudo systemctl enable --now earlyoom
+```
+- 能不能限制一个用户所有的进程总内存占用限制呢？
+  => 使用systemctl限制用户1000占用的内存上限
+```
+sudo systemctl set-property user-1000.slice MemoryMax=24G
+systemctl show user-1000.slice | grep MemoryMax
+```
+
 #### 替换SwitchyOmega
 
 https://zhuanlan.zhihu.com/p/742243540
