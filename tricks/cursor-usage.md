@@ -436,6 +436,12 @@ Added HTTP MCP server ghidra with URL: http://x.x.x.x:8080/mcp to local config
 File modified: $HOME/.claude.json [project: $HOME/workspaces/xxx]
 ```
 
+codex配置mcp
+```
+codex mcp add ghidra --url http://x.x.x.x:8080/mcp
+```
+~/.codex/config.toml
+
 #### ghidra mcp安装使用
 
 ubuntu 20.04安装ghidra:
@@ -467,6 +473,37 @@ exclude = ["vim", "nano", "less"]
 
 [tee]
 enabled = true
+```
+
+## codex使用
+
+#### codex ssh下特别慢
+
+=> 最后发现是这个mcp加入引起的
+```
+codex mcp add ghidra --url http://x.x.x.x:8080/mcp
+```
+auth_mcp 访问 keyring, 在非图形界面下120s超时
+
+最后给这个ghidra配置一个bearer_token解决, 以及配置一个环境变量`export GHIDRA_MCP_TOKEN=xxx`
+```
+[mcp_servers.ghidra]
+url = "http://10.30.9.97:8080/mcp"
+bearer_token_env_var = "GHIDRA_MCP_TOKEN"
+```
+
+=> 但是在图形界面下执行就非常快
+
+切换一个新的HOME就很快了
+```
+CODEX_HOME=$HOME/.codex-ssh-test codex
+```
+
+~/.codex/log/codex-tui.log
+日志中有卡住120s的
+```
+session_init.auth_mcp ... failed to read OAuth tokens from keyring ... org.freedesktop.secrets ... timed out (service_start_timeout=120000ms)
+session_init.auth_mcp ... close time.busy=120s
 ```
 
 ## 收集文章

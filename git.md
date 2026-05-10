@@ -74,6 +74,25 @@ Host github.com *.github.com
     ProxyCommand nc -v -x proxy.iefcu.cn:20170 %h %p
 ```
 
+ssh协议代理，发现代理的ssh协议被防火墙屏蔽, 改成如下配置即可 ()
+
+改用 GitHub 提供的 443 端口（HTTPS/SSH 复用端口）
+
+GitHub 官方建议在某些网络环境下使用 ssh.github.com:443。这个端口通常不会被 DPI 识别为 SSH，因此能绕过很多屏蔽。
+测试命令如下, 如果这个命令可以通过，就可以用443端口走ssh github流量
+```
+ssh -v -p 443 -o ProxyCommand="nc -X 5 -x 127.0.0.1:20170 %h %p" git@ssh.github.com
+```
+
+配置如下
+```
+Host github.com
+    HostName ssh.github.com
+    Port 443
+    User git
+    ProxyCommand nc -X 5 -x 127.0.0.1:20170 %h %p
+```
+
 ## git FAQ
 
 * git tag usage
@@ -182,6 +201,7 @@ git config --global core.quotepath false
 
 ```
 git push --set-upstream origin 8.1.7-24436
+git push origin dev:master # 把本地dev分支，推送到远端master分支
 ```
 
 * git log(docker) 中文commit乱码
