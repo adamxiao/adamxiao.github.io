@@ -95,6 +95,25 @@ Host github.com
 
 ## git FAQ
 
+* git rebase origin/main
+
+Q: 能不能让自己本地的分支的最新提交commit，都自动变为最新的commit呢
+
+原来：
+A---B---C  (main)
+     \
+      D---E  (feature)
+
+rebase 后：
+A---B---C---D'---E'  (feature)
+
+操作步骤如下, 如果没有冲突则完成了，有冲突则需要解决
+```
+git fetch origin
+git checkout feature
+git rebase origin/main
+```
+
 * git tag usage
 
 1. 列出标签, 查看标签
