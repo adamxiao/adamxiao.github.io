@@ -129,6 +129,12 @@ ipmitool -I lanplus -U admin -P password -H 10.30.11.113 -p 623 chassis power on
 ipmitool -I lanplus -U admin -P password -H 10.30.11.113 -p 623 chassis power reset
 ```
 
+设置网卡pxe启动，然后重启
+```
+ipmitool -I lanplus -H 10.30.10.x -U ADMIN -P ADMIN chassis bootdev pxe options=efiboot
+ipmitool -I lanplus -H 10.30.10.x -U ADMIN -P ADMIN chassis power cycle
+```
+
 ## ipmi重启mc
 
 冷重启, 重置BMC, 其他选项warm(热重启，保留部分状态)

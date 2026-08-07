@@ -7,6 +7,10 @@
 最终会话分析的资料，总结为文档，编写为代码，这个会话就可以结束甚至删除了， 是吧?
 => 文档记录遗留的TODO事件!
 
+#### 将输出记录到文件中去
+
+定义一个规则，将输出都记录到一个文件中去
+
 ### agent写代码 - 实现功能, 解决问题
 
 cursor chat聊天
@@ -221,6 +225,16 @@ markdown to EPUB这个电子书生成skill => 我要to html的吧!
 
 - 移动工作目录，或者工作目录改名，cursor还能有这个工作目录的记忆，以及会话吗？
 
+## 规则
+
+- 终端画ascii图时, 在计算字符串长度时必须使用 wcwidth 逻辑，将中文视为宽度 2，英文视为宽度 1
+  计划模式中画的ascii图，也需要遵守这个规则
+
+- 1.编码时代码使用英文，代码中的注释使用中文。
+  2.其他地方都使用中文。
+
+- Always respond in Chinese-simplified
+
 ## skills应用
 
 看看有什么好用的skills使用一下
@@ -430,6 +444,7 @@ Linux 下用 bubblewrap (bwrap) 跑 Claude Code
 #### claude code mcp
 
 https://github.com/themixednuts/GhidraMCP
+0.6.2版本支持 Ghidra 12.0.3
 ```
 claude mcp add ghidra "http://x.x.x.x:8080/mcp" --transport http
 Added HTTP MCP server ghidra with URL: http://x.x.x.x:8080/mcp to local config
