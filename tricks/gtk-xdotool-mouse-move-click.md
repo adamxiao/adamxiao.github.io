@@ -21,3 +21,12 @@ VDE R022C27 配置使用自动化
 http://10.20.20.17/koji/buildinfo?buildID=18330
 
 然后使用kylin用户, export DISPLAY=:0, 就可以使用xdotool工具自动化处理了!
+
+#### 定时按F11
+
+```
+while true; do
+    xdotool key F11
+    sleep 1
+done
+```

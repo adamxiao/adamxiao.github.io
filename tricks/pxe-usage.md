@@ -373,6 +373,81 @@ EOF
 %end
 ```
 
+## pxe安装ubuntu 26.04
+
+分析一下如下配置, 为什么无法安装ubuntu 26.04, 安装过程中会报错
+```
+:ubuntu2604-iso-install
+set base-url ${http-url}/ubuntu2604
+kernel ${base-url}/vmlinuz
+initrd ${base-url}/initrd
+imgargs vmlinuz initrd=initrd ip=dhcp url=http://10.30.9.99:9080/ubuntu2604/ubuntu-26.04-desktop-amd64.iso
+boot || goto failed
+goto start
+```
+
+  这段配置能把内核拉起来，但 Desktop ISO 的网络安装参数不完整，很容易在 casper 找 live 文件系统、下 ISO、或内存阶段报错。
+
+  当前配置的问题
+
+  imgargs vmlinuz initrd=initrd ip=dhcp url=http://10.30.9.99:9080/ubuntu2604/ubuntu-26.04-desktop-amd64.iso
+
+  只给了 ip=dhcp 和 url=，对 Desktop live ISO 通常不够。
+
+  ┌────────────────────────────┬────────────────────────────────────────────────────┐
+  │ 缺失项                     │ 作用                                               │
+  ├────────────────────────────┼────────────────────────────────────────────────────┤
+  │ boot=casper                │ Desktop 走 live 环境，没有它 casper 不会按预期挂载 │
+  ├────────────────────────────┼────────────────────────────────────────────────────┤
+  │ netboot=url                │ 明确用 URL 拉取 ISO（Desktop 常用）                │
+  ├────────────────────────────┼────────────────────────────────────────────────────┤
+  │ root=/dev/ram0             │ 把 root 指到内存盘                                 │
+  ├────────────────────────────┼────────────────────────────────────────────────────┤
+  │ cloud-config-url=/dev/null │ 避免 cloud-init 去找云元数据而卡住                 │
+  ├────────────────────────────┼────────────────────────────────────────────────────┤
+  │ ramdisk_size=...           │ Desktop ISO 约 6.1G，内存盘要够大                  │
+  └────────────────────────────┴────────────────────────────────────────────────────┘
+
+  另外还有两点硬条件：
+
+  1. vmlinuz / initrd 必须来自同一张 Desktop ISO 的 casper/
+
+     用 Server 的、或别的版本的，常见报错是：unable to find a live file system on the network。
+
+  2. 内存要大约超过 ISO 体积的 2 倍
+
+     26.04 Desktop ~6.1G，机器最好有 ≥12–14GB 可用内存，否则下载/解压 ISO 会失败。
+
+  建议改成这样 => 验证可以
+
+  :ubuntu2604-iso-install
+  set base-url ${http-url}/ubuntu2604
+  kernel ${base-url}/vmlinuz
+  initrd ${base-url}/initrd
+  imgargs vmlinuz initrd=initrd root=/dev/ram0 ramdisk_size=8388608 \
+    boot=casper netboot=url ip=dhcp cloud-config-url=/dev/null \
+    url=http://10.30.9.99:9080/ubuntu2604/ubuntu-26.04-desktop-amd64.iso
+  boot || goto failed
+  goto start
+
+  准备文件时：
+
+  mount -o loop ubuntu-26.04-desktop-amd64.iso /mnt
+  cp /mnt/casper/vmlinuz /path/to/ubuntu2604/
+  cp /mnt/casper/initrd  /path/to/ubuntu2604/
+  umount /mnt
+
+  若仍失败，优先核对
+
+  1. 报错是否是 unable to find a live file system on the network → 内核/initrd 与 ISO 不匹配。
+  2. 卡在下载 ISO / OOM → 内存不够（Desktop 比 Server 苛刻得多）。
+  3. 能开网但下不了 ISO → 确认 http://10.30.9.99:9080/...iso 在目标机上可访问（防火墙、端口、路径）。
+
+  如果目标只是装系统而不是必须用 Desktop 安装器，用 live-server ISO 更稳（体积约 2.7G，内存压力小很多），装完再装 ubuntu-desktop。
+
+  具体报错原文（或截图里的那一行）发一下，可以进一步对上是参数、内存还是文件不匹配。
+
+
 ## pxe安装ubuntu
 
 关键字《centos pxe install ubuntu》
