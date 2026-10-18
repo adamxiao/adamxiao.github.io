@@ -24,6 +24,16 @@ iptables -A FORWARD -i eth0 -s 192.168.1.3 -p tcp --sport 3306 -j ACCEPT
 sudo iptables -t nat -A OUTPUT -p tcp --dport 80 -j REDIRECT --to-ports 3128
 sudo iptables -t nat -A OUTPUT -p tcp --dport 80 -j DNAT --to 10.20.3.18:3128
 
+#### 基于目的地址的路由
+
+- 如何给节点 root@10.30.8.x 添加一个ip地址 10.30.11.xxx, 这个ip地址仅在访问 10.90.6.41/24 网段才使用，并且还是走网关10.30.0.1，先只给出方案
+
+=> 测试ok
+```
+ip addr add 10.30.11.x/32 dev IFACE
+ip route add 10.90.6.0/24 via 10.30.0.1 src 10.30.11.x
+```
+
 #### 基于目的端口的策略路由
 
 gpt: 节点A访问目的ip地址B，可以配置基于端口的路由策略吗？例如访问指定端口8080，走路由a，访问其他端口，走路由b
@@ -79,6 +89,49 @@ iptables -t nat -I PREROUTING -d ${ip1}/32 -p tcp -m tcp --dport 80 -j DNAT --to
 # 本机dnat
 iptables -t nat -I OUTPUT -d ${ip1}/32 -p tcp -m tcp --dport 80 -j DNAT --to-destination ${new_ip2}:80
 ```
+
+#### DNAT转发访问vmware vcenter
+
+  192.168.98.111 访问不了 10.90.0.0/16。这台开发机 192.168.98.97 两边都能到，所以用了两层转发：测试节点把目的地址改到开发机，开发机再按端口把 TCP 原样转到 vCenter 和 ESXi。
+
+  192.168.98.111
+    iptables OUTPUT DNAT
+          |
+          v
+  192.168.98.97  tcp_relay.py
+          |
+          +--> 10.90.6.41:443   vCenter
+          +--> 10.90.6.40:443   ESXi
+          +--> 10.90.6.40:902   NBD
+
+  1. 开发机上的 TCP 中继
+
+  脚本是 /tmp/tcp_relay.py。它在 192.168.98.97 上监听，收到连接后 socket.create_connection 到真实地址，双向拷贝字节，不改协议。当时开了三个进程：
+
+```
+  python3 /tmp/tcp_relay.py 192.168.98.97 18443 10.90.6.41 443
+  python3 /tmp/tcp_relay.py 192.168.98.97 18440 10.90.6.40 443
+  python3 /tmp/tcp_relay.py 192.168.98.97 19020 10.90.6.40 902
+```
+
+  参数顺序是：监听地址、监听端口、目标地址、目标端口。443 走 SOAP/VDDK 控制连接，902 走 NBD 磁盘数据。
+
+  2. 测试节点上的 DNAT
+
+  vmware-backup 和 pyVmomi 会直接连 JSON 和 vSphere 里给出的 IP，不会走 HTTP 代理。所以在 192.168.98.111 的 OUTPUT 链上，把这些目的地址改到开发机对应端口：
+
+```
+  iptables -t nat -A OUTPUT -d 10.90.6.41/32 -p tcp --dport 443 \
+    -j DNAT --to-destination 192.168.98.97:18443
+  iptables -t nat -A OUTPUT -d 10.90.6.40/32 -p tcp --dport 443 \
+    -j DNAT --to-destination 192.168.98.97:18440
+  iptables -t nat -A OUTPUT -d 10.90.6.40/32 -p tcp --dport 902 \
+    -j DNAT --to-destination 192.168.98.97:19020
+```
+
+  OUTPUT 在本机进程发出包、路由之前生效，所以 111 不需要有到 10.90.0.0/16 的路由，只要能访问同网段的 192.168.98.97。
+
+  ESXi 地址 10.90.6.40 是连上 vCenter 之后从这台虚拟机的 runtime.host 读到的，不是事先写死的。
 
 #### 简单nat转发
 

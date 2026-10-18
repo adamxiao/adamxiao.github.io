@@ -43,7 +43,7 @@ deb http://security.ubuntu.com/ubuntu xenial-security multiverse
 ### 2. 系统重要编程软件安装
 
 ```bash
-sudo apt-get install vim exuberant-ctags openssh-server git subversion \
+sudo apt install -y vim exuberant-ctags openssh-server git zsh \
 	autoconf libtool valgrind unrar cmake
 ```
 
@@ -120,6 +120,23 @@ $HOME/.config/google-chrome
 gsettings set org.gnome.shell.extensions.dash-to-dock show-mounts false
 ```
 
+#### easyconnect ubuntu 20.04起不来
+
+报错退出 (EasyConnect_x64_7_6_7_3.deb)
+```
+Gtk-Message: 11:10:29.748: Failed to load module "canberra-gtk-module"
+
+(EasyConnect:16941): Pango-ERROR **: 11:10:29.987: Harfbuzz version too old (1.3.1)
+
+[1]    16941 trace trap (core dumped)  /usr/share/sangfor/EasyConnect/EasyConnect
+```
+
+https://www.cnblogs.com/yspm/p/18694745/UseEasyConnectOnUbuntu
+https://juejin.cn/post/7121236352032571422
+https://www.cnblogs.com/zj420255586/p/14211474.html
+
+=> 去下载ubuntu18.04的libpango 1.40.14 三个库，放到目录 /usr/share/sangfor/EasyConnect/EasyConnect
+
 #### uniface ubuntu 22.04起不来
 
 修改入口脚本: /opt/ksvd/usr/bin/uniface
@@ -145,6 +162,20 @@ rsync -avh /usr/lib/x86_64-linux-gnu/libglib-2.0.so.0* /opt/ksvd/usr/lib64/
 rm -f /opt/ksvd/usr/lib64/libglib-2.0.so.0*
 # 以及还缺失一些动态库, 从ubuntu20.04 上拷贝过来
 scp /usr/lib/x86_64-linux-gnu/librest-0.7.so.0 root@10.90.4.117:/opt/ksvd/usr/lib64/
+```
+
+最后 ubuntu 26.04使用uniface 819
+```
+=> 从20.04中拷贝库
+scp /usr/lib/x86_64-linux-gnu/{libatk-1.0.so.0,libgdk-x11-2.0.so.0,libgtk-x11-2.0.so.0,libicudata.so.66,libicuuc.so.66,librest-0.7.so.0,libxml2.so.2} root@10.30.9.98:/opt/ksvd/usr/lib64/
+libicuuc.so.66
+=> 安装一些包
+sudo apt install libxcb-render-util0 libxcb-image0 libxcb-keysyms1 libxcb-icccm4
+                 virt-viewer libqt5core5a
+=> 删除冲突库
+cd /opt/ksvd/usr/lib64 && rm -f libgio-2.0.so.0,libgio-2.0.so.0.5600.1,libglib-2.0.so.0,libglib-2.0.so.0.5600.1,libgmodule-2.0.so.0,libgmodule-2.0.so.0.5600.1,libgobject-2.0.so.0,libgobject-2.0.so.0.5600.1,libgthread-2.0.so.0,libgthread-2.0.so.0.5600.1,libpcre2-16.so.0,libpcre2-16.so.0.5.0,libpcre2-8.so.0,libpcre2-8.so.0.5.0,libpcre2-posix.so.1,libpcre2-posix.so.1.0.1
+
+=> 修改uniface, export GDK_BACKEND=x11
 ```
 
 #### 配置Desktop等目录位置
